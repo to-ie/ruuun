@@ -50,16 +50,16 @@ import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Surface as SurfaceColor
 
 private data class StartingPlan(val label: String, val metres: Int) {
-    val caption: String get() = "First mission ${Formatters.distance(metres)}"
+    val caption: String get() = "Your first mission: ${Formatters.distance(metres)}"
 }
 
 private val PLANS = listOf(
-    StartingPlan("New to it", RunnerSettings.START_NEW_M),
-    StartingPlan("Getting moving", RunnerSettings.START_MOVING_M),
-    StartingPlan("Already jogging", RunnerSettings.START_JOGGING_M),
+    StartingPlan("New to running", RunnerSettings.START_NEW_M),
+    StartingPlan("Getting going", RunnerSettings.START_MOVING_M),
+    StartingPlan("Already running", RunnerSettings.START_JOGGING_M),
 )
 
-/** One screen, about a minute. Nickname, starting distance, outings per week. */
+/** One screen, about a minute. Nickname, starting distance, runs per week. */
 @Composable
 fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: Int) -> Unit) {
     var nickname by remember { mutableStateOf("") }
@@ -84,14 +84,14 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
                 )
                 Spacer(Modifier.height(18.dp))
                 Text(
-                    "Let's set up your adventure",
+                    "Set up your running",
                     style = RuuunText.SubTitle,
                     color = Navy,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Takes about a minute. A grown-up can help.",
+                    "Takes a minute. Grab an adult if you want a hand.",
                     style = RuuunText.Body,
                     color = TextMuted,
                     textAlign = TextAlign.Center,
@@ -146,7 +146,7 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
             }
 
             Spacer(Modifier.height(6.dp))
-            Text("Outings each week", style = RuuunText.BodyStrong, color = Navy)
+            Text("Runs each week", style = RuuunText.BodyStrong, color = Navy)
             Spacer(Modifier.height(10.dp))
             SegmentedPicker(
                 options = listOf(1, 2, 3),
@@ -164,13 +164,13 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
 
             Spacer(Modifier.height(Dimens.SectionGap))
             InfoPanel(
-                "Walk breaks are encouraged and rest days are good. Stop and tell a trusted " +
+                "Walking is part of running, and rest days make you faster. Stop and tell an " +
                     "adult if you feel pain, dizziness or unwell.",
             )
 
             Spacer(Modifier.height(24.dp))
             PrimaryCta(
-                text = "Let's go!",
+                text = "Start running",
                 onClick = {
                     onFinish(
                         RunInput.cleanNickname(nickname),

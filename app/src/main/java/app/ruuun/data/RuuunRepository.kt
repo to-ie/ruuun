@@ -43,7 +43,7 @@ class RuuunRepository(private val dao: RuuunDao) {
         dao.upsertSettings(transform(current))
     }
 
-    /** Saves a new outing and returns everything the celebration screen needs. */
+    /** Saves a new run and returns everything the celebration screen needs. */
     suspend fun saveRun(
         date: LocalDate,
         distanceM: Int,
@@ -136,6 +136,18 @@ class RuuunRepository(private val dao: RuuunDao) {
         val settings = dao.getSettings() ?: return
         dao.upsertSettings(
             settings.copy(currentTargetM = TargetRecommender.makeEasier(settings.currentTargetM)),
+        )
+    }
+
+    suspend fun makeHarder() {
+        val settings = dao.getSettings() ?: return
+        dao.upsertSettings(
+            settings.copy(
+                currentTargetM = TargetRecommender.makeHarder(
+                    settings.currentTargetM,
+                    settings.maxTargetM,
+                ),
+            ),
         )
     }
 

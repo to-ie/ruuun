@@ -146,6 +146,7 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
                     today = viewModel.today(),
                     onLogRun = { navController.navigate(Routes.LOG_RUN) },
                     onMakeEasier = viewModel::makeEasier,
+                    onMakeHarder = viewModel::makeHarder,
                     onSettings = { navController.navigate(Routes.SETTINGS) },
                 )
             }
@@ -154,7 +155,7 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
                     state = state,
                     today = viewModel.today(),
                     onMakeEasier = viewModel::makeEasier,
-                    onRepeat = viewModel::repeatTarget,
+                    onMakeHarder = viewModel::makeHarder,
                 )
             }
             composable(Routes.BADGES) {

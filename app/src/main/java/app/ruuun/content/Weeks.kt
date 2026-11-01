@@ -2,14 +2,14 @@ package app.ruuun.content
 
 /** The eight fixed optional side quests. No random generation, no quest state. */
 enum class SideQuest(val description: String) {
-    ANY_RUN("Enjoy any outing"),
-    EASY("Enjoy an easy-feeling outing"),
-    WALK("Try a walking adventure"),
-    NOTE("Save a tiny memory"),
-    PARK("Visit a park"),
-    FAMILY("Go with family"),
-    NEW_ROUTE("Try a new safe path"),
-    NATURE("Notice nature"),
+    ANY_RUN("Go for any run"),
+    EASY("Log a run that felt easy"),
+    WALK("Do one of them as a walk"),
+    NOTE("Add a note to a run"),
+    PARK("Run at a park"),
+    FAMILY("Take someone from home with you"),
+    NEW_ROUTE("Try a route you have not run before"),
+    NATURE("Run somewhere green"),
 }
 
 data class WeekTheme(

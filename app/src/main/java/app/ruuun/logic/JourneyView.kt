@@ -26,8 +26,8 @@ data class ChapterProgress(
 /** The four numbers in the History header. */
 data class HistoryStats(
     val totalDistanceM: Long,
-    val outingDays: Int,
-    val longestOutingM: Int,
+    val runDays: Int,
+    val longestRunM: Int,
     val daysOutThisMonth: Int,
 )
 
@@ -41,7 +41,7 @@ object JourneyView {
             ?.let { Chapters.runDaysNeeded(it, settings.initialStoryPaceOnePerWeek) } ?: 0
         return ChapterProgress(
             chapter = next,
-            runDays = stats.outingDays,
+            runDays = stats.runDays,
             runDaysNeeded = next?.let {
                 Chapters.runDaysNeeded(it, settings.initialStoryPaceOnePerWeek)
             } ?: 0,
@@ -86,8 +86,8 @@ object JourneyView {
 
     fun historyStats(logs: List<RunLog>, today: LocalDate): HistoryStats = HistoryStats(
         totalDistanceM = logs.sumOf { it.distanceM.toLong() },
-        outingDays = StatsCalculator.outingDays(logs),
-        longestOutingM = logs.maxOfOrNull { it.distanceM } ?: 0,
+        runDays = StatsCalculator.runDays(logs),
+        longestRunM = logs.maxOfOrNull { it.distanceM } ?: 0,
         daysOutThisMonth = logs
             .filter { it.date.year == today.year && it.date.month == today.month }
             .map { it.date }
@@ -97,13 +97,13 @@ object JourneyView {
 
     /** Supportive one-liner beside the next mission on the Run saved screen. */
     fun nextMissionNote(outcome: SaveOutcome, settings: RunnerSettings): String = when {
-        outcome.nextTargetM < outcome.previousTargetM -> "Nice and gentle next time."
-        outcome.nextTargetM > outcome.previousTargetM -> "Your mission grew a little. Walk breaks still welcome."
+        outcome.nextTargetM < outcome.previousTargetM -> "Taking it down a notch next time."
+        outcome.nextTargetM > outcome.previousTargetM -> "Mission went up. Walk breaks still fine."
         outcome.log.effort == app.ruuun.data.Effort.EASY &&
             outcome.log.distanceM >= outcome.log.targetMAtLog ->
-            "One more easy outing at ${Formatters.distance(outcome.nextTargetM)} and it can grow a little."
-        else -> "Same mission next time. Repeating builds confidence."
-    }.let { if (settings.currentTargetM >= settings.maxTargetM) "This is your longest suggested mission." else it }
+            "One more easy run at ${Formatters.distance(outcome.nextTargetM)} and it goes up."
+        else -> "Same mission next time. Repeating is how it sticks."
+    }.let { if (settings.currentTargetM >= settings.maxTargetM) "You are at your longest mission setting." else it }
 
     /** Cheerful line under the big check on the Run saved screen. */
     fun savedHeadline(nickname: String): String = "Nice one, $nickname!"

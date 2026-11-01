@@ -17,12 +17,12 @@ import java.time.LocalDate
 class WorkedScenariosTest {
 
     @Test
-    fun `first outing - 220m okay against a 300m mission`() {
+    fun `first run - 220m okay against a 300m mission`() {
         val settings = TestData.settings(currentTargetM = 300)
         val log = TestData.log(TestData.ONBOARDED, distanceM = 220, effort = Effort.OKAY, targetMAtLog = 300)
         val stats = StatsCalculator.snapshot(listOf(log), settings)
 
-        assertEquals(1, stats.outingDays)
+        assertEquals(1, stats.runDays)
         assertEquals(220L, stats.totalDistanceM)
         assertEquals(50, stats.xp)
         assertTrue("FS-001" in stats.earnedBadgeIds)
@@ -42,7 +42,7 @@ class WorkedScenariosTest {
         val settings = TestData.settings(currentTargetM = 300)
         val log = TestData.log(TestData.ONBOARDED, distanceM = 270, effort = Effort.HARD, targetMAtLog = 300)
         val stats = StatsCalculator.snapshot(listOf(log), settings)
-        assertEquals(1, stats.outingDays)
+        assertEquals(1, stats.runDays)
         assertEquals(250, TargetRecommender.afterLog(settings, listOf(log), log))
     }
 
@@ -54,14 +54,14 @@ class WorkedScenariosTest {
         val before = StatsCalculator.snapshot(listOf(a), settings)
         val after = StatsCalculator.snapshot(listOf(a, b), settings)
         assertEquals(500L, after.totalDistanceM)
-        assertEquals(1, after.outingDays)
+        assertEquals(1, after.runDays)
         assertEquals(50, after.xp)
-        assertFalse("the second log adds no outing day", after.outingDays > before.outingDays)
+        assertFalse("the second log adds no run day", after.runDays > before.runDays)
         assertEquals(before.completedChapters, after.completedChapters)
     }
 
     @Test
-    fun `comeback - a new outing after sixteen days keeps everything`() {
+    fun `comeback - a new run after sixteen days keeps everything`() {
         val settings = TestData.settings()
         val old = TestData.run(4)
         val comebackDate = old.last().date.plusDays(16)
@@ -85,7 +85,7 @@ class WorkedScenariosTest {
             targetMAtLog = 500,
         )
         val stats = StatsCalculator.snapshot(listOf(recent, backdated), settings)
-        assertEquals(2, stats.outingDays)
+        assertEquals(2, stats.runDays)
         assertEquals(1_300L, stats.totalDistanceM)
         assertEquals(500, TargetRecommender.afterLog(settings, listOf(recent, backdated), backdated))
     }
@@ -101,16 +101,16 @@ class WorkedScenariosTest {
         val after = StatsCalculator.snapshot(corrected, settings)
         assertEquals(150L, after.totalDistanceM)
         assertFalse("SD-011" in after.earnedBadgeIds)
-        assertEquals(1, after.outingDays)
+        assertEquals(1, after.runDays)
         assertEquals(50, after.xp)
     }
 
     @Test
-    fun `one per week - 48 outing days still finishes the story`() {
+    fun `one per week - 48 run days still finishes the story`() {
         val settings = TestData.settings(onePerWeekPace = true)
         val logs = (0 until 48).map { TestData.log(TestData.ONBOARDED.plusWeeks(it.toLong())) }
         val stats = StatsCalculator.snapshot(logs, settings)
-        assertEquals(48, stats.outingDays)
+        assertEquals(48, stats.runDays)
         assertEquals(11, stats.completedChapters)
 
         val twoMore = logs + listOf(
@@ -132,14 +132,14 @@ class WorkedScenariosTest {
             "Launch Week",
             WeekCalculator.themeFor(settings.onboardedDate, weekFiftyThree).title,
         )
-        assertEquals(60, stats.outingDays)
+        assertEquals(60, stats.runDays)
         // Chapter thresholds are run days, not weeks: 60 days clears chapters 1 to 9.
         assertEquals(9, stats.completedChapters)
     }
 
     @Test
     fun `the mockup sample child reconciles with the rules`() {
-        // UI spec section 7: 11 outing days and 4,050 m, then a 450 m outing.
+        // UI spec section 7: 11 run days and 4,050 m, then a 450 m run.
         val settings = TestData.settings(currentTargetM = 425)
         val before = (0 until 11).map {
             TestData.log(TestData.ONBOARDED.plusDays(it.toLong() * 3), distanceM = 4_050 / 11)
@@ -153,7 +153,7 @@ class WorkedScenariosTest {
             tags = setOf(RunTag.PARK, RunTag.FAMILY),
         )
         val after = StatsCalculator.snapshot(before + saved, settings)
-        assertEquals(12, after.outingDays)
+        assertEquals(12, after.runDays)
         assertEquals(600, after.xp)
         assertEquals(3, after.level)
         assertEquals("Trail Finder", StatsCalculator.levelName(after.level))

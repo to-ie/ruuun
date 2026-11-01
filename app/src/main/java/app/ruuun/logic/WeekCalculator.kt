@@ -35,8 +35,8 @@ object WeekCalculator {
     fun themeFor(onboardedDate: LocalDate, date: LocalDate): WeekTheme =
         Weeks.themeFor(journeyWeek(onboardedDate, date).coerceAtLeast(1))
 
-    /** Distinct outing dates in the ISO week starting on [monday]. */
-    fun outingDaysInWeek(logs: List<RunLog>, monday: LocalDate): Int =
+    /** Distinct run dates in the ISO week starting on [monday]. */
+    fun runDaysInWeek(logs: List<RunLog>, monday: LocalDate): Int =
         logs.filter { weekStart(it.date) == monday }.map { it.date }.distinct().size
 
     /** Is the optional side quest satisfied by [logs] (already filtered to one week)? */
@@ -56,11 +56,11 @@ object WeekCalculator {
         val journeyWeek: Int,
         val weekStart: LocalDate,
         val theme: WeekTheme,
-        val outingDays: Int,
+        val runDays: Int,
         val weeklyGoal: Int,
         val sideQuestMet: Boolean,
     ) {
-        val mainQuestMet: Boolean get() = outingDays >= weeklyGoal
+        val mainQuestMet: Boolean get() = runDays >= weeklyGoal
         val tasksDone: Int get() = (if (mainQuestMet) 1 else 0) + (if (sideQuestMet) 1 else 0)
     }
 
@@ -77,7 +77,7 @@ object WeekCalculator {
             journeyWeek = week,
             weekStart = monday,
             theme = theme,
-            outingDays = weekLogs.map { it.date }.distinct().size,
+            runDays = weekLogs.map { it.date }.distinct().size,
             weeklyGoal = weeklyGoal,
             sideQuestMet = sideQuestMet(weekLogs, theme.sideQuest),
         )

@@ -17,7 +17,7 @@ class BadgeEvaluatorTest {
     private val settings = TestData.settings()
 
     @Test
-    fun `the very first outing earns Liftoff and nothing that needs more`() {
+    fun `the very first run earns Liftoff and nothing that needs more`() {
         val stats = StatsCalculator.snapshot(
             listOf(TestData.log(TestData.ONBOARDED, distanceM = 300, targetMAtLog = 300)),
             settings,
@@ -91,7 +91,7 @@ class BadgeEvaluatorTest {
             )
         }
         val stats = StatsCalculator.snapshot(logs, TestData.settings(onboardedDate = LocalDate.of(2026, 1, 1)))
-        assertEquals(150, stats.outingDays)
+        assertEquals(150, stats.runDays)
         assertEquals(7_500, stats.xp)
         assertTrue("RC-020" in stats.earnedBadgeIds)
         assertTrue(stats.earnedBadgeIds.size > 100)

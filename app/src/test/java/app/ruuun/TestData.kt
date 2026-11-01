@@ -57,7 +57,7 @@ object TestData {
         updatedAt = counter.toLong(),
     )
 
-    /** [days] distinct outing days, one per day starting at [from]. */
+    /** [days] distinct run days, one per day starting at [from]. */
     fun run(days: Int, from: LocalDate = ONBOARDED, distanceM: Int = 300): List<RunLog> =
         (0 until days).map { log(from.plusDays(it.toLong()), distanceM = distanceM) }
 }

@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +69,7 @@ fun HomeScreen(
     today: LocalDate,
     onLogRun: () -> Unit,
     onMakeEasier: () -> Unit,
+    onMakeHarder: () -> Unit,
     onSettings: () -> Unit,
 ) {
     val settings = state.settings ?: return
@@ -101,11 +103,12 @@ fun HomeScreen(
                 fraction = stats.levelProgress,
                 color = Sky,
                 height = Dimens.XpBarHeight,
-                description = "${stats.daysIntoLevel} of 5 outing days to level ${stats.level + 1}",
+                description = "${stats.runsToNextLevel} more runs to level ${stats.level + 1}",
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "${stats.daysIntoLevel} of 5 outing days to Level ${stats.level + 1}",
+                if (stats.runsToNextLevel == 1) "1 more run to Level ${stats.level + 1}"
+                else "${stats.runsToNextLevel} more runs to Level ${stats.level + 1}",
                 style = RuuunText.Secondary,
                 color = TextMuted,
             )
@@ -116,11 +119,12 @@ fun HomeScreen(
                 welcomeBack = welcomeBack,
                 onLogRun = onLogRun,
                 onMakeEasier = onMakeEasier,
+                onMakeHarder = onMakeHarder,
             )
 
             Spacer(Modifier.height(Dimens.SectionGap))
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
-                StatTile("${stats.outingDays}", "Runs", Modifier.weight(1f))
+                StatTile("${stats.runDays}", "Runs", Modifier.weight(1f))
                 StatTile(Formatters.km(stats.totalDistanceM), "Distance (km)", Modifier.weight(1f))
                 StatTile("${stats.earnedBadgeIds.size}", "Badges", Modifier.weight(1f))
             }
@@ -131,14 +135,14 @@ fun HomeScreen(
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "${week.outingDays} / ${week.weeklyGoal} outings this week",
+                        "${week.runDays} / ${week.weeklyGoal} runs this week",
                         style = RuuunText.CardTitle,
                         color = Navy,
                         modifier = Modifier.weight(1f),
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         repeat(week.weeklyGoal) { index ->
-                            CheckDot(done = index < week.outingDays)
+                            CheckDot(done = index < week.runDays)
                         }
                     }
                 }
@@ -164,7 +168,7 @@ fun HomeScreen(
                         }
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
-                            Overline("Badge almost there")
+                            Overline("Closest badge")
                             Text(upcoming.title, style = RuuunText.BodyStrong, color = Navy)
                             Text(upcoming.hint, style = RuuunText.Secondary, color = TextMuted)
                         }
@@ -210,38 +214,37 @@ fun HomeScreen(
 
 @Composable
 private fun HomeHeader(onSettings: () -> Unit) {
-    Surface(color = SurfaceColor, modifier = Modifier.fillMaxWidth()) {
-        Column {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.ScreenPadding, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+    // Navy bar: the logo sits on the brand colour rather than floating on white,
+    // and it matches the launcher icon.
+    Surface(color = Navy, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(start = Dimens.ScreenPadding, end = 12.dp, top = 10.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ruuun_logo_light),
+                contentDescription = stringResource(R.string.logo_description),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.height(44.dp),
+            )
+            Spacer(Modifier.weight(1f))
+            Surface(
+                onClick = onSettings,
+                shape = Shapes.Pill,
+                color = Color.White.copy(alpha = 0.10f),
+                modifier = Modifier.size(44.dp),
             ) {
-                Image(
-                    painter = painterResource(R.drawable.ruuun_logo),
-                    contentDescription = stringResource(R.string.logo_description),
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(Dimens.LogoHeaderHeight),
-                )
-                Spacer(Modifier.weight(1f))
-                Surface(
-                    onClick = onSettings,
-                    shape = Shapes.Input,
-                    color = IconButtonBg,
-                    modifier = Modifier.size(48.dp),
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Outlined.Settings,
-                            contentDescription = "Settings",
-                            tint = Navy,
-                            modifier = Modifier.size(24.dp),
-                        )
-                    }
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = "Settings",
+                        tint = Ground,
+                        modifier = Modifier.size(22.dp),
+                    )
                 }
             }
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
         }
     }
 }
@@ -252,6 +255,7 @@ private fun NextMissionHero(
     welcomeBack: Boolean,
     onLogRun: () -> Unit,
     onMakeEasier: () -> Unit,
+    onMakeHarder: () -> Unit,
 ) {
     Surface(shape = Shapes.Hero, color = Navy, modifier = Modifier.fillMaxWidth()) {
         Box {
@@ -283,9 +287,9 @@ private fun NextMissionHero(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     if (welcomeBack) {
-                        "Welcome back! Repeat or make it easier."
+                        "Welcome back. Repeat this one, or make it easier."
                     } else {
-                        "Walk or jog. Breaks welcome."
+                        "Walk it or run it. Breaks are fine."
                     },
                     style = RuuunText.BodyLarge,
                     color = Ground,
@@ -293,12 +297,20 @@ private fun NextMissionHero(
                 Spacer(Modifier.height(18.dp))
                 PrimaryCta("Log a run", onLogRun, icon = Icons.Outlined.Add)
                 Spacer(Modifier.height(10.dp))
-                SecondaryButton(
-                    text = "Make this easier",
-                    onClick = onMakeEasier,
-                    onNavy = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SecondaryButton(
+                        text = "Easier",
+                        onClick = onMakeEasier,
+                        onNavy = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                    SecondaryButton(
+                        text = "Harder",
+                        onClick = onMakeHarder,
+                        onNavy = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }

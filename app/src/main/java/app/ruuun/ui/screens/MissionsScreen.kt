@@ -2,6 +2,7 @@ package app.ruuun.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Flag
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import app.ruuun.logic.BadgeEvaluator
 import app.ruuun.logic.Formatters
 import app.ruuun.logic.JourneyView
-import app.ruuun.logic.TargetRecommender
 import app.ruuun.logic.WeekCalculator
 import app.ruuun.ui.AppState
 import app.ruuun.ui.bannerColor
@@ -68,7 +66,7 @@ fun MissionsScreen(
     state: AppState,
     today: LocalDate,
     onMakeEasier: () -> Unit,
-    onRepeat: () -> Unit,
+    onMakeHarder: () -> Unit,
 ) {
     val settings = state.settings ?: return
     val stats = state.stats
@@ -79,7 +77,6 @@ fun MissionsScreen(
         .coerceAtLeast(1)
 
     var showAllWeeks by remember { mutableStateOf(false) }
-    var showTargetDialog by remember { mutableStateOf(false) }
 
     val weeksToShow = if (showAllWeeks) {
         maxOf(52, currentJourneyWeek + WEEKS_AHEAD)
@@ -119,17 +116,16 @@ fun MissionsScreen(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                "Walk or jog. Breaks welcome.",
+                                "The distance to aim for on your next run.",
                                 style = RuuunText.Body,
                                 color = Ground,
                             )
                         }
                         Spacer(Modifier.width(12.dp))
-                        SecondaryButton(
-                            text = "Repeat / Easier",
-                            onClick = { showTargetDialog = true },
-                            onNavy = true,
-                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SecondaryButton("Easier", onMakeEasier, onNavy = true)
+                            SecondaryButton("Harder", onMakeHarder, onNavy = true)
+                        }
                     }
                 }
             }
@@ -139,11 +135,17 @@ fun MissionsScreen(
                 Overline("Week ${thisWeek.journeyWeek} · ${thisWeek.theme.flavour}")
                 Spacer(Modifier.height(4.dp))
                 Text(thisWeek.theme.title, style = RuuunText.CardTitle, color = Navy)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Two things to tick off. They reset every Monday.",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                )
                 Spacer(Modifier.height(12.dp))
                 QuestRow(
                     label = "Main quest",
-                    description = "Get out on ${thisWeek.weeklyGoal} days this week",
-                    progressText = "${thisWeek.outingDays}/${thisWeek.weeklyGoal}",
+                    description = "Run on ${thisWeek.weeklyGoal} days this week",
+                    progressText = "${thisWeek.runDays}/${thisWeek.weeklyGoal}",
                     done = thisWeek.mainQuestMet,
                 )
                 Spacer(Modifier.height(Dimens.ItemGap))
@@ -176,7 +178,13 @@ fun MissionsScreen(
 
             if (reachable.isNotEmpty()) {
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Text("Badges within reach", style = RuuunText.SectionTitle, color = Navy)
+                Text("Closest badges", style = RuuunText.SectionTitle, color = Navy)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "The ones you are nearest to earning.",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                )
                 Spacer(Modifier.height(10.dp))
                 reachable.forEach { badge ->
                     RuuunCard(modifier = Modifier.padding(bottom = Dimens.ItemGap)) {
@@ -205,7 +213,13 @@ fun MissionsScreen(
             }
 
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Text("Your 52-week journey", style = RuuunText.SectionTitle, color = Navy)
+                Text("Your 52 weeks", style = RuuunText.SectionTitle, color = Navy)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "A new theme every week. Nothing expires.",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                )
                 Spacer(Modifier.height(10.dp))
             }
 
@@ -229,47 +243,6 @@ fun MissionsScreen(
                 Spacer(Modifier.height(Dimens.ScreenPadding))
             }
         }
-    }
-
-    if (showTargetDialog) {
-        val easier = TargetRecommender.makeEasier(settings.currentTargetM)
-        AlertDialog(
-            onDismissRequest = { showTargetDialog = false },
-            containerColor = SurfaceColor,
-            title = { Text("Next mission", style = RuuunText.SubTitle, color = Navy) },
-            text = {
-                Text(
-                    "Repeat ${Formatters.distance(settings.currentTargetM)}, " +
-                        "or make it ${Formatters.distance(easier)}?",
-                    style = RuuunText.Body,
-                    color = Navy,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    onRepeat()
-                    showTargetDialog = false
-                }) {
-                    Text(
-                        "Repeat ${Formatters.distance(settings.currentTargetM)}",
-                        color = Navy,
-                        style = RuuunText.BodyStrong,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    onMakeEasier()
-                    showTargetDialog = false
-                }) {
-                    Text(
-                        "Make it ${Formatters.distance(easier)}",
-                        color = Navy,
-                        style = RuuunText.Body,
-                    )
-                }
-            },
-        )
     }
 }
 

@@ -151,8 +151,8 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.makeEasier() }
     }
 
-    fun repeatTarget() {
-        notify("Same mission next time. Repeating is a good plan.")
+    fun makeHarder() {
+        viewModelScope.launch { repository.makeHarder() }
     }
 
     fun setNickname(nickname: String) {

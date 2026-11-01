@@ -32,8 +32,8 @@ class WeekCalculatorTest {
         val sunday = LocalDate.of(2026, 11, 1)
         val monday = LocalDate.of(2026, 11, 2)
         val logs = listOf(TestData.log(sunday), TestData.log(monday))
-        assertEquals(1, WeekCalculator.outingDaysInWeek(logs, WeekCalculator.weekStart(sunday)))
-        assertEquals(1, WeekCalculator.outingDaysInWeek(logs, WeekCalculator.weekStart(monday)))
+        assertEquals(1, WeekCalculator.runDaysInWeek(logs, WeekCalculator.weekStart(sunday)))
+        assertEquals(1, WeekCalculator.runDaysInWeek(logs, WeekCalculator.weekStart(monday)))
     }
 
     /** QA 13: the December/January boundary must not drift. */
@@ -97,7 +97,7 @@ class WeekCalculatorTest {
         val settings = TestData.settings(weeklyGoal = 2, onboardedDate = monday)
         val sameDayTwice = listOf(TestData.log(monday), TestData.log(monday))
         val progress = WeekCalculator.weekProgress(sameDayTwice, monday, 2, monday)
-        assertEquals(1, progress.outingDays)
+        assertEquals(1, progress.runDays)
         assertFalse(progress.mainQuestMet)
         assertEquals(2, settings.weeklyGoal)
     }

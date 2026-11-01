@@ -83,7 +83,7 @@ private val TAGS = listOf(
     RunTag.NATURE to "Nature",
 )
 
-/** Add or edit one outing. The same screen serves both; only the copy changes. */
+/** Add or edit one run. The same screen serves both; only the copy changes. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogRunScreen(
@@ -226,13 +226,13 @@ fun LogRunScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 "Your mission was ${Formatters.distance(settings.currentTargetM)}. " +
-                    "Enter what you actually did.",
+                    "Put in what you actually did \u2014 more or less, both count.",
                 style = RuuunText.Secondary,
                 color = TextMuted,
             )
             if (distanceM != null && RunInput.isImplausible(distanceM)) {
                 Spacer(Modifier.height(10.dp))
-                InfoPanel("That's a long way! Double-check the number.")
+                InfoPanel("That is a long way. Worth double-checking the number.")
             }
 
             Spacer(Modifier.height(Dimens.SectionGap))
@@ -310,7 +310,7 @@ fun LogRunScreen(
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    "Just for your notes. Never used for speed.",
+                    "Just for your own record. Never turned into a pace.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                     modifier = Modifier.weight(1f),
@@ -318,12 +318,12 @@ fun LogRunScreen(
             }
 
             Spacer(Modifier.height(14.dp))
-            Text("A tiny memory", style = RuuunText.BodyStrong, color = Navy)
+            Text("Notes", style = RuuunText.BodyStrong, color = Navy)
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = note,
                 onValueChange = { note = it.take(RunLog.MAX_NOTE_LENGTH) },
-                placeholder = { Text("What did you notice?", color = TextMuted) },
+                placeholder = { Text("How did it go?", color = TextMuted) },
                 minLines = 2,
                 shape = Shapes.Input,
                 textStyle = RuuunText.Body,

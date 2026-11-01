@@ -166,8 +166,8 @@ fun RunSavedScreen(
             Spacer(Modifier.height(Dimens.SectionGap))
             QuestRow(
                 label = "Main quest",
-                description = "Weekly goal: ${week.outingDays} / ${week.weeklyGoal} outings",
-                progressText = "${week.outingDays}/${week.weeklyGoal}",
+                description = "Weekly goal: ${week.runDays} / ${week.weeklyGoal} runs",
+                progressText = "${week.runDays}/${week.weeklyGoal}",
                 done = week.mainQuestMet,
             )
             Spacer(Modifier.height(Dimens.ItemGap))
@@ -258,7 +258,7 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(14.dp))
-                if (saved.isNewOutingDay) {
+                if (saved.isNewRunDay) {
                     Pill("+50 XP", Orange)
                 } else {
                     Pill("Distance added", SkyTint)
@@ -275,11 +275,12 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                     color = Sky,
                     height = Dimens.XpBarHeight,
                     trackColor = HeroTrack,
-                    description = "${after.daysIntoLevel} of 5 outing days to level ${after.level + 1}",
+                    description = "${after.runsToNextLevel} more runs to level ${after.level + 1}",
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "${after.daysIntoLevel} of 5 days to Level ${after.level + 1}",
+                    if (after.runsToNextLevel == 1) "1 more run to Level ${after.level + 1}"
+                    else "${after.runsToNextLevel} more runs to Level ${after.level + 1}",
                     style = RuuunText.Secondary,
                     color = Ground,
                 )

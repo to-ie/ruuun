@@ -140,7 +140,7 @@ fun SettingsScreen(
                 )
 
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Text("Outings each week", style = RuuunText.BodyStrong, color = Navy)
+                Text("Runs each week", style = RuuunText.BodyStrong, color = Navy)
                 Spacer(Modifier.height(8.dp))
                 SegmentedPicker(
                     options = listOf(1, 2, 3),

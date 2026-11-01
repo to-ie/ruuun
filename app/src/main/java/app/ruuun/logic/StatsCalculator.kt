@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit
  * correcting a log simply produces a different snapshot.
  */
 data class StatsSnapshot(
-    val outingDays: Int,
+    val runDays: Int,
     val totalDistanceM: Long,
     val maxSingleDistanceM: Int,
     val weeksMet: Int,
@@ -24,23 +24,26 @@ data class StatsSnapshot(
     val metrics: Map<BadgeMetric, Int>,
     val earnedBadgeIds: Set<String>,
 ) {
-    /** 50 XP per distinct outing day. Nothing else grants XP. */
-    val xp: Int get() = XP_PER_OUTING_DAY * outingDays
+    /** 50 XP per distinct run day. Nothing else grants XP. */
+    val xp: Int get() = XP_PER_RUN_DAY * runDays
 
-    /** Five outing days per level. */
-    val level: Int get() = 1 + outingDays / OUTING_DAYS_PER_LEVEL
+    /** Five run days per level. */
+    val level: Int get() = 1 + runDays / RUN_DAYS_PER_LEVEL
 
-    /** Outing days completed inside the current level, 0 to 4. */
-    val daysIntoLevel: Int get() = outingDays % OUTING_DAYS_PER_LEVEL
+    /** Run days completed inside the current level, 0 to 4. */
+    val daysIntoLevel: Int get() = runDays % RUN_DAYS_PER_LEVEL
 
     /** 0f to 1f progress towards the next level. */
-    val levelProgress: Float get() = daysIntoLevel.toFloat() / OUTING_DAYS_PER_LEVEL
+    val levelProgress: Float get() = daysIntoLevel.toFloat() / RUN_DAYS_PER_LEVEL
+
+    /** Run days still needed to reach the next level. */
+    val runsToNextLevel: Int get() = RUN_DAYS_PER_LEVEL - daysIntoLevel
 
     fun metric(metric: BadgeMetric): Int = metrics[metric] ?: 0
 
     companion object {
-        const val XP_PER_OUTING_DAY = 50
-        const val OUTING_DAYS_PER_LEVEL = 5
+        const val XP_PER_RUN_DAY = 50
+        const val RUN_DAYS_PER_LEVEL = 5
 
         val EMPTY = StatsSnapshot(0, 0L, 0, 0, 0, 0, emptyMap(), emptySet())
     }
@@ -60,7 +63,7 @@ object StatsCalculator {
         else -> "Trail Hero"
     }
 
-    fun outingDays(logs: List<RunLog>): Int = logs.map { it.date }.distinct().size
+    fun runDays(logs: List<RunLog>): Int = logs.map { it.date }.distinct().size
 
     /**
      * Build the full snapshot. [today] only bounds nothing by itself: weeks are taken
@@ -68,7 +71,7 @@ object StatsCalculator {
      */
     fun snapshot(logs: List<RunLog>, settings: RunnerSettings): StatsSnapshot {
         val dates = logs.map { it.date }.distinct().sorted()
-        val outingDays = dates.size
+        val runDays = dates.size
         val totalM = logs.sumOf { it.distanceM.toLong() }
         val maxSingle = logs.maxOfOrNull { it.distanceM } ?: 0
 
@@ -85,11 +88,11 @@ object StatsCalculator {
             .mapValues { (_, weekLogs) -> weekLogs.size }
 
         val completedChapters = Chapters.ALL.count { chapter ->
-            outingDays >= Chapters.runDaysNeeded(chapter, settings.initialStoryPaceOnePerWeek)
+            runDays >= Chapters.runDaysNeeded(chapter, settings.initialStoryPaceOnePerWeek)
         }
 
         val metrics = buildMap {
-            put(BadgeMetric.RUN_DAYS, outingDays)
+            put(BadgeMetric.RUN_DAYS, runDays)
             put(BadgeMetric.MAX_SESSION_M, maxSingle)
             put(BadgeMetric.TOTAL_M, totalM.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
             put(BadgeMetric.WEEKS_MET, weeksMet)
@@ -142,7 +145,7 @@ object StatsCalculator {
         }
 
         return StatsSnapshot(
-            outingDays = outingDays,
+            runDays = runDays,
             totalDistanceM = totalM,
             maxSingleDistanceM = maxSingle,
             weeksMet = weeksMet,
@@ -154,15 +157,15 @@ object StatsCalculator {
     }
 
     /**
-     * Gaps of at least [days] calendar days between consecutive distinct outing dates.
-     * The return outing counts once per gap.
+     * Gaps of at least [days] calendar days between consecutive distinct run dates.
+     * The return run counts once per gap.
      */
     private fun comebackGaps(sortedDates: List<LocalDate>, days: Int): Int =
         sortedDates.zipWithNext().count { (previous, next) ->
             ChronoUnit.DAYS.between(previous, next) >= days
         }
 
-    /** Days since the most recent outing, or null when nothing has been logged. */
-    fun daysSinceLastOuting(logs: List<RunLog>, today: LocalDate): Long? =
+    /** Days since the most recent run, or null when nothing has been logged. */
+    fun daysSinceLastRun(logs: List<RunLog>, today: LocalDate): Long? =
         logs.maxOfOrNull { it.date }?.let { ChronoUnit.DAYS.between(it, today) }
 }

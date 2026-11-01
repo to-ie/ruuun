@@ -16,7 +16,7 @@ class StatsCalculatorTest {
     @Test
     fun `empty data is a complete, zeroed state`() {
         val stats = StatsCalculator.snapshot(emptyList(), settings)
-        assertEquals(0, stats.outingDays)
+        assertEquals(0, stats.runDays)
         assertEquals(0, stats.xp)
         assertEquals(1, stats.level)
         assertEquals(0L, stats.totalDistanceM)
@@ -24,14 +24,14 @@ class StatsCalculatorTest {
         assertTrue(stats.earnedBadgeIds.isEmpty())
     }
 
-    /** QA 3: one 250 m Okay outing against a 300 m mission. */
+    /** QA 3: one 250 m Okay run against a 300 m mission. */
     @Test
-    fun `first 250m okay outing gives one day, 50 XP and no met-target badge`() {
+    fun `first 250m okay run gives one day, 50 XP and no met-target badge`() {
         val logs = listOf(
             TestData.log(TestData.ONBOARDED, distanceM = 250, effort = Effort.OKAY, targetMAtLog = 300),
         )
         val stats = StatsCalculator.snapshot(logs, settings)
-        assertEquals(1, stats.outingDays)
+        assertEquals(1, stats.runDays)
         assertEquals(250L, stats.totalDistanceM)
         assertEquals(50, stats.xp)
         assertEquals(1, stats.level)
@@ -50,7 +50,7 @@ class StatsCalculatorTest {
             TestData.log(date, distanceM = 150),
         )
         val stats = StatsCalculator.snapshot(logs, settings)
-        assertEquals(1, stats.outingDays)
+        assertEquals(1, stats.runDays)
         assertEquals(650L, stats.totalDistanceM)
         assertEquals(50, stats.xp)
         assertEquals(0, stats.completedChapters)

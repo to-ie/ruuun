@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 
-/** How the outing felt. Required on every log. */
+/** How the run felt. Required on every log. */
 enum class Effort { EASY, OKAY, HARD }
 
 /** Optional self-reported movement mode. Never used for pacing or ranking. */
@@ -26,7 +26,7 @@ data class RunnerSettings(
     val currentTargetM: Int,
     val maxTargetM: Int = DEFAULT_MAX_TARGET_M,
     val weeklyGoal: Int = DEFAULT_WEEKLY_GOAL,
-    /** Frozen at setup: 1 outing/week halves the chapter run-day thresholds. */
+    /** Frozen at setup: 1 run/week halves the chapter run-day thresholds. */
     val initialStoryPaceOnePerWeek: Boolean = false,
     val onboardingComplete: Boolean = false,
 ) {
@@ -45,7 +45,7 @@ data class RunnerSettings(
 }
 
 /**
- * One manually logged outing. Multiple rows may share a [date]; all distances
+ * One manually logged run. Multiple rows may share a [date]; all distances
  * count towards totals but the date counts once for XP, the weekly goal,
  * run-day badges and chapter milestones.
  */

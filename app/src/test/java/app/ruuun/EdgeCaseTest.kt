@@ -73,7 +73,7 @@ class EdgeCaseTest {
             TestData.log(TestData.ONBOARDED),
         )
         val stats = StatsCalculator.snapshot(logs, settings)
-        assertEquals("every run counts towards totals", 3, stats.outingDays)
+        assertEquals("every run counts towards totals", 3, stats.runDays)
         assertEquals("only the journey week counts", 1, stats.weeksMet)
         assertEquals(2, stats.metric(BadgeMetric.ACTIVE_MONTHS))
     }
@@ -95,12 +95,12 @@ class EdgeCaseTest {
     }
 
     @Test
-    fun `a one-metre effort is a real outing`() {
+    fun `a one-metre effort is a real run`() {
         val stats = StatsCalculator.snapshot(
             listOf(TestData.log(TestData.ONBOARDED, distanceM = 1, targetMAtLog = 300)),
             TestData.settings(),
         )
-        assertEquals(1, stats.outingDays)
+        assertEquals(1, stats.runDays)
         assertEquals(50, stats.xp)
         assertTrue("FS-001" in stats.earnedBadgeIds)
     }
@@ -111,7 +111,7 @@ class EdgeCaseTest {
             TestData.log(LocalDate.of(2020 + it, 3, 1), distanceM = 500)
         }
         val stats = StatsCalculator.snapshot(logs, TestData.settings(onboardedDate = LocalDate.of(2020, 3, 1)))
-        assertEquals(10, stats.outingDays)
+        assertEquals(10, stats.runDays)
         assertEquals(10, stats.metric(BadgeMetric.ACTIVE_MONTHS))
         assertEquals(10, stats.metric(BadgeMetric.RUNS_IN_MONTH_03))
         assertEquals(9, stats.metric(BadgeMetric.COMEBACK_GAPS_30D))

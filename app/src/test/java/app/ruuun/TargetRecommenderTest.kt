@@ -13,7 +13,7 @@ class TargetRecommenderTest {
     private val day1 = TestData.ONBOARDED
     private val day2 = TestData.ONBOARDED.plusDays(2)
 
-    /** QA 4: two Easy outings at target raise 300 m to 325 m, never 350 m. */
+    /** QA 4: two Easy runs at target raise 300 m to 325 m, never 350 m. */
     @Test
     fun `two easy met-target days step up by one 25m increment`() {
         val settings = TestData.settings(currentTargetM = 300)
@@ -61,13 +61,51 @@ class TargetRecommenderTest {
     }
 
     @Test
-    fun `okay or below-target repeats the same target`() {
+    fun `matching or falling short of the mission repeats it`() {
         val settings = TestData.settings(currentTargetM = 400)
-        val okay = TestData.log(day1, distanceM = 450, effort = Effort.OKAY, targetMAtLog = 400)
-        assertEquals(400, TargetRecommender.afterLog(settings, listOf(okay), okay))
+        val matched = TestData.log(day1, distanceM = 400, effort = Effort.OKAY, targetMAtLog = 400)
+        assertEquals(400, TargetRecommender.afterLog(settings, listOf(matched), matched))
 
         val short = TestData.log(day2, distanceM = 200, effort = Effort.EASY, targetMAtLog = 400)
-        assertEquals(400, TargetRecommender.afterLog(settings, listOf(okay, short), short))
+        assertEquals(400, TargetRecommender.afterLog(settings, listOf(matched, short), short))
+    }
+
+    /** Beating the mission moves it to what was actually run, not one small step. */
+    @Test
+    fun `running further than the mission raises it to that distance`() {
+        val settings = TestData.settings(currentTargetM = 300)
+        val big = TestData.log(day1, distanceM = 350, effort = Effort.EASY, targetMAtLog = 300)
+        assertEquals(350, TargetRecommender.afterLog(settings, listOf(big), big))
+
+        // Okay effort counts too: the mission follows the distance, not the mood.
+        val okay = TestData.log(day1, distanceM = 480, effort = Effort.OKAY, targetMAtLog = 300)
+        assertEquals(475, TargetRecommender.afterLog(settings, listOf(okay), okay))
+
+        // Beating it by less than 25 m is not enough to move it on its own.
+        val nearly = TestData.log(day1, distanceM = 310, effort = Effort.OKAY, targetMAtLog = 300)
+        assertEquals(300, TargetRecommender.afterLog(settings, listOf(nearly), nearly))
+    }
+
+    @Test
+    fun `a hard run still eases off however far it went`() {
+        val settings = TestData.settings(currentTargetM = 300)
+        val far = TestData.log(day1, distanceM = 900, effort = Effort.HARD, targetMAtLog = 300)
+        assertEquals(250, TargetRecommender.afterLog(settings, listOf(far), far))
+    }
+
+    @Test
+    fun `beating the mission never jumps past the cap`() {
+        val settings = TestData.settings(currentTargetM = 900, maxTargetM = 1_000)
+        val huge = TestData.log(day1, distanceM = 4_000, effort = Effort.EASY, targetMAtLog = 900)
+        assertEquals(1_000, TargetRecommender.afterLog(settings, listOf(huge), huge))
+    }
+
+    @Test
+    fun `make it harder steps up to the next 25 m, never past the cap`() {
+        assertEquals(325, TargetRecommender.makeHarder(300, 3_000))
+        assertEquals(325, TargetRecommender.makeHarder(310, 3_000))
+        assertEquals(1_000, TargetRecommender.makeHarder(990, 1_000))
+        assertEquals(1_000, TargetRecommender.makeHarder(1_000, 1_000))
     }
 
     @Test

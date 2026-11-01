@@ -17,8 +17,8 @@ data class SaveOutcome(
     val nextTargetM: Int,
     val previousTargetM: Int,
 ) {
-    /** A second log on a day already recorded adds distance, but not an outing day. */
-    val isNewOutingDay: Boolean get() = after.outingDays > before.outingDays
+    /** A second log on a day already recorded adds distance, but not an run day. */
+    val isNewRunDay: Boolean get() = after.runDays > before.runDays
 
     val leveledUp: Boolean get() = after.level > before.level
 

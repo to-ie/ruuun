@@ -9,7 +9,7 @@ import kotlin.math.floor
 /**
  * The gentle suggestion algorithm from the handoff, section 4. A suggestion, never a
  * schedule: the child may log any distance, and the target never rises after a `Hard`
- * outing or because of a backdated entry.
+ * run or because of a backdated entry.
  */
 object TargetRecommender {
 
@@ -26,15 +26,21 @@ object TargetRecommender {
         else -> 100
     }
 
-    /** The next target after a `Hard` outing: 10% easier, rounded down to 25 m. */
+    /** The next target after a `Hard` run: 10% easier, rounded down to 25 m. */
     fun easierAfterHard(target: Int): Int =
         maxOf(MIN_TARGET_M, floorTo25(floor(target * HARD_FACTOR).toInt()))
 
-    /** `Make this easier`: the nearest lower 25 m increment, never below 100 m. */
+    /** `Make it easier`: the nearest lower 25 m increment, never below 100 m. */
     fun makeEasier(target: Int): Int {
         val floored = floorTo25(target)
         val lower = if (floored < target) floored else target - 25
         return maxOf(MIN_TARGET_M, lower)
+    }
+
+    /** `Make it harder`: the nearest higher 25 m increment, never above the cap. */
+    fun makeHarder(target: Int, maxTargetM: Int): Int {
+        val higher = (target / 25 + 1) * 25
+        return minOf(higher, maxTargetM).coerceAtLeast(target)
     }
 
     /**
@@ -51,7 +57,7 @@ object TargetRecommender {
      * The next suggested target after [newLog] was saved. [allLogs] must already
      * include it.
      *
-     * Only a new log on or after the latest existing outing date can move the target,
+     * Only a new log on or after the latest existing run date can move the target,
      * so backdating affects history and badges but never today's suggestion.
      */
     fun afterLog(
@@ -67,13 +73,18 @@ object TargetRecommender {
         // 1. Hard always eases off, whatever the distance.
         if (newLog.effort == Effort.HARD) return easierAfterHard(current)
 
-        // 2. Below the suggestion: repeat it. Still a real outing.
+        // 2. Below the suggestion: repeat it. Still a real run.
         if (newLog.distanceM < newLog.targetMAtLog) return current
 
-        // 3. Okay: repeat.
+        // 3. Beat the mission by a clear margin? The next one follows what was
+        //    actually run, rather than creeping up one small step at a time.
+        val achieved = floorTo25(newLog.distanceM)
+        if (achieved > current) return minOf(achieved, settings.maxTargetM)
+
+        // 4. Okay, or matched the mission without beating it: repeat.
         if (newLog.effort == Effort.OKAY) return current
 
-        // 4. Easy and target met: step up only after two such days at this target.
+        // 5. Easy and target matched: step up only after two such days at this target.
         //    Only days since the target last became this value count, so an Easy day
         //    from before an earlier dip cannot carry over and skip the gate.
         val easyMetDays = allLogs
@@ -98,9 +109,9 @@ object TargetRecommender {
         return latest.targetMAtLog.coerceIn(MIN_TARGET_M, settings.maxTargetM)
     }
 
-    /** 14 or more days without an outing offers the gentle welcome-back choice. */
+    /** 14 or more days without an run offers the gentle welcome-back choice. */
     fun needsWelcomeBack(logs: List<RunLog>, today: LocalDate): Boolean {
-        val gap = StatsCalculator.daysSinceLastOuting(logs, today) ?: return false
+        val gap = StatsCalculator.daysSinceLastRun(logs, today) ?: return false
         return gap >= 14
     }
 }

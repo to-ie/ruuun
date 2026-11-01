@@ -67,13 +67,13 @@ fun HistoryScreen(
                         contentColor = Ground,
                         modifier = Modifier.weight(1f),
                     )
-                    StatTile("${stats.outingDays}", "Outing days", Modifier.weight(1f))
+                    StatTile("${stats.runDays}", "Run days", Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(Dimens.ItemGap))
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
                     StatTile(
-                        Formatters.distance(stats.longestOutingM),
-                        "Longest outing",
+                        Formatters.distance(stats.longestRunM),
+                        "Longest run",
                         Modifier.weight(1f),
                     )
                     StatTile(
