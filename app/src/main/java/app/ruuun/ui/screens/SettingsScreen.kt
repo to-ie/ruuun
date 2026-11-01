@@ -255,7 +255,8 @@ fun SettingsScreen(
             title = { Text("Import this backup?", style = RuuunText.SubTitle, color = Navy) },
             text = {
                 Text(
-                    "${preview.settings.nickname} · ${preview.logs.size} runs.\n\n" +
+                    "${preview.settings.nickname} · ${preview.logs.size} " +
+                        (if (preview.logs.size == 1) "run" else "runs") + ".\n\n" +
                         "This replaces everything on this phone.",
                     style = RuuunText.Body,
                     color = Navy,

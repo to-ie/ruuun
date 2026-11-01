@@ -16,7 +16,7 @@ android {
         // Must only ever increase; it is independent of the 0.x name below.
         versionCode = 5
         versionName = "0.5"
-        // No instrumentation runner: the app ships pure-JVM unit tests only.
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -77,6 +77,11 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.json)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.room.runtime)
 }

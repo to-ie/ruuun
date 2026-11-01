@@ -36,7 +36,9 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,19 +106,31 @@ fun LogRunScreen(
     }
     val saving by viewModel.saving.collectAsStateWithLifecycle()
 
-    var date by remember(editing) { mutableStateOf(editing?.date ?: today) }
-    var unit by remember(editing) { mutableStateOf(DistanceUnit.METRES) }
-    var distanceText by remember(editing) {
+    // Saveable, so a rotation mid-entry does not throw away what has been typed.
+    // Enums and dates are held as primitives because that is what the bundle can carry.
+    val key = editing?.id ?: "new"
+    var dateEpochDay by rememberSaveable(key) {
+        mutableLongStateOf((editing?.date ?: today).toEpochDay())
+    }
+    val date: LocalDate = LocalDate.ofEpochDay(dateEpochDay)
+    var unitName by rememberSaveable(key) { mutableStateOf(DistanceUnit.METRES.name) }
+    val unit = DistanceUnit.valueOf(unitName)
+    var distanceText by rememberSaveable(key) {
         mutableStateOf(editing?.distanceM?.toString() ?: "")
     }
-    var effort by remember(editing) { mutableStateOf(editing?.effort) }
-    var mode by remember(editing) { mutableStateOf(editing?.mode) }
-    var tags by remember(editing) { mutableStateOf(editing?.tags ?: emptySet()) }
-    var minutesText by remember(editing) {
+    var effortName by rememberSaveable(key) { mutableStateOf(editing?.effort?.name ?: "") }
+    val effort = effortName.takeIf { it.isNotEmpty() }?.let { Effort.valueOf(it) }
+    var modeName by rememberSaveable(key) { mutableStateOf(editing?.mode?.name ?: "") }
+    val mode = modeName.takeIf { it.isNotEmpty() }?.let { RunMode.valueOf(it) }
+    var tagNames by rememberSaveable(key) {
+        mutableStateOf(editing?.tags.orEmpty().joinToString(",") { it.name })
+    }
+    val tags = tagNames.split(",").filter { it.isNotEmpty() }.map { RunTag.valueOf(it) }.toSet()
+    var minutesText by rememberSaveable(key) {
         mutableStateOf(editing?.durationMinutes?.toString() ?: "")
     }
-    var note by remember(editing) { mutableStateOf(editing?.note ?: "") }
-    var showDatePicker by remember { mutableStateOf(false) }
+    var note by rememberSaveable(key) { mutableStateOf(editing?.note ?: "") }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
     val distanceM = RunInput.parseDistanceM(distanceText, unit)
     val durationValid = RunInput.isDurationValid(minutesText)
@@ -222,7 +236,7 @@ fun LogRunScreen(
                 SegmentedPicker(
                     options = DistanceUnit.entries,
                     selected = unit,
-                    onSelect = { unit = it },
+                    onSelect = { unitName = it.name },
                     label = { it.label },
                     modifier = Modifier.width(126.dp),
                 )
@@ -247,7 +261,7 @@ fun LogRunScreen(
                     EffortButton(
                         effort = option,
                         selected = effort == option,
-                        onSelect = { effort = option },
+                        onSelect = { effortName = option.name },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -266,7 +280,7 @@ fun LogRunScreen(
                     ToggleChip(
                         text = label,
                         selected = mode == value,
-                        onToggle = { mode = if (mode == value) null else value },
+                        onToggle = { modeName = if (mode == value) "" else value.name },
                     )
                 }
             }
@@ -281,7 +295,8 @@ fun LogRunScreen(
                         text = label,
                         selected = selected,
                         onToggle = {
-                            tags = if (selected) tags - value else tags + value
+                            val next = if (selected) tags - value else tags + value
+                            tagNames = next.joinToString(",") { tag -> tag.name }
                         },
                         selectedFill = Lime,
                         selectedContent = Navy,
@@ -412,7 +427,7 @@ fun LogRunScreen(
                         val picked = java.time.Instant.ofEpochMilli(millis)
                             .atZone(ZoneOffset.UTC)
                             .toLocalDate()
-                        if (!picked.isAfter(today)) date = picked
+                        if (!picked.isAfter(today)) dateEpochDay = picked.toEpochDay()
                     }
                     showDatePicker = false
                 }) { Text("Choose", color = Navy, style = RuuunText.BodyStrong) }

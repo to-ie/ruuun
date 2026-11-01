@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,9 +63,9 @@ private val PLANS = listOf(
 /** One screen, about a minute. Nickname, starting distance, runs per week. */
 @Composable
 fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: Int) -> Unit) {
-    var nickname by remember { mutableStateOf("") }
-    var planIndex by remember { mutableIntStateOf(0) }
-    var weeklyGoal by remember { mutableIntStateOf(RunnerSettings.DEFAULT_WEEKLY_GOAL) }
+    var nickname by rememberSaveable { mutableStateOf("") }
+    var planIndex by rememberSaveable { mutableIntStateOf(0) }
+    var weeklyGoal by rememberSaveable { mutableIntStateOf(RunnerSettings.DEFAULT_WEEKLY_GOAL) }
 
     Column(
         Modifier
