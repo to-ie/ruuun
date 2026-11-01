@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ruuun! Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B5E9C}a:hover{color:#101C2E}
+</style>
+</helmet>
+<div style="width: 390px; height: 1160px; box-sizing: border-box; background: #F7F9FC; color: #101C2E; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<header style="display: flex; align-items: center; gap: 8px; padding: 12px 12px 12px 8px; background: #FFFFFF; border-bottom: 1px solid #DDE4EE">
+<a href="Home.dc.html" aria-label="Back to Home" style="width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #101C2E">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"></path></svg>
+</a>
+<div style="display: flex; flex-direction: column">
+<h1 style="margin: 0; font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.1">Settings</h1>
+<span style="font-size: 13px; color: #4B5872; font-weight: 700">Best changed with a grown-up</span>
+</div>
+</header>
+
+<main style="flex: 1 1 auto; padding: 20px; display: flex; flex-direction: column; gap: 22px">
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4B5872">Your plan</h2>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="snick" style="font-weight: 800; font-size: 15px">Nickname</label>
+<input id="snick" type="text" value="Runner" readonly style="min-height: 48px; box-sizing: border-box; border-radius: 12px; border: 2px solid #C5CFDD; background: #FFFFFF; padding: 0 14px; font: 600 16px 'Nunito', sans-serif; color: #101C2E">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-weight: 800; font-size: 15px">Outings each week</span>
+<div role="group" aria-label="Outings each week" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: #E9EEF5; padding: 5px; border-radius: 14px">
+<button type="button" aria-pressed="false" style="min-height: 44px; border-radius: 10px; border: 0; background: transparent; font: 800 17px 'Nunito', sans-serif; color: #101C2E; cursor: pointer">1</button>
+<button type="button" aria-pressed="true" style="min-height: 44px; border-radius: 10px; border: 0; background: #FFFFFF; box-shadow: 0 1px 3px rgba(16,28,46,0.2); font: 800 17px 'Nunito', sans-serif; color: #101C2E; cursor: pointer">2</button>
+<button type="button" aria-pressed="false" style="min-height: 44px; border-radius: 10px; border: 0; background: transparent; font: 800 17px 'Nunito', sans-serif; color: #101C2E; cursor: pointer">3</button>
+</div>
+<span style="font-size: 13px; color: #4B5872">Changing this can change past weekly-goal badges. Story progress stays.</span>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column">
+<span style="font-weight: 800; font-size: 15px">Longest suggested mission</span>
+<span style="font-size: 13px; color: #4B5872">Missions never go above this</span>
+</div>
+<button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 12px; border: 2px solid #C5CFDD; background: #FFFFFF; font: 800 16px 'Nunito', sans-serif; color: #101C2E; cursor: pointer">3,000 m</button>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column">
+<span style="font-weight: 800; font-size: 15px">Story pace</span>
+<span style="font-size: 13px; color: #4B5872">Set at the start, can't be changed</span>
+</div>
+<span style="font-weight: 700; font-size: 15px">Normal</span>
+</div>
+<button type="button" style="min-height: 48px; border-radius: 14px; border: 2px solid #101C2E; background: #FFFFFF; font: 800 15px 'Nunito', sans-serif; color: #101C2E; cursor: pointer">Reset next mission to 300 m</button>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4B5872">Your data</h2>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column">
+<button type="button" style="min-height: 64px; display: flex; align-items: center; gap: 14px; padding: 10px 16px; border: 0; border-bottom: 1px solid #E6EBF2; background: #FFFFFF; cursor: pointer; text-align: left; font-family: 'Nunito', sans-serif; color: #101C2E">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"></path></svg>
+<span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">Export progress</span><span style="font-size: 13px; color: #4B5872">Save a backup file. Keep it somewhere safe.</span></span>
+</button>
+<button type="button" style="min-height: 64px; display: flex; align-items: center; gap: 14px; padding: 10px 16px; border: 0; border-bottom: 1px solid #E6EBF2; background: #FFFFFF; cursor: pointer; text-align: left; font-family: 'Nunito', sans-serif; color: #101C2E">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
+<span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">Import progress</span><span style="font-size: 13px; color: #4B5872">Replaces everything on this phone. You'll see a preview first.</span></span>
+</button>
+<button type="button" style="min-height: 64px; display: flex; align-items: center; gap: 14px; padding: 10px 16px; border: 0; background: #FFFFFF; cursor: pointer; text-align: left; font-family: 'Nunito', sans-serif; color: #A12A12">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+<span style="flex: 1 1 auto; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 16px">Delete all progress</span><span style="font-size: 13px; color: #4B5872">Asks twice before anything is removed</span></span>
+</button>
+</div>
+</section>
+
+<section style="background: #E6F7FF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-weight: 800; font-size: 16px">About and privacy</h2>
+<p style="margin: 0; font-size: 14px; line-height: 1.45; color: #1F2E45">ruuun! works fully offline. No account, no internet, no location, no ads. Everything you log stays on this phone unless you export it.</p>
+<span style="font-size: 13px; color: #1F2E45; font-weight: 700">Version 1.0</span>
+</section>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1160}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

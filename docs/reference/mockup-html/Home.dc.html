@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ruuun! Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B5E9C}a:hover{color:#101C2E}
+</style>
+</helmet>
+<div style="width: 390px; height: 1240px; box-sizing: border-box; background: #F7F9FC; color: #101C2E; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px 20px; background: #FFFFFF; border-bottom: 1px solid #DDE4EE">
+<img src="/_blob/d8a5f6375902b74cdfc71bbbed27e540" alt="ruuun!" style="height: 48px; width: auto; display: block">
+<a href="Settings.dc.html" aria-label="Settings" style="width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #101C2E; background: #EEF3F9">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+</a>
+</header>
+
+<main style="flex: 1 1 auto; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.1">Hello, Runner</h1>
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-weight: 800; font-size: 16px">Level 3 · Trail Finder</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">550 XP</span>
+</div>
+<div role="progressbar" aria-label="XP toward Level 4" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 12px; border-radius: 999px; background: #E3E9F2; overflow: hidden">
+<div style="width: 20%; height: 100%; background: #49C6FF; border-radius: 999px"></div>
+</div>
+<span style="font-size: 14px; color: #4B5872">1 of 5 outing days to Level 4</span>
+</section>
+
+<section aria-labelledby="mission-h" style="background: #101C2E; color: #F7F9FC; border-radius: 24px; padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden">
+<svg width="170" height="170" viewBox="0 0 170 170" aria-hidden="true" style="position: absolute; right: -40px; top: -50px"><circle cx="85" cy="85" r="85" fill="#FF8C24" opacity="0.18"></circle><circle cx="85" cy="85" r="52" fill="#49C6FF" opacity="0.16"></circle></svg>
+<span id="mission-h" style="font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #49C6FF">Next mission</span>
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 60px; line-height: 1">425 m</span>
+<span style="font-size: 17px; font-weight: 600">Walk or jog. Breaks welcome.</span>
+<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px">
+<a href="LogRun.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: 16px; background: #FF8C24; color: #101C2E; font-weight: 800; font-size: 19px; text-decoration: none">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+Log a run</a>
+<button type="button" style="min-height: 48px; border-radius: 16px; background: transparent; border: 2px solid #3A4A63; color: #F7F9FC; font: 700 16px 'Nunito', sans-serif; cursor: pointer">Make this easier</button>
+</div>
+</section>
+
+<section aria-label="Totals" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.1">11</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">Runs</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.1">4.1</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">Distance (km)</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.1">37</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">Badges</span>
+</div>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 14px">
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; color: #4B5872; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase">This week · Forest Friends</span>
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.2">1 / 2 outings this week</span>
+</div>
+<div aria-hidden="true" style="display: flex; gap: 8px">
+<span style="width: 34px; height: 34px; border-radius: 999px; background: #C9F54A; border: 2px solid #101C2E; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#101C2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17l9-10"></path></svg></span>
+<span style="width: 34px; height: 34px; border-radius: 999px; background: #FFFFFF; border: 2px dashed #8A97AD"></span>
+</div>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 14px">
+<span aria-hidden="true" style="width: 52px; height: 52px; flex: 0 0 52px; border-radius: 16px; background: #FFE4CC; display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#101C2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="5"></circle><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"></path></svg></span>
+<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 13px; color: #4B5872; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase">Badge almost there</span>
+<span style="font-weight: 800; font-size: 18px">The Dozen</span>
+<span style="font-size: 14px; color: #4B5872">Complete 12 separate outing days</span>
+</div>
+<span style="font-weight: 800; font-size: 18px">11/12</span>
+</div>
+<div style="height: 10px; border-radius: 999px; background: #E3E9F2; overflow: hidden"><div style="width: 92%; height: 100%; background: #FF8C24; border-radius: 999px"></div></div>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column">
+<div style="background: #C9F54A; padding: 14px 16px; display: flex; align-items: center; gap: 10px">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#101C2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 6 12h4l-4 6h12l-4-6h4z"></path><path d="M12 18v3"></path></svg>
+<span style="font-weight: 800; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase">Rookie Woods</span>
+</div>
+<div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.2">Chapter 3 · The Forest Gate</span>
+<span style="font-size: 15px; color: #4B5872">The old gate is creaking. One more outing day might open it.</span>
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 4px">
+<div style="flex: 1 1 auto; height: 10px; border-radius: 999px; background: #E3E9F2; overflow: hidden"><div style="width: 92%; height: 100%; background: #101C2E; border-radius: 999px"></div></div>
+<span style="font-weight: 800; font-size: 15px">11 / 12 days</span>
+</div>
+</div>
+</section>
+
+</main>
+
+<nav aria-label="Main" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #DDE4EE; padding: 8px 8px 14px">
+<a href="Home.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #101C2E; font-size: 13px; font-weight: 800">
+<span style="width: 56px; height: 32px; border-radius: 999px; background: #49C6FF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Home</a>
+<a href="Missions.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #4B5872; font-size: 13px; font-weight: 700">
+<span style="width: 56px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg></span>Missions</a>
+<a href="Badges.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #4B5872; font-size: 13px; font-weight: 700">
+<span style="width: 56px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="15" r="5"></circle><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"></path></svg></span>Badges</a>
+<a href="History.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #4B5872; font-size: 13px; font-weight: 700">
+<span style="width: 56px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>History</a>
+</nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

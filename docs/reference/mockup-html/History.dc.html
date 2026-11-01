@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ruuun! History</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B5E9C}a:hover{color:#101C2E}
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; box-sizing: border-box; background: #F7F9FC; color: #101C2E; font-family: 'Nunito', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+<header style="padding: 18px 20px 14px; background: #FFFFFF; border-bottom: 1px solid #DDE4EE">
+<h1 style="margin: 0; font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.2">History</h1>
+</header>
+
+<main style="flex: 1 1 auto; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+
+<section aria-label="All-time totals" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="background: #101C2E; color: #F7F9FC; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">4.5 km</span>
+<span style="font-size: 14px; font-weight: 700">All-time distance</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">12</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">Outing days</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">600 m</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">Longest outing</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #DDE4EE; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">1</span>
+<span style="font-size: 14px; color: #4B5872; font-weight: 700">Days out in November</span>
+</div>
+</section>
+
+<sc-for list="{{ months }}" as="m" hint-placeholder-count="2">
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4B5872">{{ m.name }}</h2>
+<sc-for list="{{ m.runs }}" as="r" hint-placeholder-count="3">
+<button type="button" style="width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 12px 10px 12px 14px; border-radius: 16px; border: 1px solid #DDE4EE; background: #FFFFFF; cursor: pointer; text-align: left; font-family: 'Nunito', sans-serif; color: #101C2E">
+<span style="width: 46px; flex: 0 0 46px; display: flex; flex-direction: column; align-items: center; line-height: 1.1">
+<span style="font-size: 12px; font-weight: 800; color: #4B5872; text-transform: uppercase">{{ r.dow }}</span>
+<span style="font-family: 'Baloo 2', 'Nunito', sans-serif; font-weight: 800; font-size: 22px">{{ r.day }}</span>
+</span>
+<span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="display: flex; align-items: center; gap: 8px">
+<span style="font-weight: 800; font-size: 17px">{{ r.dist }}</span>
+<span style="font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: {{ r.effBg }}">{{ r.effort }}</span>
+</span>
+<span style="font-size: 14px; color: #4B5872; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ r.note }}</span>
+</span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4B5872" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+</button>
+</sc-for>
+</section>
+</sc-for>
+
+<button type="button" style="min-height: 48px; border-radius: 14px; border: 2px solid #C5CFDD; background: #FFFFFF; font: 800 15px 'Nunito', sans-serif; color: #101C2E; cursor: pointer">Show September</button>
+
+</main>
+
+<nav aria-label="Main" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #DDE4EE; padding: 8px 8px 14px">
+<a href="Home.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #4B5872; font-size: 13px; font-weight: 700">
+<span style="width: 56px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Home</a>
+<a href="Missions.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #4B5872; font-size: 13px; font-weight: 700">
+<span style="width: 56px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg></span>Missions</a>
+<a href="Badges.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #4B5872; font-size: 13px; font-weight: 700">
+<span style="width: 56px; height: 32px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="15" r="5"></circle><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"></path></svg></span>Badges</a>
+<a href="History.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; text-decoration: none; color: #101C2E; font-size: 13px; font-weight: 800">
+<span style="width: 56px; height: 32px; border-radius: 999px; background: #49C6FF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>History</a>
+</nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+renderVals() {
+const eff = { Easy: '#E8FBC2', Okay: '#E1F5FF', Hard: '#FFE4CC' };
+const r = (dow, day, dist, effort, note) => ({ dow, day, dist, effort, note, effBg: eff[effort] });
+const months = [
+{ name: 'November 2026', runs: [r('Sun', '1', '450 m', 'Easy', 'Spotted a heron by the pond')] },
+{ name: 'October 2026', runs: [
+r('Wed', '28', '400 m', 'Okay', 'Windy but fun'),
+r('Sat', '24', '425 m', 'Easy', 'New bench by the river'),
+r('Wed', '21', '350 m', 'Hard', 'Legs tired after football'),
+r('Sat', '17', '600 m', 'Okay', 'Park loop with the dog')
+] }
+];
+return { months };
+}
+}
+</script>
+</body>
+</html>
