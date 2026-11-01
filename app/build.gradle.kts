@@ -14,8 +14,8 @@ android {
         minSdk = 26
         targetSdk = 34
         // Must only ever increase; it is independent of the 0.x name below.
-        versionCode = 5
-        versionName = "0.5"
+        versionCode = 6
+        versionName = "1.0-beta"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }

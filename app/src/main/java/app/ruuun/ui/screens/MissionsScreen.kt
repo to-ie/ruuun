@@ -43,6 +43,7 @@ import app.ruuun.ui.components.RuuunCard
 import app.ruuun.ui.components.RuuunProgressBar
 import app.ruuun.ui.components.SecondaryButton
 import app.ruuun.ui.components.WorldCard
+import app.ruuun.ui.components.WorldJourneyCard
 import app.ruuun.ui.components.decorative
 import app.ruuun.ui.icon
 import app.ruuun.ui.theme.Border
@@ -77,6 +78,7 @@ fun MissionsScreen(
     val thisWeek = JourneyView.thisWeek(state.logs, settings, today)
     val chapter = JourneyView.chapterProgress(stats, settings)
     val reachable = JourneyView.badgesWithinReach(stats)
+    val journey = remember(stats, settings) { JourneyView.journeyMap(stats, settings) }
     // Clamped: a corrupted start date must not ask for thousands of rows.
     val currentJourneyWeek = WeekCalculator.journeyWeek(settings.onboardedDate, today)
         .coerceIn(1, MAX_JOURNEY_WEEKS)
@@ -227,7 +229,22 @@ fun MissionsScreen(
             }
 
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Text("Your 52 weeks", style = RuuunText.SectionTitle, color = Navy)
+                Text("The whole journey", style = RuuunText.SectionTitle, color = Navy)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Four worlds, twelve chapters. Chapters open on the number of days " +
+                        "you run, not on dates.",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                )
+                Spacer(Modifier.height(10.dp))
+                journey.forEach { world ->
+                    WorldJourneyCard(world)
+                    Spacer(Modifier.height(Dimens.ItemGap))
+                }
+
+                Spacer(Modifier.height(Dimens.SectionGap))
+                Text("Week by week", style = RuuunText.SectionTitle, color = Navy)
                 Spacer(Modifier.height(2.dp))
                 Text(
                     "A new theme every week. Nothing expires.",

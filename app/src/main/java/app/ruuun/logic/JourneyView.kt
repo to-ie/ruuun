@@ -3,6 +3,7 @@ package app.ruuun.logic
 import app.ruuun.content.BadgeDef
 import app.ruuun.content.Chapter
 import app.ruuun.content.Chapters
+import app.ruuun.content.World
 import app.ruuun.data.RunLog
 import app.ruuun.data.RunnerSettings
 import java.time.LocalDate
@@ -21,6 +22,30 @@ data class ChapterProgress(
     val fraction: Float
         get() = if (isFinale || runDaysNeeded <= 0) 1f
         else (runDays.toFloat() / runDaysNeeded).coerceIn(0f, 1f)
+}
+
+/** One chapter's standing in the overall journey. */
+data class ChapterStatus(
+    val chapter: Chapter,
+    val runDaysNeeded: Int,
+    val runDays: Int,
+    val isComplete: Boolean,
+    val isCurrent: Boolean,
+) {
+    val fraction: Float
+        get() = if (runDaysNeeded <= 0) 1f else (runDays.toFloat() / runDaysNeeded).coerceIn(0f, 1f)
+}
+
+/** A world and the three chapters inside it. */
+data class WorldStatus(
+    val world: World,
+    val chapters: List<ChapterStatus>,
+) {
+    val completed: Int get() = chapters.count { it.isComplete }
+    val total: Int get() = chapters.size
+    val isComplete: Boolean get() = completed == total
+    val isCurrent: Boolean get() = chapters.any { it.isCurrent }
+    val isLocked: Boolean get() = completed == 0 && !isCurrent
 }
 
 /** The four numbers in the History header. */
@@ -75,6 +100,34 @@ object JourneyView {
                 monday = firstMonday.plusWeeks((week - 1).toLong()),
             )
         }
+    }
+
+    /**
+     * The whole story at a glance: four worlds, twelve chapters, with what is done,
+     * what is in progress and what is still ahead.
+     */
+    fun journeyMap(stats: StatsSnapshot, settings: RunnerSettings): List<WorldStatus> {
+        val currentNumber = Chapters.ALL.getOrNull(stats.completedChapters)?.number
+        return Chapters.ALL
+            .groupBy { it.world }
+            .map { (world, chapters) ->
+                WorldStatus(
+                    world = world,
+                    chapters = chapters.map { chapter ->
+                        val needed = Chapters.runDaysNeeded(
+                            chapter,
+                            settings.initialStoryPaceOnePerWeek,
+                        )
+                        ChapterStatus(
+                            chapter = chapter,
+                            runDaysNeeded = needed,
+                            runDays = stats.runDays,
+                            isComplete = stats.runDays >= needed,
+                            isCurrent = chapter.number == currentNumber,
+                        )
+                    },
+                )
+            }
     }
 
     /** The single reachable badge shown on Home: the locked one closest to done. */

@@ -23,7 +23,7 @@ the two disagree, the handoff wins.
 export JAVA_HOME=/path/to/jdk-17
 echo "sdk.dir=/path/to/android-sdk" > local.properties
 
-./gradlew :app:testDebugUnitTest    # 95 unit tests, pure JVM, no device needed
+./gradlew :app:testDebugUnitTest    # 103 unit tests, pure JVM, no device needed
 ./gradlew :app:assembleDebug        # app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -101,7 +101,12 @@ app/src/main/java/app/ruuun/
 
 ## Tests
 
-`./gradlew :app:testDebugUnitTest` — 95 JVM tests, no emulator required:
+`./gradlew :app:connectedDebugAndroidTest` runs 13 instrumented tests against a real Room database
+on a connected device or emulator: onboarding, saving, same-date runs, editing, deleting, tag and
+note persistence, atomic import, delete-everything, the mission controls against the cap, and 150
+runs.
+
+`./gradlew :app:testDebugUnitTest` — 103 JVM tests, no emulator required:
 
 | File | Covers |
 |---|---|
@@ -113,6 +118,8 @@ app/src/main/java/app/ruuun/
 | `BackupFileTest` | export/import round trip, duplicate ids, out-of-range and malformed files |
 | `RunInputTest` | distance and duration parsing, note/nickname cleaning, distance formatting |
 | `WorkedScenariosTest` | all ten Appendix D scenarios plus the UI spec's sample child |
+| `JourneyMapTest` | the four-world map: ordering, exactly one chapter current, world completion, gentle pacing |
+| `InvariantSweepTest` | 1,000 randomised journeys, every rule re-checked after each run |
 | `EdgeCaseTest` | backups missing optional keys or carrying unknown ones, runs logged before onboarding, weekly-goal changes, a future onboarding date, a 1 m outing, a decade of logs |
 
 ## Verified on a device
@@ -173,9 +180,12 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-Pre-release while the app is being tried out; **1.0 is reserved for going live**. The Android
-`versionCode` keeps counting up independently (currently 5) because it must never decrease, so it
-does not track the `0.x` name.
+The Android `versionCode` counts up independently of the name (currently 6) because it must never
+decrease.
+
+- **1.0 beta** — the whole journey is now visible on Missions: four worlds, twelve chapters, showing
+  what is finished, what is in progress and what each one still asks for. Form state survives a
+  rotation. First instrumented tests against a real database, plus a randomised invariant sweep.
 
 - **0.5** — a splash screen showing the logo on brand navy while the database is read; Home drops
   its logo bar for the same header the other tabs use, with the settings gear beside the greeting.
