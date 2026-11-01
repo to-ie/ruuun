@@ -20,6 +20,12 @@ object BackupFile {
     const val FORMAT = "ruuun-offline-backup"
     const val SCHEMA_VERSION = 1
 
+    /** Roughly 55 years of daily running. Past this, something is wrong with the file. */
+    const val MAX_LOGS = 20_000
+
+    /** The journey cannot have started before the app existed, nor in the future. */
+    private val EARLIEST_START: LocalDate = LocalDate.of(2024, 1, 1)
+
     data class Payload(val settings: RunnerSettings, val logs: List<RunLog>)
 
     sealed interface ParseResult {
@@ -69,8 +75,10 @@ object BackupFile {
         return root.toString(2)
     }
 
+    fun parse(text: String): ParseResult = parse(text, today = LocalDate.now())
+
     @Suppress("ReturnCount")
-    fun parse(text: String): ParseResult {
+    fun parse(text: String, today: LocalDate): ParseResult {
         val root = try {
             JSONObject(text)
         } catch (e: JSONException) {
@@ -90,6 +98,10 @@ object BackupFile {
 
         val onboardedDate = parseDate(settingsJson.optString("onboardedDate"))
             ?: return ParseResult.Invalid("The backup has an unreadable start date.")
+        // A wild start date would make the weekly journey span thousands of weeks.
+        if (onboardedDate.isBefore(EARLIEST_START) || onboardedDate.isAfter(today)) {
+            return ParseResult.Invalid("The backup has a start date that cannot be right.")
+        }
 
         val startingTargetM = settingsJson.optInt("startingTargetM", -1)
         val currentTargetM = settingsJson.optInt("currentTargetM", -1)
@@ -116,6 +128,10 @@ object BackupFile {
 
         val logsJson = root.optJSONArray("logs")
             ?: return ParseResult.Invalid("The backup is missing its runs.")
+
+        if (logsJson.length() > MAX_LOGS) {
+            return ParseResult.Invalid("That backup holds too many runs to import.")
+        }
 
         val logs = ArrayList<RunLog>(logsJson.length())
         val seenIds = HashSet<String>()
@@ -159,14 +175,16 @@ object BackupFile {
         val duration = if (item.isNull("durationMinutes")) null else item.optInt("durationMinutes", -1)
         if (duration != null && duration <= 0) return null
 
-        val mode = if (item.isNull("mode")) null
-        else enumOrNull<RunMode>(item.optString("mode")) ?: return null
+        val mode = if (item.isNull("mode")) null else enumOrNull<RunMode>(item.optString("mode"))
 
+        // Tags and mode are decorative, so a value from a newer version of the app is
+        // skipped rather than failing the whole restore. Effort drives the rules, so an
+        // unknown effort is still rejected above.
         val tagsJson = item.optJSONArray("tags")
         val tags = LinkedHashSet<RunTag>()
         if (tagsJson != null) {
             for (t in 0 until tagsJson.length()) {
-                tags.add(enumOrNull<RunTag>(tagsJson.optString(t)) ?: return null)
+                enumOrNull<RunTag>(tagsJson.optString(t))?.let { tags.add(it) }
             }
         }
 

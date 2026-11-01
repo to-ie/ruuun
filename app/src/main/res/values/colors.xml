@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="navy">#FF101C2E</color>
+    <!-- Only the window background needs an Android resource; the Compose theme owns
+         every other colour the app draws. -->
     <color name="ground">#FFF7F9FC</color>
-    <color name="sky">#FF49C6FF</color>
-    <color name="orange">#FFFF8C24</color>
 </resources>

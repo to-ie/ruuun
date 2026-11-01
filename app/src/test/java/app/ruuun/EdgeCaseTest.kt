@@ -57,6 +57,64 @@ class EdgeCaseTest {
     }
 
     @Test
+    fun `a backup with an impossible start date is refused`() {
+        val envelope = { date: String -> """
+            {"format":"ruuun-offline-backup","schemaVersion":1,"exportedAt":"x",
+             "settings":{"nickname":"R","onboardedDate":"$date","startingTargetM":300,
+             "currentTargetM":300,"maxTargetM":3000,"weeklyGoal":2},"logs":[]}
+        """.trimIndent() }
+        val today = LocalDate.of(2026, 11, 1)
+        listOf("0001-01-01", "1900-01-01", "2200-01-01").forEach { date ->
+            assertTrue(date, BackupFile.parse(envelope(date), today) is BackupFile.ParseResult.Invalid)
+        }
+        assertTrue(BackupFile.parse(envelope("2026-01-01"), today) is BackupFile.ParseResult.Ok)
+    }
+
+    @Test
+    fun `a backup with absurdly many runs is refused`() {
+        val one = { i: Int -> """{"id":"id$i","date":"2026-01-01","distanceM":300,
+            "effort":"OKAY","targetMAtLog":300}""" }
+        val many = (0..BackupFile.MAX_LOGS).joinToString(",") { one(it) }
+        val text = """
+            {"format":"ruuun-offline-backup","schemaVersion":1,"exportedAt":"x",
+             "settings":{"nickname":"R","onboardedDate":"2026-01-01","startingTargetM":300,
+             "currentTargetM":300,"maxTargetM":3000,"weeklyGoal":2},"logs":[$many]}
+        """.trimIndent()
+        val result = BackupFile.parse(text, LocalDate.of(2026, 11, 1))
+        assertTrue(result is BackupFile.ParseResult.Invalid)
+    }
+
+    @Test
+    fun `tags and modes from a newer version are skipped, not fatal`() {
+        val text = """
+            {"format":"ruuun-offline-backup","schemaVersion":1,"exportedAt":"x",
+             "settings":{"nickname":"R","onboardedDate":"2026-01-01","startingTargetM":300,
+             "currentTargetM":300,"maxTargetM":3000,"weeklyGoal":2},
+             "logs":[{"id":"a","date":"2026-01-02","distanceM":300,"effort":"OKAY",
+                      "targetMAtLog":300,"tags":["PARK","SOMETHING_NEW"],"mode":"SPRINT"}]}
+        """.trimIndent()
+        val result = BackupFile.parse(text, LocalDate.of(2026, 11, 1))
+        assertTrue(result.toString(), result is BackupFile.ParseResult.Ok)
+        val log = (result as BackupFile.ParseResult.Ok).payload.logs.single()
+        assertEquals(setOf(app.ruuun.data.RunTag.PARK), log.tags)
+        assertNull("an unknown mode becomes no mode", log.mode)
+    }
+
+    @Test
+    fun `an unknown effort is still fatal, because it drives the rules`() {
+        val text = """
+            {"format":"ruuun-offline-backup","schemaVersion":1,"exportedAt":"x",
+             "settings":{"nickname":"R","onboardedDate":"2026-01-01","startingTargetM":300,
+             "currentTargetM":300,"maxTargetM":3000,"weeklyGoal":2},
+             "logs":[{"id":"a","date":"2026-01-02","distanceM":300,"effort":"BRUTAL",
+                      "targetMAtLog":300}]}
+        """.trimIndent()
+        assertTrue(
+            BackupFile.parse(text, LocalDate.of(2026, 11, 1)) is BackupFile.ParseResult.Invalid,
+        )
+    }
+
+    @Test
     fun `an imported future onboarding date does not break the week list`() {
         val settings = TestData.settings(onboardedDate = LocalDate.of(2030, 1, 7))
         val weeks = JourneyView.journeyWeeks(emptyList(), settings, upToJourneyWeek = -4)

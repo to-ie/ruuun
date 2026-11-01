@@ -23,7 +23,7 @@ the two disagree, the handoff wins.
 export JAVA_HOME=/path/to/jdk-17
 echo "sdk.dir=/path/to/android-sdk" > local.properties
 
-./gradlew :app:testDebugUnitTest    # 89 unit tests, pure JVM, no device needed
+./gradlew :app:testDebugUnitTest    # 95 unit tests, pure JVM, no device needed
 ./gradlew :app:assembleDebug        # app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -47,11 +47,14 @@ Derived from those rows every time the UI reads them, by pure functions in
   add distance but count as **one** day for XP, the weekly goal, run-count badges and chapters.
 - **XP and level** — `XP = 50 × outing days`, `level = 1 + outingDays / 5`. Nothing else grants XP.
 - **Next mission** — [`TargetRecommender`](app/src/main/java/app/ruuun/logic/TargetRecommender.kt):
-  **Running further than the mission moves it to that distance** (rounded down to 25 m, capped by
-  the longest suggested mission in Settings) whatever the effort felt like — distance wins over
-  effort. Falling short repeats the mission, or eases off 10% if it felt `Hard`. Matching it exactly
-  steps up one band (+25/+50/+100) after two `Easy` days at that distance. Backdated entries never
-  raise it, and `Easier` / `Harder` on Home move it by 25 m by hand.
+  **Beating the mission sets the next one beyond the distance just run**, by a bump that depends on
+  how it felt: +25 m for `Hard`, one band step for `Okay`, two for `Easy` (bands are 25 m under
+  500 m, 50 m under 1,500 m, 100 m above). Effort never drags the mission back below what was
+  actually covered. Falling short repeats the mission, or eases off 10% if it felt `Hard`. Matching
+  it exactly steps up one band after two `Easy` days. Backdated entries never raise it, and
+  `Easier` / `Harder` on Home move it by 25 m by hand. The mission only ever falls on a `Hard` run
+  that fell short, or by hand — so **the Settings cap is the main brake**; consider lowering it from
+  3,000 m for a younger runner.
 - **Weeks and quests** — ISO Monday-to-Sunday, each week identified by its Monday date, which keeps
   the December/January and leap-year boundaries honest. One main quest (the child's own weekly goal)
   and one authored optional side quest per week.
@@ -98,7 +101,7 @@ app/src/main/java/app/ruuun/
 
 ## Tests
 
-`./gradlew :app:testDebugUnitTest` — 89 JVM tests, no emulator required:
+`./gradlew :app:testDebugUnitTest` — 95 JVM tests, no emulator required:
 
 | File | Covers |
 |---|---|
@@ -119,6 +122,21 @@ Built and driven on an Android 14 (API 34) emulator: first-run setup, Home empty
 chapter 1 at 1/4 days), a second log on the same date showing `Distance added` rather than a second
 +50 XP, Missions, the 141-badge cabinet, History, Settings, and a JSON export written through the
 system file picker with no storage permission.
+
+## Audit notes
+
+A security and robustness pass in 1.3 found and fixed: an imported backup with a corrupted start
+date could ask the Missions screen for ~100,000 week rows; imports had no size limit; file reads,
+JSON parsing and serialisation all ran on the main thread; a file-size guard used an API 33 method
+under a minSdk of 26 and would have crashed on Android 8 to 12; and a single unrecognised tag
+rejected an entire backup. Start dates, run counts and file size are now bounded, all of that work
+runs on `Dispatchers.IO`, and unknown tags and modes are skipped rather than fatal — an unknown
+*effort* is still refused, because it drives the rules.
+
+The app declares no permissions at all, logs nothing, and pulls in no third-party libraries.
+`androidx.compose.ui.tooling.PreviewActivity` is exported in **debug** builds only (it arrives with
+`ui-tooling`), which is one reason to cut a signed release build for day-to-day use. Android Lint
+reports zero errors.
 
 ## Known gaps
 
@@ -155,6 +173,8 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
+- **1.3** — beating your mission now sets the next one *beyond* the distance you ran, by an amount
+  that depends on how it felt; hardening from a security and robustness audit (see below).
 - **1.2** — eight run tags instead of four; every badge explains itself in a tap-through sheet from
   the cabinet, the `Closest badges` list and the save celebration; `Show all N badges` replaces the
   dead `+N more`; chapter progress reads "1 of 4 runs" rather than "1 / 4 days"; beating your

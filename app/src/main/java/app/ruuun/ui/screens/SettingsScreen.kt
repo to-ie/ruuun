@@ -1,6 +1,7 @@
 package app.ruuun.ui.screens
 
 import android.content.Context
+import java.io.ByteArrayOutputStream
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,8 +67,10 @@ import app.ruuun.ui.theme.RuuunText
 import app.ruuun.ui.theme.Shapes
 import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Surface as SurfaceColor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -98,13 +101,14 @@ fun SettingsScreen(
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             val text = viewModel.buildExport()
-            if (text == null) {
-                viewModel.notify("Nothing to export yet")
-            } else if (writeText(context, uri, text)) {
-                viewModel.notify("Backup saved")
-            } else {
-                viewModel.notify("Could not save that file")
-            }
+            val saved = text != null && withContext(Dispatchers.IO) { writeText(context, uri, text) }
+            viewModel.notify(
+                when {
+                    text == null -> "Nothing to export yet"
+                    saved -> "Backup saved"
+                    else -> "Could not save that file"
+                },
+            )
         }
     }
 
@@ -112,8 +116,7 @@ fun SettingsScreen(
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
-        val text = readText(context, uri)
-        if (text == null) viewModel.notify("Could not read that file") else viewModel.previewImport(text)
+        viewModel.previewImport { readText(context, uri) }
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -416,8 +419,27 @@ private fun writeText(context: Context, uri: Uri, text: String): Boolean = try {
     false
 }
 
+/** Backups are small; refuse to pull an arbitrarily large file into memory. */
+private const val MAX_IMPORT_BYTES = 32 * 1024 * 1024
+
 private fun readText(context: Context, uri: Uri): String? = try {
-    context.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+    context.contentResolver.openInputStream(uri)?.use { stream ->
+        val collected = ByteArrayOutputStream()
+        val buffer = ByteArray(16 * 1024)
+        var total = 0
+        var bounded = true
+        while (true) {
+            val read = stream.read(buffer)
+            if (read < 0) break
+            total += read
+            if (total > MAX_IMPORT_BYTES) {
+                bounded = false
+                break
+            }
+            collected.write(buffer, 0, read)
+        }
+        if (bounded) collected.toByteArray().decodeToString() else null
+    }
 } catch (e: Exception) {
     null
 }

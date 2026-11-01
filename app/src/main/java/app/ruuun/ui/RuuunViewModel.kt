@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 /** Everything the UI reads, recomputed whenever the two tables change. */
@@ -193,16 +195,31 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
 
     // --- Backup -------------------------------------------------------------
 
-    /** Builds the export text, or null when there is nothing to export yet. */
-    suspend fun buildExport(): String? {
-        val (settings, logs) = repository.snapshotForExport() ?: return null
-        return BackupFile.write(settings, logs, exportedAt = java.time.Instant.now().toString())
+    /**
+     * Builds the export text, or null when there is nothing to export yet. Serialising a
+     * long journey is slow enough to drop frames, so it stays off the main thread.
+     */
+    suspend fun buildExport(): String? = withContext(Dispatchers.IO) {
+        val snapshot = repository.snapshotForExport() ?: return@withContext null
+        BackupFile.write(
+            snapshot.first,
+            snapshot.second,
+            exportedAt = java.time.Instant.now().toString(),
+        )
     }
 
-    fun previewImport(text: String) {
-        when (val result = BackupFile.parse(text)) {
-            is BackupFile.ParseResult.Ok -> _pendingImport.value = result.payload
-            is BackupFile.ParseResult.Invalid -> notify(result.reason)
+    /** Reads and validates a chosen file. All of it off the main thread. */
+    fun previewImport(read: suspend () -> String?) {
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val text = read() ?: return@withContext null
+                BackupFile.parse(text)
+            }
+            when (result) {
+                null -> notify("Could not read that file")
+                is BackupFile.ParseResult.Ok -> _pendingImport.value = result.payload
+                is BackupFile.ParseResult.Invalid -> notify(result.reason)
+            }
         }
     }
 

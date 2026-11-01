@@ -37,6 +37,17 @@ object TargetRecommender {
         return maxOf(MIN_TARGET_M, lower)
     }
 
+    /**
+     * How much to add on top of a distance that beat the mission. The next mission is
+     * always a little further than the run that earned it; how much further depends on
+     * how the run felt.
+     */
+    fun bumpAfterBeating(distanceM: Int, effort: Effort): Int = when (effort) {
+        Effort.HARD -> 25                      // a nudge
+        Effort.OKAY -> stepFor(distanceM)      // one ordinary step
+        Effort.EASY -> stepFor(distanceM) * 2  // room to stretch
+    }
+
     /** `Make it harder`: the nearest higher 25 m increment, never above the cap. */
     fun makeHarder(target: Int, maxTargetM: Int): Int {
         val higher = (target / 25 + 1) * 25
@@ -70,10 +81,14 @@ object TargetRecommender {
         val isNewLatestDay = latestOtherDate == null || !newLog.date.isBefore(latestOtherDate)
         if (!isNewLatestDay) return current
 
-        // 1. Ran further than the mission? The mission follows the distance actually
-        //    covered, whatever the effort felt like. Running further never lowers it.
-        val achieved = floorTo25(newLog.distanceM)
-        if (achieved > current) return minOf(achieved, settings.maxTargetM)
+        // 1. Beat the mission? The next one is set a little beyond the distance just
+        //    run, by an amount that depends on how hard it felt. Effort never drags it
+        //    back below what was actually covered.
+        if (newLog.distanceM > current) {
+            val base = maxOf(floorTo25(newLog.distanceM), current)
+            val next = base + bumpAfterBeating(base, newLog.effort)
+            return minOf(next, settings.maxTargetM).coerceAtLeast(current)
+        }
 
         // 2. Hard, without beating the mission: ease off.
         if (newLog.effort == Effort.HARD) return easierAfterHard(current)

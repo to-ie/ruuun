@@ -13,9 +13,12 @@ class TargetRecommenderTest {
     private val day1 = TestData.ONBOARDED
     private val day2 = TestData.ONBOARDED.plusDays(2)
 
-    /** QA 4: two Easy runs at target raise 300 m to 325 m, never 350 m. */
+    /**
+     * Matching the mission exactly, twice, steps up one band. Beating it is handled by
+     * the bump rule instead, so this gate only covers runs that land exactly on target.
+     */
     @Test
-    fun `two easy met-target days step up by one 25m increment`() {
+    fun `two easy days that exactly match the mission step up one band`() {
         val settings = TestData.settings(currentTargetM = 300)
         val first = TestData.log(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
         assertEquals(
@@ -24,16 +27,15 @@ class TargetRecommenderTest {
             TargetRecommender.afterLog(settings, listOf(first), first),
         )
 
-        val second = TestData.log(day2, distanceM = 310, effort = Effort.EASY, targetMAtLog = 300)
-        val next = TargetRecommender.afterLog(settings, listOf(first, second), second)
-        assertEquals(325, next)
+        val second = TestData.log(day2, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        assertEquals(325, TargetRecommender.afterLog(settings, listOf(first, second), second))
     }
 
     @Test
-    fun `two easy logs on the same day do not step up`() {
+    fun `two exactly-on-target easy logs on the same day do not step up`() {
         val settings = TestData.settings(currentTargetM = 300)
         val a = TestData.log(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
-        val b = TestData.log(day1, distanceM = 320, effort = Effort.EASY, targetMAtLog = 300)
+        val b = TestData.log(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
         assertEquals(300, TargetRecommender.afterLog(settings, listOf(a, b), b))
     }
 
@@ -47,10 +49,10 @@ class TargetRecommenderTest {
 
     /** Distance wins: beating the mission raises it even when it felt hard. */
     @Test
-    fun `a hard run that beat the mission still raises it to that distance`() {
+    fun `a hard run that beat the mission still raises it past that distance`() {
         val settings = TestData.settings(currentTargetM = 500)
         val hard = TestData.log(day1, distanceM = 900, effort = Effort.HARD, targetMAtLog = 500)
-        assertEquals(900, TargetRecommender.afterLog(settings, listOf(hard), hard))
+        assertEquals(925, TargetRecommender.afterLog(settings, listOf(hard), hard))
     }
 
     @Test
@@ -78,31 +80,54 @@ class TargetRecommenderTest {
         assertEquals(400, TargetRecommender.afterLog(settings, listOf(matched, short), short))
     }
 
-    /** Beating the mission moves it to what was actually run, not one small step. */
+    /** Beating the mission sets the next one beyond the distance just run. */
     @Test
-    fun `running further than the mission raises it to that distance`() {
+    fun `beating the mission pushes past the distance, scaled by effort`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val big = TestData.log(day1, distanceM = 350, effort = Effort.EASY, targetMAtLog = 300)
-        assertEquals(350, TargetRecommender.afterLog(settings, listOf(big), big))
+        fun next(distance: Int, effort: Effort): Int {
+            val log = TestData.log(day1, distanceM = distance, effort = effort, targetMAtLog = 300)
+            return TargetRecommender.afterLog(settings, listOf(log), log)
+        }
+        // Ran 350 m against a 300 m mission.
+        assertEquals("hard: a nudge", 375, next(350, Effort.HARD))
+        assertEquals("okay: one step", 375, next(350, Effort.OKAY))
+        assertEquals("easy: two steps", 400, next(350, Effort.EASY))
 
-        // Okay effort counts too: the mission follows the distance, not the mood.
-        val okay = TestData.log(day1, distanceM = 480, effort = Effort.OKAY, targetMAtLog = 300)
-        assertEquals(475, TargetRecommender.afterLog(settings, listOf(okay), okay))
-
-        // Beating it by less than 25 m is not enough to move it on its own.
-        val nearly = TestData.log(day1, distanceM = 310, effort = Effort.OKAY, targetMAtLog = 300)
-        assertEquals(300, TargetRecommender.afterLog(settings, listOf(nearly), nearly))
+        // Above 500 m the band widens, so the gap between easy and hard widens too.
+        val big = TestData.settings(currentTargetM = 600)
+        fun nextBig(distance: Int, effort: Effort): Int {
+            val log = TestData.log(day1, distanceM = distance, effort = effort, targetMAtLog = 600)
+            return TargetRecommender.afterLog(big, listOf(log), log)
+        }
+        assertEquals(825, nextBig(800, Effort.HARD))
+        assertEquals(850, nextBig(800, Effort.OKAY))
+        assertEquals(900, nextBig(800, Effort.EASY))
     }
 
-    /** The sequence the user hit: 200 m mission, ran 250 m, rated it hard. */
     @Test
-    fun `beating a 200 m mission with 250 m sets the next mission to 250 m`() {
+    fun `the next mission is always further than the run that earned it`() {
+        val settings = TestData.settings(currentTargetM = 200, maxTargetM = 50_000)
+        listOf(201, 210, 249, 250, 251, 999, 1_000, 1_501).forEach { distance ->
+            Effort.entries.forEach { effort ->
+                val log = TestData.log(day1, distanceM = distance, effort = effort, targetMAtLog = 200)
+                val next = TargetRecommender.afterLog(settings, listOf(log), log)
+                assertTrue(
+                    "$distance m $effort gave $next, which is not further",
+                    next > distance,
+                )
+            }
+        }
+    }
+
+    /** The sequence the user hit: 200 m mission, ran 250 m. */
+    @Test
+    fun `beating a 200 m mission with 250 m sets the next mission past 250 m`() {
         val settings = TestData.settings(currentTargetM = 200)
-        listOf(Effort.EASY, Effort.OKAY, Effort.HARD).forEach { effort ->
+        mapOf(Effort.HARD to 275, Effort.OKAY to 275, Effort.EASY to 300).forEach { (effort, want) ->
             val log = TestData.log(day1, distanceM = 250, effort = effort, targetMAtLog = 200)
             assertEquals(
-                "a $effort run of 250 m should set the mission to 250 m",
-                250,
+                "a $effort run of 250 m",
+                want,
                 TargetRecommender.afterLog(settings, listOf(log), log),
             )
         }
@@ -120,6 +145,15 @@ class TargetRecommenderTest {
         val settings = TestData.settings(currentTargetM = 900, maxTargetM = 1_000)
         val huge = TestData.log(day1, distanceM = 4_000, effort = Effort.EASY, targetMAtLog = 900)
         assertEquals(1_000, TargetRecommender.afterLog(settings, listOf(huge), huge))
+    }
+
+    @Test
+    fun `the effort bump widens with the distance band`() {
+        assertEquals(25, TargetRecommender.bumpAfterBeating(300, Effort.HARD))
+        assertEquals(25, TargetRecommender.bumpAfterBeating(300, Effort.OKAY))
+        assertEquals(50, TargetRecommender.bumpAfterBeating(300, Effort.EASY))
+        assertEquals(100, TargetRecommender.bumpAfterBeating(1_000, Effort.EASY))
+        assertEquals(200, TargetRecommender.bumpAfterBeating(2_000, Effort.EASY))
     }
 
     @Test
@@ -187,7 +221,7 @@ class TargetRecommenderTest {
             day1.plusDays(4), distanceM = 260, effort = Effort.EASY, targetMAtLog = 250,
         )
         val backAtThreeHundred = TestData.log(
-            day1.plusDays(9), distanceM = 320, effort = Effort.EASY, targetMAtLog = 300,
+            day1.plusDays(9), distanceM = 300, effort = Effort.EASY, targetMAtLog = 300,
         )
         assertEquals(
             300,
@@ -200,7 +234,7 @@ class TargetRecommenderTest {
 
         // A second Easy day at the restored target does step up, as it should.
         val second = TestData.log(
-            day1.plusDays(11), distanceM = 305, effort = Effort.EASY, targetMAtLog = 300,
+            day1.plusDays(11), distanceM = 300, effort = Effort.EASY, targetMAtLog = 300,
         )
         assertEquals(
             325,

@@ -62,6 +62,9 @@ import java.time.LocalDate
 
 private const val WEEKS_AHEAD = 2
 
+/** Twenty years of weeks. Far past any real journey, and a hard stop on bad data. */
+private const val MAX_JOURNEY_WEEKS = 1_040
+
 @Composable
 fun MissionsScreen(
     state: AppState,
@@ -74,8 +77,9 @@ fun MissionsScreen(
     val thisWeek = JourneyView.thisWeek(state.logs, settings, today)
     val chapter = JourneyView.chapterProgress(stats, settings)
     val reachable = JourneyView.badgesWithinReach(stats)
+    // Clamped: a corrupted start date must not ask for thousands of rows.
     val currentJourneyWeek = WeekCalculator.journeyWeek(settings.onboardedDate, today)
-        .coerceAtLeast(1)
+        .coerceIn(1, MAX_JOURNEY_WEEKS)
 
     var showAllWeeks by remember { mutableStateOf(false) }
     var selectedBadge by remember { mutableStateOf<app.ruuun.content.BadgeDef?>(null) }
@@ -84,8 +88,10 @@ fun MissionsScreen(
         maxOf(52, currentJourneyWeek + WEEKS_AHEAD)
     } else {
         currentJourneyWeek + WEEKS_AHEAD
+    }.coerceAtMost(MAX_JOURNEY_WEEKS)
+    val weeks = remember(state.logs, settings, weeksToShow) {
+        JourneyView.journeyWeeks(state.logs, settings, weeksToShow)
     }
-    val weeks = JourneyView.journeyWeeks(state.logs, settings, weeksToShow)
 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Missions")
