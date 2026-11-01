@@ -36,6 +36,7 @@ import app.ruuun.logic.JourneyView
 import app.ruuun.logic.WeekCalculator
 import app.ruuun.ui.AppState
 import app.ruuun.ui.bannerColor
+import app.ruuun.ui.components.BadgeDetailSheet
 import app.ruuun.ui.components.Overline
 import app.ruuun.ui.components.QuestRow
 import app.ruuun.ui.components.RuuunCard
@@ -77,6 +78,7 @@ fun MissionsScreen(
         .coerceAtLeast(1)
 
     var showAllWeeks by remember { mutableStateOf(false) }
+    var selectedBadge by remember { mutableStateOf<app.ruuun.content.BadgeDef?>(null) }
 
     val weeksToShow = if (showAllWeeks) {
         maxOf(52, currentJourneyWeek + WEEKS_AHEAD)
@@ -137,7 +139,8 @@ fun MissionsScreen(
                 Text(thisWeek.theme.title, style = RuuunText.CardTitle, color = Navy)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Two things to tick off. They reset every Monday.",
+                    "Two things to tick off. They reset every Monday, and missing a " +
+                        "week costs you nothing.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                 )
@@ -172,7 +175,7 @@ fun MissionsScreen(
                 progressLabel = if (chapter.isFinale) {
                     "Every chapter complete"
                 } else {
-                    "${chapter.runDays} / ${chapter.runDaysNeeded} days"
+                    "${chapter.runDays} of ${chapter.runDaysNeeded} runs"
                 },
             )
 
@@ -187,7 +190,10 @@ fun MissionsScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 reachable.forEach { badge ->
-                    RuuunCard(modifier = Modifier.padding(bottom = Dimens.ItemGap)) {
+                    RuuunCard(
+                        modifier = Modifier.padding(bottom = Dimens.ItemGap),
+                        onClick = { selectedBadge = badge },
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 badge.title,
@@ -202,6 +208,8 @@ fun MissionsScreen(
                                 color = TextMuted,
                             )
                         }
+                        Spacer(Modifier.height(4.dp))
+                        Text(badge.hint, style = RuuunText.Secondary, color = TextMuted)
                         Spacer(Modifier.height(10.dp))
                         RuuunProgressBar(
                             fraction = BadgeEvaluator.progressFraction(badge, stats),
@@ -243,6 +251,10 @@ fun MissionsScreen(
                 Spacer(Modifier.height(Dimens.ScreenPadding))
             }
         }
+    }
+
+    selectedBadge?.let { badge ->
+        BadgeDetailSheet(badge = badge, stats = stats, onDismiss = { selectedBadge = null })
     }
 }
 

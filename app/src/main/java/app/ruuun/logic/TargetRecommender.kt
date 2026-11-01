@@ -70,23 +70,23 @@ object TargetRecommender {
         val isNewLatestDay = latestOtherDate == null || !newLog.date.isBefore(latestOtherDate)
         if (!isNewLatestDay) return current
 
-        // 1. Hard always eases off, whatever the distance.
-        if (newLog.effort == Effort.HARD) return easierAfterHard(current)
-
-        // 2. Below the suggestion: repeat it. Still a real run.
-        if (newLog.distanceM < newLog.targetMAtLog) return current
-
-        // 3. Beat the mission by a clear margin? The next one follows what was
-        //    actually run, rather than creeping up one small step at a time.
+        // 1. Ran further than the mission? The mission follows the distance actually
+        //    covered, whatever the effort felt like. Running further never lowers it.
         val achieved = floorTo25(newLog.distanceM)
         if (achieved > current) return minOf(achieved, settings.maxTargetM)
 
-        // 4. Okay, or matched the mission without beating it: repeat.
+        // 2. Hard, without beating the mission: ease off.
+        if (newLog.effort == Effort.HARD) return easierAfterHard(current)
+
+        // 3. Fell short of the mission: repeat it. Turning up still counts.
+        if (newLog.distanceM < newLog.targetMAtLog) return current
+
+        // 4. Okay, and matched the mission without beating it: repeat.
         if (newLog.effort == Effort.OKAY) return current
 
-        // 5. Easy and target matched: step up only after two such days at this target.
-        //    Only days since the target last became this value count, so an Easy day
-        //    from before an earlier dip cannot carry over and skip the gate.
+        // 5. Easy and matched the mission: step up only after two such days at this
+        //    distance. Only days since the mission became this value count, so an Easy
+        //    day from before an earlier dip cannot carry over and skip the gate.
         val easyMetDays = allLogs
             .sortedWith(compareByDescending<RunLog> { it.date }.thenByDescending { it.createdAt })
             .takeWhile { it.targetMAtLog == current }

@@ -23,7 +23,7 @@ the two disagree, the handoff wins.
 export JAVA_HOME=/path/to/jdk-17
 echo "sdk.dir=/path/to/android-sdk" > local.properties
 
-./gradlew :app:testDebugUnitTest    # 86 unit tests, pure JVM, no device needed
+./gradlew :app:testDebugUnitTest    # 89 unit tests, pure JVM, no device needed
 ./gradlew :app:assembleDebug        # app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -47,11 +47,11 @@ Derived from those rows every time the UI reads them, by pure functions in
   add distance but count as **one** day for XP, the weekly goal, run-count badges and chapters.
 - **XP and level** — `XP = 50 × outing days`, `level = 1 + outingDays / 5`. Nothing else grants XP.
 - **Next mission** — [`TargetRecommender`](app/src/main/java/app/ruuun/logic/TargetRecommender.kt):
-  `Hard` always eases off 10%, rounded down to 25 m. Falling short repeats the mission. **Running
-  further than the mission moves it to that distance** (rounded down to 25 m), capped by the longest
-  suggested mission in Settings. Matching it exactly steps up one band (+25/+50/+100) only after two
-  `Easy` days at that distance. Backdated entries never raise it, and `Easier` / `Harder` on Home
-  move it by 25 m by hand.
+  **Running further than the mission moves it to that distance** (rounded down to 25 m, capped by
+  the longest suggested mission in Settings) whatever the effort felt like — distance wins over
+  effort. Falling short repeats the mission, or eases off 10% if it felt `Hard`. Matching it exactly
+  steps up one band (+25/+50/+100) after two `Easy` days at that distance. Backdated entries never
+  raise it, and `Easier` / `Harder` on Home move it by 25 m by hand.
 - **Weeks and quests** — ISO Monday-to-Sunday, each week identified by its Monday date, which keeps
   the December/January and leap-year boundaries honest. One main quest (the child's own weekly goal)
   and one authored optional side quest per week.
@@ -98,7 +98,7 @@ app/src/main/java/app/ruuun/
 
 ## Tests
 
-`./gradlew :app:testDebugUnitTest` — 86 JVM tests, no emulator required:
+`./gradlew :app:testDebugUnitTest` — 89 JVM tests, no emulator required:
 
 | File | Covers |
 |---|---|
@@ -155,6 +155,10 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
+- **1.2** — eight run tags instead of four; every badge explains itself in a tap-through sheet from
+  the cabinet, the `Closest badges` list and the save celebration; `Show all N badges` replaces the
+  dead `+N more`; chapter progress reads "1 of 4 runs" rather than "1 / 4 days"; beating your
+  mission now raises it even when the run felt hard.
 - **1.1** — `Harder` button beside `Easier`; the mission now follows a distance you beat rather than
   creeping up; launcher icon rebuilt from the real logo artwork; navy app header; "outings" renamed
   to "runs" throughout; badge and mission copy rewritten to say plainly what to do.

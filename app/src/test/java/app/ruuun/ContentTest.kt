@@ -14,10 +14,23 @@ import org.junit.Test
 class ContentTest {
 
     @Test
-    fun `the catalogue holds exactly 141 unique badges`() {
-        assertEquals(141, Achievements.ALL.size)
-        assertEquals(141, Achievements.ALL.map { it.id }.toSet().size)
-        assertEquals(141, Achievements.BY_CATEGORY.values.sumOf { it.size })
+    fun `the catalogue holds 147 unique badges, ids and all`() {
+        val expected = 147   // the handoff's 141, plus six for the extra tags
+        assertEquals(expected, Achievements.ALL.size)
+        assertEquals(expected, Achievements.ALL.map { it.id }.toSet().size)
+        assertEquals(expected, Achievements.BY_CATEGORY.values.sumOf { it.size })
+    }
+
+    /** Every id from the original handoff catalogue must survive. */
+    @Test
+    fun `the original badge ids are all still present`() {
+        val counts = mapOf(
+            "FS" to 10, "RC" to 20, "SD" to 17, "TD" to 16, "WK" to 14, "CO" to 5,
+            "RF" to 13, "CH" to 12, "QS" to 8, "MO" to 12, "SE" to 7,
+        )
+        counts.forEach { (prefix, n) ->
+            assertEquals(prefix, n, Achievements.ALL.count { it.id.startsWith("$prefix-") })
+        }
     }
 
     @Test

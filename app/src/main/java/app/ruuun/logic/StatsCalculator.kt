@@ -106,6 +106,10 @@ object StatsCalculator {
             put(BadgeMetric.TAG_FAMILY, logs.count { RunTag.FAMILY in it.tags })
             put(BadgeMetric.TAG_NEW_ROUTE, logs.count { RunTag.NEW_ROUTE in it.tags })
             put(BadgeMetric.TAG_NATURE, logs.count { RunTag.NATURE in it.tags })
+            put(BadgeMetric.TAG_FRIEND, logs.count { RunTag.FRIEND in it.tags })
+            put(BadgeMetric.TAG_TRAIL, logs.count { RunTag.TRAIL in it.tags })
+            put(BadgeMetric.TAG_HILLS, logs.count { RunTag.HILLS in it.tags })
+            put(BadgeMetric.TAG_BEACH, logs.count { RunTag.BEACH in it.tags })
 
             put(BadgeMetric.MODE_WALK_ONLY, logs.count { it.mode == RunMode.WALK_ONLY })
             put(BadgeMetric.MODE_WALK_JOG, logs.count { it.mode == RunMode.WALK_JOG })

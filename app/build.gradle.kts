@@ -13,8 +13,8 @@ android {
         applicationId = "app.ruuun"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
         // No instrumentation runner: the app ships pure-JVM unit tests only.
         vectorDrawables { useSupportLibrary = true }
     }

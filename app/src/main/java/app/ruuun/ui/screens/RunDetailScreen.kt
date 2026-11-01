@@ -193,4 +193,8 @@ private fun tagLabel(tag: app.ruuun.data.RunTag): String = when (tag) {
     app.ruuun.data.RunTag.FAMILY -> "Family"
     app.ruuun.data.RunTag.NEW_ROUTE -> "New route"
     app.ruuun.data.RunTag.NATURE -> "Nature"
+    app.ruuun.data.RunTag.FRIEND -> "With a friend"
+    app.ruuun.data.RunTag.TRAIL -> "Trail"
+    app.ruuun.data.RunTag.HILLS -> "Hills"
+    app.ruuun.data.RunTag.BEACH -> "Beach"
 }

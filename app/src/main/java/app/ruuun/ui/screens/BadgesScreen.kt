@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.ruuun.content.Achievements
 import app.ruuun.content.BadgeCategory
@@ -32,18 +28,14 @@ import app.ruuun.content.BadgeDef
 import app.ruuun.logic.BadgeEvaluator
 import app.ruuun.ui.AppState
 import app.ruuun.ui.components.BadgeCell
-import app.ruuun.ui.components.Overline
-import app.ruuun.ui.components.Pill
+import app.ruuun.ui.components.BadgeDetailSheet
 import app.ruuun.ui.components.RuuunProgressBar
 import app.ruuun.ui.components.ToggleChip
 import app.ruuun.ui.theme.Dimens
-import app.ruuun.ui.theme.Lime
 import app.ruuun.ui.theme.Navy
 import app.ruuun.ui.theme.Orange
 import app.ruuun.ui.theme.RuuunText
 import app.ruuun.ui.theme.TextMuted
-import app.ruuun.ui.theme.Track
-import app.ruuun.ui.theme.Surface as SurfaceColor
 
 private const val COLUMNS = 3
 
@@ -53,7 +45,6 @@ fun BadgesScreen(state: AppState) {
     val stats = state.stats
     var filter by remember { mutableStateOf<BadgeCategory?>(null) }
     var selected by remember { mutableStateOf<BadgeDef?>(null) }
-    val sheetState = rememberModalBottomSheetState()
 
     val categories = BadgeCategory.entries.filter { category ->
         Achievements.BY_CATEGORY[category]?.isNotEmpty() == true
@@ -154,58 +145,7 @@ fun BadgesScreen(state: AppState) {
 
     val sheetBadge = selected
     if (sheetBadge != null) {
-        val earned = sheetBadge.id in stats.earnedBadgeIds
-        val hidden = sheetBadge.secret && !earned
-        ModalBottomSheet(
-            onDismissRequest = { selected = null },
-            sheetState = sheetState,
-            containerColor = SurfaceColor,
-        ) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, bottom = 36.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                BadgeCell(
-                    badge = sheetBadge,
-                    earned = earned,
-                    progressText = null,
-                    modifier = Modifier.width(140.dp),
-                )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    if (hidden) "???" else sheetBadge.title,
-                    style = RuuunText.SubTitle,
-                    color = Navy,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    if (hidden) "Keep exploring to find this one." else sheetBadge.hint,
-                    style = RuuunText.Body,
-                    color = TextMuted,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(16.dp))
-                Pill(
-                    text = if (earned) "Earned" else "Locked",
-                    background = if (earned) Lime else Track,
-                )
-                if (!hidden && !earned && sheetBadge.threshold > 1) {
-                    Spacer(Modifier.height(16.dp))
-                    Overline(
-                        "${BadgeEvaluator.progress(sheetBadge, stats)} of " +
-                            "${sheetBadge.threshold} ${sheetBadge.unit}",
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    RuuunProgressBar(
-                        fraction = BadgeEvaluator.progressFraction(sheetBadge, stats),
-                        color = Orange,
-                    )
-                }
-            }
-        }
+        BadgeDetailSheet(badge = sheetBadge, stats = stats, onDismiss = { selected = null })
     }
 }
 

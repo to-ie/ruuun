@@ -39,18 +39,26 @@ class TargetRecommenderTest {
 
     /** QA 5: Hard never raises the target. */
     @Test
-    fun `hard effort eases off by ten percent rounded down to 25m`() {
+    fun `hard effort below the mission eases off ten percent, rounded down to 25m`() {
         val settings = TestData.settings(currentTargetM = 300)
         val hard = TestData.log(day1, distanceM = 270, effort = Effort.HARD, targetMAtLog = 300)
         assertEquals(250, TargetRecommender.afterLog(settings, listOf(hard), hard))
     }
 
+    /** Distance wins: beating the mission raises it even when it felt hard. */
     @Test
-    fun `hard never raises the target even when the distance was long`() {
+    fun `a hard run that beat the mission still raises it to that distance`() {
         val settings = TestData.settings(currentTargetM = 500)
         val hard = TestData.log(day1, distanceM = 900, effort = Effort.HARD, targetMAtLog = 500)
+        assertEquals(900, TargetRecommender.afterLog(settings, listOf(hard), hard))
+    }
+
+    @Test
+    fun `a hard run that fell short eases the mission off`() {
+        val settings = TestData.settings(currentTargetM = 500)
+        val hard = TestData.log(day1, distanceM = 300, effort = Effort.HARD, targetMAtLog = 500)
         val next = TargetRecommender.afterLog(settings, listOf(hard), hard)
-        assertTrue("next=$next", next <= 500)
+        assertTrue("next=$next", next < 500)
         assertEquals(450, next)
     }
 
@@ -86,11 +94,25 @@ class TargetRecommenderTest {
         assertEquals(300, TargetRecommender.afterLog(settings, listOf(nearly), nearly))
     }
 
+    /** The sequence the user hit: 200 m mission, ran 250 m, rated it hard. */
     @Test
-    fun `a hard run still eases off however far it went`() {
-        val settings = TestData.settings(currentTargetM = 300)
-        val far = TestData.log(day1, distanceM = 900, effort = Effort.HARD, targetMAtLog = 300)
-        assertEquals(250, TargetRecommender.afterLog(settings, listOf(far), far))
+    fun `beating a 200 m mission with 250 m sets the next mission to 250 m`() {
+        val settings = TestData.settings(currentTargetM = 200)
+        listOf(Effort.EASY, Effort.OKAY, Effort.HARD).forEach { effort ->
+            val log = TestData.log(day1, distanceM = 250, effort = effort, targetMAtLog = 200)
+            assertEquals(
+                "a $effort run of 250 m should set the mission to 250 m",
+                250,
+                TargetRecommender.afterLog(settings, listOf(log), log),
+            )
+        }
+    }
+
+    @Test
+    fun `a short hard run after a long one eases from the raised mission`() {
+        val settings = TestData.settings(currentTargetM = 250)
+        val short = TestData.log(day2, distanceM = 50, effort = Effort.HARD, targetMAtLog = 250)
+        assertEquals(225, TargetRecommender.afterLog(settings, listOf(short), short))
     }
 
     @Test

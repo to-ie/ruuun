@@ -204,7 +204,7 @@ fun HomeScreen(
                 progressLabel = if (chapter.isFinale) {
                     "Every chapter complete"
                 } else {
-                    "${chapter.runDays} / ${chapter.runDaysNeeded} days"
+                    "${chapter.runDays} of ${chapter.runDaysNeeded} runs"
                 },
             )
             Spacer(Modifier.height(Dimens.ScreenPadding))

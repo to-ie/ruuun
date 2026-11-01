@@ -62,8 +62,12 @@ enum class BadgeMetric {
     RUN_DAYS,
     RUN_LOGS_WITH_EFFORT,
     TAG_FAMILY,
+    TAG_BEACH,
+    TAG_FRIEND,
+    TAG_HILLS,
     TAG_NATURE,
     TAG_NEW_ROUTE,
+    TAG_TRAIL,
     TAG_PARK,
     TOTAL_M,
     WEEKS_MET,
@@ -181,6 +185,12 @@ object Achievements {
         B("AD-002", "Park Ranger", BadgeCategory.ADVENTURE, BadgeMetric.TAG_PARK, 1, "Tag a run as Park.", "runs"),
         B("AD-003", "The Explorer", BadgeCategory.ADVENTURE, BadgeMetric.TAG_NEW_ROUTE, 1, "Tag a run as New route.", "runs"),
         B("AD-004", "Nature Ninja", BadgeCategory.ADVENTURE, BadgeMetric.TAG_NATURE, 1, "Tag a run as Nature.", "runs"),
+        B("AD-005", "Running Buddy", BadgeCategory.ADVENTURE, BadgeMetric.TAG_FRIEND, 1, "Tag a run as With a friend.", "runs"),
+        B("AD-006", "Off Road", BadgeCategory.ADVENTURE, BadgeMetric.TAG_TRAIL, 1, "Tag a run as Trail.", "runs"),
+        B("AD-007", "Hill Starter", BadgeCategory.ADVENTURE, BadgeMetric.TAG_HILLS, 1, "Tag a run as Hills.", "runs"),
+        B("AD-008", "Sand Between Your Toes", BadgeCategory.ADVENTURE, BadgeMetric.TAG_BEACH, 1, "Tag a run as Beach.", "runs"),
+        B("AT-004", "Hill Habit", BadgeCategory.ADVENTURE, BadgeMetric.TAG_HILLS, 5, "Tag 5 runs as Hills.", "runs"),
+        B("AT-005", "Trail Regular", BadgeCategory.ADVENTURE, BadgeMetric.TAG_TRAIL, 5, "Tag 5 runs as Trail.", "runs"),
         B("AT-001", "Route Discoverer", BadgeCategory.ADVENTURE, BadgeMetric.TAG_NEW_ROUTE, 3, "Tag 3 runs as New route.", "runs"),
         B("AT-002", "Explorer Supreme", BadgeCategory.ADVENTURE, BadgeMetric.TAG_NEW_ROUTE, 5, "Tag 5 runs as New route.", "runs"),
         B("AT-003", "Route Master", BadgeCategory.ADVENTURE, BadgeMetric.TAG_NEW_ROUTE, 8, "Tag 8 runs as New route.", "runs"),
@@ -246,7 +256,7 @@ object Achievements {
         }
 
     init {
-        require(ALL.size == 141) { "Expected 141 badges, found ${ALL.size}" }
+        require(ALL.size == 147) { "Expected 147 badges, found ${ALL.size}" }
         require(BY_ID.size == ALL.size) { "Duplicate badge id in the catalogue" }
     }
 }

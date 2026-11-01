@@ -79,8 +79,12 @@ private val MODES = listOf(
 private val TAGS = listOf(
     RunTag.PARK to "Park",
     RunTag.FAMILY to "Family",
+    RunTag.FRIEND to "With a friend",
     RunTag.NEW_ROUTE to "New route",
     RunTag.NATURE to "Nature",
+    RunTag.TRAIL to "Trail",
+    RunTag.HILLS to "Hills",
+    RunTag.BEACH to "Beach",
 )
 
 /** Add or edit one run. The same screen serves both; only the copy changes. */

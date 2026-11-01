@@ -11,7 +11,7 @@ enum class Effort { EASY, OKAY, HARD }
 enum class RunMode { WALK_ONLY, WALK_JOG, MOSTLY_JOG }
 
 /** Optional self-reported tags. Nothing here is checked remotely. */
-enum class RunTag { PARK, FAMILY, NEW_ROUTE, NATURE }
+enum class RunTag { PARK, FAMILY, NEW_ROUTE, NATURE, FRIEND, TRAIL, HILLS, BEACH }
 
 /**
  * The single settings row. Everything a parent can adjust lives here; nothing

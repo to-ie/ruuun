@@ -22,6 +22,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +40,7 @@ import app.ruuun.ui.AppState
 import app.ruuun.ui.RuuunViewModel
 import app.ruuun.ui.bannerColor
 import app.ruuun.ui.components.BadgeCell
+import app.ruuun.ui.components.BadgeDetailSheet
 import app.ruuun.ui.components.Overline
 import app.ruuun.ui.components.Pill
 import app.ruuun.ui.components.PrimaryCta
@@ -60,6 +64,7 @@ import app.ruuun.ui.theme.Shapes
 import app.ruuun.ui.theme.Sky
 import app.ruuun.ui.theme.SkyTint
 import app.ruuun.ui.theme.SunTint
+import app.ruuun.ui.theme.TextMuted
 
 /** The celebration. Everything shown is a diff between two computed snapshots. */
 @Composable
@@ -78,6 +83,8 @@ fun RunSavedScreen(
     }
     val after = saved.after
     val week = JourneyView.thisWeek(state.logs, settings, saved.log.date)
+    var showAllBadges by remember { mutableStateOf(false) }
+    var selectedBadge by remember { mutableStateOf<app.ruuun.content.BadgeDef?>(null) }
 
     Column(
         Modifier
@@ -88,32 +95,47 @@ fun RunSavedScreen(
 
         Column(Modifier.padding(Dimens.ScreenPadding)) {
             if (saved.newBadges.isNotEmpty()) {
-                val shown = saved.newBadges.take(SaveOutcome.MAX_BADGES_SHOWN)
+                val all = saved.newBadges
+                val shown = if (showAllBadges) all else all.take(SaveOutcome.MAX_BADGES_SHOWN)
                 Text(
-                    if (saved.newBadges.size == 1) "1 new badge" else "${saved.newBadges.size} new badges",
+                    if (all.size == 1) "1 new badge" else "${all.size} new badges",
                     style = RuuunText.SectionTitle,
                     color = Navy,
                 )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Tap one to see what it is for.",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                )
                 Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
-                    shown.forEach { badge ->
-                        BadgeCell(
-                            badge = badge,
-                            earned = true,
-                            progressText = null,
-                            modifier = Modifier.weight(1f),
-                        )
+                shown.chunked(SaveOutcome.MAX_BADGES_SHOWN).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
+                        row.forEach { badge ->
+                            BadgeCell(
+                                badge = badge,
+                                earned = true,
+                                progressText = null,
+                                onClick = { selectedBadge = badge },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        repeat(SaveOutcome.MAX_BADGES_SHOWN - row.size) {
+                            Spacer(Modifier.weight(1f))
+                        }
                     }
-                    repeat(SaveOutcome.MAX_BADGES_SHOWN - shown.size) {
-                        Spacer(Modifier.weight(1f))
-                    }
+                    Spacer(Modifier.height(Dimens.ItemGap))
                 }
-                if (saved.newBadges.size > shown.size) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "+${saved.newBadges.size - shown.size} more",
-                        style = RuuunText.BodyStrong,
-                        color = app.ruuun.ui.theme.Link,
+                if (all.size > SaveOutcome.MAX_BADGES_SHOWN) {
+                    SecondaryButton(
+                        text = if (showAllBadges) {
+                            "Show fewer"
+                        } else {
+                            "Show all ${all.size} badges"
+                        },
+                        onClick = { showAllBadges = !showAllBadges },
+                        lowEmphasis = true,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 Spacer(Modifier.height(Dimens.SectionGap))
@@ -139,7 +161,7 @@ fun RunSavedScreen(
                         title = "Chapter ${next.number} · ${next.title}",
                         teaser = next.teaser,
                         progressFraction = progress.fraction,
-                        progressLabel = "${progress.runDays} / ${progress.runDaysNeeded} days",
+                        progressLabel = "${progress.runDays} of ${progress.runDaysNeeded} runs",
                     )
                 }
             } else {
@@ -158,7 +180,7 @@ fun RunSavedScreen(
                     progressLabel = if (progress.isFinale) {
                         "Every chapter complete"
                     } else {
-                        "${progress.runDays} / ${progress.runDaysNeeded} days"
+                        "${progress.runDays} of ${progress.runDaysNeeded} runs"
                     },
                 )
             }
@@ -215,6 +237,10 @@ fun RunSavedScreen(
             }
             Spacer(Modifier.height(Dimens.ScreenPadding))
         }
+    }
+
+    selectedBadge?.let { badge ->
+        BadgeDetailSheet(badge = badge, stats = after, onDismiss = { selectedBadge = null })
     }
 }
 
