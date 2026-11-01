@@ -177,10 +177,10 @@ Pre-release while the app is being tried out; **1.0 is reserved for going live**
 `versionCode` keeps counting up independently (currently 5) because it must never decrease, so it
 does not track the `0.x` name.
 
+- **0.5** — a splash screen showing the logo on brand navy while the database is read; Home drops
+  its logo bar for the same header the other tabs use, with the settings gear beside the greeting.
 - **0.4** — beating your mission now sets the next one *beyond* the distance you ran, by an amount
-  that depends on how it felt; a splash screen showing the logo on brand navy while the database is
-  read; Home drops its logo bar for the same header the other tabs use, with the settings gear
-  beside the greeting; hardening from a security and robustness audit (see above).
+  that depends on how it felt; hardening from a security and robustness audit (see above).
 - **0.3** — eight run tags instead of four; every badge explains itself in a tap-through sheet from
   the cabinet, the `Closest badges` list and the save celebration; `Show all N badges` replaces the
   dead `+N more`; chapter progress reads "1 of 4 runs" rather than "1 / 4 days"; beating your

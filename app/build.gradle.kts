@@ -15,7 +15,7 @@ android {
         targetSdk = 34
         // Must only ever increase; it is independent of the 0.x name below.
         versionCode = 5
-        versionName = "0.4"
+        versionName = "0.5"
         // No instrumentation runner: the app ships pure-JVM unit tests only.
         vectorDrawables { useSupportLibrary = true }
     }
