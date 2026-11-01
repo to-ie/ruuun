@@ -1,6 +1,5 @@
 package app.ruuun.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,11 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.ruuun.R
 import app.ruuun.logic.BadgeEvaluator
 import app.ruuun.logic.Formatters
 import app.ruuun.logic.JourneyView
@@ -49,7 +44,6 @@ import app.ruuun.ui.components.StatTile
 import app.ruuun.ui.components.WorldCard
 import app.ruuun.ui.components.decorative
 import app.ruuun.ui.icon
-import app.ruuun.ui.theme.Border
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.Ground
 import app.ruuun.ui.theme.IconButtonBg
@@ -80,15 +74,29 @@ fun HomeScreen(
     val welcomeBack = TargetRecommender.needsWelcomeBack(state.logs, today)
 
     Column(Modifier.fillMaxSize()) {
-        HomeHeader(onSettings = onSettings)
+        ScreenHeader("Hello, ${settings.nickname}") {
+            Surface(
+                onClick = onSettings,
+                shape = Shapes.Pill,
+                color = IconButtonBg,
+                modifier = Modifier.size(44.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = "Settings",
+                        tint = Navy,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
+        }
 
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.ScreenPadding),
         ) {
-            Text("Hello, ${settings.nickname}", style = RuuunText.Greeting, color = Navy)
-            Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     "Level ${stats.level} · ${StatsCalculator.levelName(stats.level)}",
@@ -208,43 +216,6 @@ fun HomeScreen(
                 },
             )
             Spacer(Modifier.height(Dimens.ScreenPadding))
-        }
-    }
-}
-
-@Composable
-private fun HomeHeader(onSettings: () -> Unit) {
-    // Navy bar: the logo sits on the brand colour rather than floating on white,
-    // and it matches the launcher icon.
-    Surface(color = Navy, modifier = Modifier.fillMaxWidth()) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = Dimens.ScreenPadding, end = 12.dp, top = 10.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ruuun_logo_light),
-                contentDescription = stringResource(R.string.logo_description),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.height(44.dp),
-            )
-            Spacer(Modifier.weight(1f))
-            Surface(
-                onClick = onSettings,
-                shape = Shapes.Pill,
-                color = Color.White.copy(alpha = 0.10f),
-                modifier = Modifier.size(44.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Outlined.Settings,
-                        contentDescription = "Settings",
-                        tint = Ground,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
-            }
         }
     }
 }

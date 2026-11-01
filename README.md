@@ -125,7 +125,7 @@ system file picker with no storage permission.
 
 ## Audit notes
 
-A security and robustness pass in 1.3 found and fixed: an imported backup with a corrupted start
+A security and robustness pass in 0.4 found and fixed: an imported backup with a corrupted start
 date could ask the Missions screen for ~100,000 week rows; imports had no size limit; file reads,
 JSON parsing and serialisation all ran on the main thread; a file-size guard used an API 33 method
 under a minSdk of 26 and would have crashed on Android 8 to 12; and a single unrecognised tag
@@ -173,16 +173,22 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-- **1.3** — beating your mission now sets the next one *beyond* the distance you ran, by an amount
-  that depends on how it felt; hardening from a security and robustness audit (see below).
-- **1.2** — eight run tags instead of four; every badge explains itself in a tap-through sheet from
+Pre-release while the app is being tried out; **1.0 is reserved for going live**. The Android
+`versionCode` keeps counting up independently (currently 5) because it must never decrease, so it
+does not track the `0.x` name.
+
+- **0.4** — beating your mission now sets the next one *beyond* the distance you ran, by an amount
+  that depends on how it felt; a splash screen showing the logo on brand navy while the database is
+  read; Home drops its logo bar for the same header the other tabs use, with the settings gear
+  beside the greeting; hardening from a security and robustness audit (see above).
+- **0.3** — eight run tags instead of four; every badge explains itself in a tap-through sheet from
   the cabinet, the `Closest badges` list and the save celebration; `Show all N badges` replaces the
   dead `+N more`; chapter progress reads "1 of 4 runs" rather than "1 / 4 days"; beating your
   mission now raises it even when the run felt hard.
-- **1.1** — `Harder` button beside `Easier`; the mission now follows a distance you beat rather than
+- **0.2** — `Harder` button beside `Easier`; the mission now follows a distance you beat rather than
   creeping up; launcher icon rebuilt from the real logo artwork; navy app header; "outings" renamed
   to "runs" throughout; badge and mission copy rewritten to say plainly what to do.
-- **1.0** — first complete build.
+- **0.1** — first complete build.
 
 ## Installing on a phone
 

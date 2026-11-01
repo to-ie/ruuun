@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12 and up draws the splash itself and can show a branding image, so the
+         wordmark sits under the mark there. -->
+    <style name="Theme.Ruuun.Splash" parent="Theme.SplashScreen">
+        <item name="android:windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/ruuun_logo_light</item>
+        <item name="postSplashScreenTheme">@style/Theme.Ruuun</item>
+    </style>
+</resources>

@@ -7,4 +7,12 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
+
+    <!-- Shown while the app starts: the logo mark on brand navy, with the wordmark
+         underneath on versions that support a branding image. -->
+    <style name="Theme.Ruuun.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.Ruuun</item>
+    </style>
 </resources>

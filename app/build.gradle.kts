@@ -13,8 +13,9 @@ android {
         applicationId = "app.ruuun"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.3"
+        // Must only ever increase; it is independent of the 0.x name below.
+        versionCode = 5
+        versionName = "0.4"
         // No instrumentation runner: the app ships pure-JVM unit tests only.
         vectorDrawables { useSupportLibrary = true }
     }
@@ -54,6 +55,7 @@ ksp {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
