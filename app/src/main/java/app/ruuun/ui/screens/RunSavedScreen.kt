@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.ruuun.content.Chapters
 import app.ruuun.logic.Formatters
 import app.ruuun.logic.JourneyView
+import app.ruuun.logic.StopGoal
 import app.ruuun.logic.SaveOutcome
 import app.ruuun.logic.StatsCalculator
 import app.ruuun.ui.AppState
@@ -136,6 +137,25 @@ fun RunSavedScreen(
             CelebrationPanel(saved = saved, nickname = settings.nickname)
 
             Column(Modifier.padding(Dimens.ScreenPadding)) {
+                val records = JourneyView.records(saved)
+                if (records.isNotEmpty()) {
+                    PopIn(delayMillis = XP_AT_MS) {
+                        Surface(
+                            shape = Shapes.Card,
+                            color = app.ruuun.ui.theme.LimeTint,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.padding(16.dp)) {
+                                Overline("Personal best", color = Navy)
+                                records.forEach { record ->
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(record, style = RuuunText.BodyStrong, color = Navy)
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(Dimens.SectionGap))
+                }
                 if (saved.newBadges.isNotEmpty()) {
                     val all = saved.newBadges
                     val shown = if (showAllBadges) all else all.take(SaveOutcome.MAX_BADGES_SHOWN)
@@ -247,6 +267,28 @@ fun RunSavedScreen(
                     done = week.sideQuestMet,
                 )
 
+                val stopNote = JourneyView.stopNote(saved)
+                val stops = saved.log.stops
+                if (stopNote != null && stops != null) {
+                    Spacer(Modifier.height(Dimens.SectionGap))
+                    Surface(shape = Shapes.Card, color = InfoBg, modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column {
+                                Overline("Stops", color = InfoLabel)
+                                Spacer(Modifier.height(2.dp))
+                                Text("$stops", style = RuuunText.CardTitle, color = Navy)
+                            }
+                            Spacer(Modifier.width(14.dp))
+                            Text(
+                                stopNote,
+                                style = RuuunText.Secondary,
+                                color = InfoText,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(Dimens.SectionGap))
                 Surface(shape = Shapes.Card, color = InfoBg, modifier = Modifier.fillMaxWidth()) {
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -258,6 +300,13 @@ fun RunSavedScreen(
                                 style = RuuunText.CardTitle,
                                 color = Navy,
                             )
+                            saved.nextStopGoal?.let { goal ->
+                                Text(
+                                    StopGoal.goalLabel(goal),
+                                    style = RuuunText.Secondary,
+                                    color = Navy,
+                                )
+                            }
                         }
                         Spacer(Modifier.width(14.dp))
                         Text(

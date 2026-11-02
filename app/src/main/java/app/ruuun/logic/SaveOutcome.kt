@@ -16,6 +16,12 @@ data class SaveOutcome(
     val completedChapter: Chapter?,
     val nextTargetM: Int,
     val previousTargetM: Int,
+    /** The stop goal this run was logged against, if stops had been counted before. */
+    val previousStopGoal: Int? = null,
+    /** The stop goal for the next run, after this one. */
+    val nextStopGoal: Int? = null,
+    /** True when this run is the one the next stop goal is built on. */
+    val setsStopGoal: Boolean = true,
     /** Logged for a date before the latest existing run, so it could not move the mission. */
     val backdated: Boolean = false,
 ) {

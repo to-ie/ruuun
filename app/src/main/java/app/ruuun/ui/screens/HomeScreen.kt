@@ -31,6 +31,7 @@ import app.ruuun.logic.BadgeEvaluator
 import app.ruuun.logic.Formatters
 import app.ruuun.logic.JourneyView
 import app.ruuun.logic.StatsCalculator
+import app.ruuun.logic.StopGoal
 import app.ruuun.logic.TargetRecommender
 import app.ruuun.ui.AppState
 import app.ruuun.ui.bannerColor
@@ -47,6 +48,7 @@ import app.ruuun.ui.icon
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.Ground
 import app.ruuun.ui.theme.IconButtonBg
+import app.ruuun.ui.theme.Lime
 import app.ruuun.ui.theme.Navy
 import app.ruuun.ui.theme.Orange
 import app.ruuun.ui.theme.OrangeTint
@@ -147,6 +149,12 @@ fun HomeScreen(
             Spacer(Modifier.height(Dimens.SectionGap))
             NextMissionHero(
                 targetM = settings.currentTargetM,
+                stopGoal = remember(state.logs, settings) {
+                    StopGoal.next(state.logs, settings)
+                },
+                lastStops = remember(state.logs) { StopGoal.goalSource(state.logs)?.stops },
+                lowStopsLimit = settings.lowStopsLimit,
+                atCap = settings.currentTargetM >= settings.maxTargetM,
                 welcomeBack = welcomeBack,
                 onLogRun = onLogRun,
                 onMakeEasier = onMakeEasier,
@@ -253,6 +261,10 @@ fun HomeScreen(
 @Composable
 private fun NextMissionHero(
     targetM: Int,
+    stopGoal: Int?,
+    lastStops: Int?,
+    lowStopsLimit: Int,
+    atCap: Boolean,
     welcomeBack: Boolean,
     onLogRun: () -> Unit,
     onMakeEasier: () -> Unit,
@@ -303,12 +315,22 @@ private fun NextMissionHero(
                         color = Ground,
                     )
                 }
+                if (stopGoal != null) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "Stop goal: ${StopGoal.goalLabel(stopGoal).lowercase()}" +
+                            (lastStops?.let { " · from $it" } ?: ""),
+                        style = RuuunText.BodyStrong,
+                        color = Lime,
+                    )
+                }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    if (welcomeBack) {
-                        "Welcome back. Repeat this one, or make it easier."
-                    } else {
-                        "Walk it or run it. Breaks are fine."
+                    when {
+                        welcomeBack -> "Welcome back. Repeat this one, or make it easier."
+                        atCap -> "Breaks are fine. This is your longest mission setting."
+                        else -> "Breaks are fine. It gets longer after a run with " +
+                            "${JourneyView.stopsOrFewer(lowStopsLimit)}."
                     },
                     style = RuuunText.BodyLarge,
                     color = Ground,

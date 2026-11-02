@@ -1,11 +1,18 @@
 package app.ruuun.content
 
-/** The four worlds. Banner colours and icons live in the UI layer. */
-enum class World(val title: String) {
-    ROOKIE_WOODS("Rookie Woods"),
-    DESERT_DASH("Desert Dash"),
-    SKY_KINGDOM("Sky Kingdom"),
-    PLANET_ZOOM("Planet Zoom"),
+/**
+ * The worlds, four per season. Season 2 (added in 1.3) opens after the festival, so a
+ * long journey still has somewhere to go. Banner colours and icons live in the UI layer.
+ */
+enum class World(val title: String, val season: Int) {
+    ROOKIE_WOODS("Rookie Woods", 1),
+    DESERT_DASH("Desert Dash", 1),
+    SKY_KINGDOM("Sky Kingdom", 1),
+    PLANET_ZOOM("Planet Zoom", 1),
+    CORAL_COAST("Coral Coast", 2),
+    JUNGLE_RUN("Jungle Run", 2),
+    FROSTY_PEAKS("Frosty Peaks", 2),
+    COMET_RUN("Comet Run", 2),
 }
 
 /**
@@ -23,7 +30,7 @@ data class Chapter(
 
 object Chapters {
 
-    /** Shown once all twelve chapters are complete. */
+    /** Shown once every chapter, both seasons, is complete. */
     const val FINALE_TITLE = "Legend of the Trail"
     const val FINALE_TEASER = "Story finished. Every run from here is yours."
 
@@ -52,10 +59,38 @@ object Chapters {
             "The rings come alive with colour.", "The rings are starting to glow."),
         Chapter(12, World.PLANET_ZOOM, "The Great ruuun! Festival", 100,
             "A big celebration of every step.", "They are setting up the festival for you."),
+        // Season 2
+        Chapter(13, World.CORAL_COAST, "The Tide Pools", 112,
+            "The sea has found you.", "Past the festival, the land runs down to the sea."),
+        Chapter(14, World.CORAL_COAST, "Shell Beach", 124,
+            "Every shell hums a little song of the sea.", "The beach is covered in shells to find."),
+        Chapter(15, World.CORAL_COAST, "The Lighthouse", 136,
+            "The lighthouse lamp is shining.", "A lighthouse waits at the end of the bay."),
+        Chapter(16, World.JUNGLE_RUN, "Vines and Rivers", 150,
+            "You are deep in the jungle now.", "Green everywhere, and the river is singing."),
+        Chapter(17, World.JUNGLE_RUN, "The Waterfall Steps", 165,
+            "You climbed the waterfall steps.", "Stone steps go up beside the waterfall."),
+        Chapter(18, World.JUNGLE_RUN, "The Hidden Temple", 180,
+            "The temple doors swing open.", "Something old is hiding in the leaves."),
+        Chapter(19, World.FROSTY_PEAKS, "Snowy Switchbacks", 200,
+            "Your footprints zigzag up the mountain.", "The path turns back and forth up the snow."),
+        Chapter(20, World.FROSTY_PEAKS, "The Ice Cave", 220,
+            "The ice cave glows blue.", "A cave of ice, glowing from inside."),
+        Chapter(21, World.FROSTY_PEAKS, "Summit Lights", 240,
+            "The sky lights up over the summit.", "From the top, the sky will dance."),
+        Chapter(22, World.COMET_RUN, "The Launch Pad", 265,
+            "Lift off!", "A launch pad is being built for you."),
+        Chapter(23, World.COMET_RUN, "Riding the Comet", 290,
+            "You are riding a comet's tail.", "A comet is coming close enough to catch."),
+        Chapter(24, World.COMET_RUN, "The Grand Finish", 320,
+            "Every world, every run: you did it.", "One last stretch to the grand finish."),
     )
 
+    /** Chapters in the first season; the second opens once these are done. */
+    const val SEASON_ONE_CHAPTERS = 12
+
     init {
-        require(ALL.size == 12) { "Expected 12 chapters, found ${ALL.size}" }
+        require(ALL.size == 24) { "Expected 24 chapters, found ${ALL.size}" }
     }
 
     /** Run days needed for [chapter] under the journey's frozen story pace. */

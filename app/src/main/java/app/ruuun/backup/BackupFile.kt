@@ -18,7 +18,9 @@ import java.time.format.DateTimeParseException
 object BackupFile {
 
     const val FORMAT = "ruuun-offline-backup"
-    const val SCHEMA_VERSION = 1
+    /** 2 added stops in 1.3. Version 1 files still restore; their runs have no stops. */
+    const val SCHEMA_VERSION = 2
+    private val READABLE_VERSIONS = 1..SCHEMA_VERSION
 
     /** Roughly 55 years of daily running. Past this, something is wrong with the file. */
     const val MAX_LOGS = 20_000
@@ -51,6 +53,7 @@ object BackupFile {
                 put("weeklyGoal", settings.weeklyGoal)
                 put("initialStoryPaceOnePerWeek", settings.initialStoryPaceOnePerWeek)
                 put("onboardingComplete", settings.onboardingComplete)
+                put("lowStopsLimit", settings.lowStopsLimit)
             },
         )
         val array = JSONArray()
@@ -66,6 +69,8 @@ object BackupFile {
                     put("mode", log.mode?.name ?: JSONObject.NULL)
                     put("tags", JSONArray(log.tags.map { it.name }.sorted()))
                     put("note", log.note ?: JSONObject.NULL)
+                    put("stops", log.stops ?: JSONObject.NULL)
+                    put("stopsGoalAtLog", log.stopsGoalAtLog ?: JSONObject.NULL)
                     put("createdAt", log.createdAt)
                     put("updatedAt", log.updatedAt)
                 },
@@ -89,7 +94,7 @@ object BackupFile {
             return ParseResult.Invalid("That file isn't a ruuun! backup.")
         }
         val version = root.optInt("schemaVersion", -1)
-        if (version != SCHEMA_VERSION) {
+        if (version !in READABLE_VERSIONS) {
             return ParseResult.Invalid("This backup was made by a different version of ruuun!.")
         }
 
@@ -105,10 +110,18 @@ object BackupFile {
 
         val startingTargetM = settingsJson.optInt("startingTargetM", -1)
         val currentTargetM = settingsJson.optInt("currentTargetM", -1)
-        val maxTargetM = settingsJson.optInt("maxTargetM", RunnerSettings.DEFAULT_MAX_TARGET_M)
+        val savedMax = settingsJson.optInt("maxTargetM", RunnerSettings.DEFAULT_MAX_TARGET_M)
+        // A 1.2 backup still on the old 3 km default moves up, as the upgrade does.
+        val maxTargetM = if (version == 1 && savedMax == RunnerSettings.OLD_DEFAULT_MAX_TARGET_M) {
+            RunnerSettings.DEFAULT_MAX_TARGET_M
+        } else {
+            savedMax
+        }
+        val lowStopsLimit = settingsJson.optInt("lowStopsLimit", RunnerSettings.DEFAULT_LOW_STOPS)
         val weeklyGoal = settingsJson.optInt("weeklyGoal", -1)
         if (!inTargetRange(startingTargetM) || !inTargetRange(currentTargetM) ||
-            !inTargetRange(maxTargetM) || weeklyGoal !in 1..3
+            !inTargetRange(maxTargetM) || weeklyGoal !in 1..3 ||
+            lowStopsLimit !in 0..RunnerSettings.MAX_LOW_STOPS
         ) {
             return ParseResult.Invalid("The backup has settings outside the allowed range.")
         }
@@ -124,6 +137,7 @@ object BackupFile {
             weeklyGoal = weeklyGoal,
             initialStoryPaceOnePerWeek = settingsJson.optBoolean("initialStoryPaceOnePerWeek", false),
             onboardingComplete = settingsJson.optBoolean("onboardingComplete", true),
+            lowStopsLimit = lowStopsLimit,
         )
 
         val logsJson = root.optJSONArray("logs")
@@ -191,6 +205,9 @@ object BackupFile {
         val note = if (item.isNull("note")) null else item.optString("note").ifBlank { null }
         if (note != null && note.length > RunLog.MAX_NOTE_LENGTH) return null
 
+        val stops = optionalStops(item, "stops") ?: return null
+        val stopsGoal = optionalStops(item, "stopsGoalAtLog") ?: return null
+
         return RunLog(
             id = id,
             date = date,
@@ -201,9 +218,20 @@ object BackupFile {
             mode = mode,
             tags = tags,
             note = note,
+            stops = stops.value,
+            stopsGoalAtLog = stopsGoal.value,
             createdAt = item.optLong("createdAt", 0L),
             updatedAt = item.optLong("updatedAt", 0L),
         )
+    }
+
+    /** A field that may be missing or null; [value] is null then. Null result = invalid. */
+    private class Optional(val value: Int?)
+
+    private fun optionalStops(item: JSONObject, key: String): Optional? {
+        if (!item.has(key) || item.isNull(key)) return Optional(null)
+        val value = item.optInt(key, -1)
+        return if (value in 0..RunLog.MAX_STOPS) Optional(value) else null
     }
 
     private inline fun <reified T : Enum<T>> enumOrNull(name: String?): T? =

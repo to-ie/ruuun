@@ -3,6 +3,7 @@ package app.ruuun.data
 import app.ruuun.content.Chapters
 import app.ruuun.logic.SaveOutcome
 import app.ruuun.logic.StatsCalculator
+import app.ruuun.logic.StopGoal
 import app.ruuun.logic.TargetRecommender
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -52,10 +53,14 @@ class RuuunRepository(private val dao: RuuunDao) {
         mode: RunMode?,
         tags: Set<RunTag>,
         note: String?,
+        stops: Int?,
         now: Long,
     ): SaveOutcome? {
         val settings = dao.getSettings() ?: return null
         val existing = dao.getLogs()
+        val backdated = existing.maxOfOrNull { it.date }?.let { date.isBefore(it) } ?: false
+        // A run on an earlier day was not run against today's goal.
+        val stopGoal = if (backdated) null else StopGoal.next(existing, settings)
         val log = RunLog(
             id = UUID.randomUUID().toString(),
             date = date,
@@ -66,6 +71,8 @@ class RuuunRepository(private val dao: RuuunDao) {
             mode = mode,
             tags = tags,
             note = note,
+            stops = stops,
+            stopsGoalAtLog = stopGoal,
             createdAt = now,
             updatedAt = now,
         )
@@ -87,7 +94,10 @@ class RuuunRepository(private val dao: RuuunDao) {
             completedChapter = newlyCompletedChapter(before, after),
             nextTargetM = nextTarget,
             previousTargetM = settings.currentTargetM,
-            backdated = existing.maxOfOrNull { it.date }?.let { date.isBefore(it) } ?: false,
+            previousStopGoal = stopGoal,
+            nextStopGoal = StopGoal.next(existing + log, settings.copy(currentTargetM = nextTarget)),
+            setsStopGoal = StopGoal.goalSource(existing + log)?.id == log.id,
+            backdated = backdated,
         )
     }
 
@@ -101,6 +111,7 @@ class RuuunRepository(private val dao: RuuunDao) {
         mode: RunMode?,
         tags: Set<RunTag>,
         note: String?,
+        stops: Int?,
         now: Long,
     ) {
         val settings = dao.getSettings() ?: return
@@ -113,10 +124,40 @@ class RuuunRepository(private val dao: RuuunDao) {
             mode = mode,
             tags = tags,
             note = note,
+            stops = stops,
             updatedAt = now,
         )
         dao.upsertLog(updated)
-        resetTargetAfterCorrection(settings)
+        // Only the date, distance and effort reset the mission. Adding a note, tags or a
+        // stop count to an old run must not knock the next mission back.
+        val missionInputsChanged = existing.date != date ||
+            existing.distanceM != distanceM ||
+            existing.effort != effort
+        if (missionInputsChanged) {
+            resetTargetAfterCorrection(settings)
+            return
+        }
+        // A corrected stop count on the latest run that crosses the low-stops limit
+        // replays the rules for that run, as if it had been logged that way.
+        val limit = settings.lowStopsLimit
+        val crossed = TargetRecommender.lowStops(existing, limit) != TargetRecommender.lowStops(updated, limit)
+        val all = dao.getLogs()
+        val latest = all.maxWithOrNull(compareBy<RunLog> { it.date }.thenBy { it.createdAt })
+        if (crossed && latest?.id == updated.id) {
+            val atLog = settings.copy(currentTargetM = updated.targetMAtLog)
+            // What the run set when it was saved. If the mission is something else now, a
+            // parent changed it by hand since (Easier, Harder or reset), so leave it alone.
+            val before = TargetRecommender.afterLog(
+                atLog,
+                all.map { if (it.id == existing.id) existing else it },
+                existing,
+            )
+            val replayed = TargetRecommender.afterLog(atLog, all, updated)
+                .coerceIn(RunnerSettings.MIN_TARGET_M, settings.maxTargetM)
+            if (settings.currentTargetM == before && replayed != settings.currentTargetM) {
+                dao.upsertSettings(settings.copy(currentTargetM = replayed))
+            }
+        }
     }
 
     suspend fun deleteRun(log: RunLog) {

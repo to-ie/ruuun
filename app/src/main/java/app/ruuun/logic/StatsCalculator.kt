@@ -51,6 +51,9 @@ data class StatsSnapshot(
 
 object StatsCalculator {
 
+    /** A non-stop run has to be at least this long to count for the Non-stop badges. */
+    const val NON_STOP_MIN_M = 100
+
     /** Level titles. Descriptive only; they unlock nothing. */
     fun levelName(level: Int): String = when (level) {
         1 -> "First Steps"
@@ -131,6 +134,19 @@ object StatsCalculator {
             put(BadgeMetric.BELOW_TARGET_LOGS, logs.count { it.distanceM < it.targetMAtLog })
             put(BadgeMetric.LOGS_AT_LEAST_100M, logs.count { it.distanceM >= 100 })
             put(BadgeMetric.LOGS_AT_MOST_500M, logs.count { it.distanceM <= 500 })
+
+            val nonStop = logs.filter { it.stops == 0 && it.distanceM >= NON_STOP_MIN_M }
+            put(BadgeMetric.STOPS_COUNTED_DAYS, StopGoal.countedDays(logs).size)
+            put(BadgeMetric.FEWER_STOPS_DAYS, StopGoal.fewerThanBefore(logs))
+            // Days, not entries: extra laps on one day cannot farm these.
+            put(BadgeMetric.STOP_GOALS_MET, StopGoal.daysGoalMet(logs))
+            put(BadgeMetric.NONSTOP_RUNS, nonStop.map { it.date }.distinct().size)
+            put(BadgeMetric.NONSTOP_MAX_M, nonStop.maxOfOrNull { it.distanceM } ?: 0)
+
+            put(
+                BadgeMetric.JOURNEY_DAYS,
+                if (dates.size < 2) 0 else ChronoUnit.DAYS.between(dates.first(), dates.last()).toInt(),
+            )
 
             put(BadgeMetric.COMEBACK_GAPS_14D, comebackGaps(dates, 14))
             put(BadgeMetric.COMEBACK_GAPS_30D, comebackGaps(dates, 30))

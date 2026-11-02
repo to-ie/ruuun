@@ -50,6 +50,7 @@ import app.ruuun.BuildConfig
 import app.ruuun.backup.BackupFile
 import app.ruuun.data.RunnerSettings
 import app.ruuun.logic.Formatters
+import app.ruuun.logic.JourneyView
 import app.ruuun.ui.AppState
 import app.ruuun.ui.RuuunViewModel
 import app.ruuun.ui.components.InfoPanel
@@ -94,6 +95,7 @@ fun SettingsScreen(
         }
     }
     var showMaxDialog by remember { mutableStateOf(false) }
+    var showStopsDialog by remember { mutableStateOf(false) }
     var deleteStage by remember { mutableIntStateOf(0) }
 
     val exportLauncher = rememberLauncherForActivityResult(
@@ -176,6 +178,18 @@ fun SettingsScreen(
                 )
                 HorizontalDivider(color = Border)
                 SettingsRow(
+                    title = "Distance goes up after",
+                    subtitle = "A run with this many stops or fewer",
+                    trailing = {
+                        SecondaryButton(
+                            text = JourneyView.stopsOrFewer(settings.lowStopsLimit),
+                            onClick = { showStopsDialog = true },
+                            lowEmphasis = true,
+                        )
+                    },
+                )
+                HorizontalDivider(color = Border)
+                SettingsRow(
                     title = "Story pace",
                     subtitle = "Set at the start, can't be changed",
                     trailing = {
@@ -246,6 +260,17 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(Dimens.ScreenPadding))
         }
+    }
+
+    if (showStopsDialog) {
+        LowStopsDialog(
+            current = settings.lowStopsLimit,
+            onDismiss = { showStopsDialog = false },
+            onConfirm = {
+                viewModel.setLowStopsLimit(it)
+                showStopsDialog = false
+            },
+        )
     }
 
     if (showMaxDialog) {
@@ -371,6 +396,44 @@ private fun SettingsHeader(onBack: () -> Unit) {
             Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
         }
     }
+}
+
+@Composable
+private fun LowStopsDialog(current: Int, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
+    var choice by remember { mutableIntStateOf(current) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceColor,
+        title = { Text("Distance goes up after", style = RuuunText.SubTitle, color = Navy) },
+        text = {
+            Column {
+                SegmentedPicker(
+                    options = (0..RunnerSettings.MAX_LOW_STOPS).toList(),
+                    selected = choice,
+                    onSelect = { choice = it },
+                    label = { "$it" },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "The mission only gets longer after a run with " +
+                        "${JourneyView.stopsOrFewer(choice)}. Lower is stricter. 2 is a good start.",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(choice) }) {
+                Text("Save", color = Navy, style = RuuunText.BodyStrong)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextMuted, style = RuuunText.Body)
+            }
+        },
+    )
 }
 
 @Composable

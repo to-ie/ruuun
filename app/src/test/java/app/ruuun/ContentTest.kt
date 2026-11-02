@@ -14,19 +14,19 @@ import org.junit.Test
 class ContentTest {
 
     @Test
-    fun `the catalogue holds 147 unique badges, ids and all`() {
-        val expected = 147   // the handoff's 141, plus six for the extra tags
+    fun `the catalogue holds 193 unique badges, ids and all`() {
+        val expected = 193   // 141 + 6 tag badges + 19 Non-stop + 12 season 2 chapters + 15 long tail
         assertEquals(expected, Achievements.ALL.size)
         assertEquals(expected, Achievements.ALL.map { it.id }.toSet().size)
         assertEquals(expected, Achievements.BY_CATEGORY.values.sumOf { it.size })
     }
 
-    /** Every id from the original handoff catalogue must survive. */
+    /** Every id from the original handoff catalogue must survive; 1.3 added to some prefixes. */
     @Test
     fun `the original badge ids are all still present`() {
         val counts = mapOf(
-            "FS" to 10, "RC" to 20, "SD" to 17, "TD" to 16, "WK" to 14, "CO" to 5,
-            "RF" to 13, "CH" to 12, "QS" to 8, "MO" to 12, "SE" to 7,
+            "FS" to 10, "RC" to 25, "SD" to 17, "TD" to 20, "WK" to 17, "CO" to 7,
+            "RF" to 13, "CH" to 24, "QS" to 9, "MO" to 12, "SE" to 7, "NS" to 19,
         )
         counts.forEach { (prefix, n) ->
             assertEquals(prefix, n, Achievements.ALL.count { it.id.startsWith("$prefix-") })
@@ -75,14 +75,13 @@ class ContentTest {
 
     /** QA 9: all twelve chapters are reachable, and the gentle pace halves them. */
     @Test
-    fun `twelve chapters complete at their run-day thresholds`() {
-        assertEquals(12, Chapters.ALL.size)
+    fun `all chapters complete at their run-day thresholds`() {
+        assertEquals(24, Chapters.ALL.size)
         val normal = TestData.settings(onePerWeekPace = false)
-        val stats = StatsCalculator.snapshot(TestData.run(100), normal)
-        assertEquals(12, stats.completedChapters)
-
-        val oneLess = StatsCalculator.snapshot(TestData.run(99), normal)
-        assertEquals(11, oneLess.completedChapters)
+        assertEquals(12, StatsCalculator.snapshot(TestData.run(100), normal).completedChapters)
+        assertEquals(11, StatsCalculator.snapshot(TestData.run(99), normal).completedChapters)
+        assertEquals(24, StatsCalculator.snapshot(TestData.run(320), normal).completedChapters)
+        assertEquals(23, StatsCalculator.snapshot(TestData.run(319), normal).completedChapters)
     }
 
     @Test
@@ -104,7 +103,7 @@ class ContentTest {
     @Test
     fun `chapter badges line up with the chapter list`() {
         val chapterBadges = Achievements.ALL.filter { it.metric == BadgeMetric.CHAPTER_COMPLETED }
-        assertEquals(12, chapterBadges.size)
+        assertEquals(24, chapterBadges.size)
         chapterBadges.sortedBy { it.threshold }.forEachIndexed { index, badge ->
             assertEquals(index + 1, badge.threshold)
             assertTrue(badge.title, badge.title.contains(Chapters.ALL[index].title))
@@ -123,6 +122,21 @@ class ContentTest {
             banned.forEach { word ->
                 assertFalse("\"$line\" contains \"$word\"", line.lowercase().contains(word))
             }
+        }
+    }
+
+    /**
+     * Badges are recomputed from the logs, so raising an existing badge's threshold would
+     * lock it again for a child who had earned it. These are the ones 1.3 nearly moved.
+     */
+    @Test
+    fun `early badges keep the thresholds children earned them at`() {
+        val expected = mapOf(
+            "RC-002" to 4, "RC-004" to 6, "RC-006" to 8, "TD-004" to 3_000, "TD-006" to 7_500,
+            "WK-002" to 2, "WK-004" to 4, "QS-001" to 1, "FS-001" to 1, "SD-009" to 1_000,
+        )
+        expected.forEach { (id, threshold) ->
+            assertEquals(id, threshold, Achievements.BY_ID.getValue(id).threshold)
         }
     }
 }

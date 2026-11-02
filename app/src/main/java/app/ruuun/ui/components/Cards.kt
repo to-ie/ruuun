@@ -264,6 +264,14 @@ fun RunRow(log: RunLog, modifier: Modifier = Modifier, onClick: () -> Unit) {
                     )
                     Spacer(Modifier.width(8.dp))
                     Pill(log.effort.label(), log.effort.tint())
+                    log.stops?.let { stops ->
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            if (stops == 0) "non-stop" else app.ruuun.logic.StopGoal.stopsLabel(stops),
+                            style = RuuunText.Secondary,
+                            color = TextMuted,
+                        )
+                    }
                 }
                 if (!log.note.isNullOrBlank()) {
                     Spacer(Modifier.height(2.dp))

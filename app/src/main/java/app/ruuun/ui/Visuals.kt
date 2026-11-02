@@ -13,10 +13,15 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Park
 import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.AcUnit
+import androidx.compose.material.icons.outlined.Forest
+import androidx.compose.material.icons.outlined.BeachAccess
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.SentimentDissatisfied
 import androidx.compose.material.icons.outlined.SentimentNeutral
 import androidx.compose.material.icons.outlined.SentimentSatisfied
+import androidx.compose.material.icons.outlined.DoubleArrow
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.ui.graphics.Color
@@ -38,6 +43,10 @@ fun World.bannerColor(): Color = when (this) {
     World.DESERT_DASH -> SunTint
     World.SKY_KINGDOM -> SkyTint
     World.PLANET_ZOOM -> OrangeTint
+    World.CORAL_COAST -> app.ruuun.ui.theme.CoralTint
+    World.JUNGLE_RUN -> app.ruuun.ui.theme.JungleTint
+    World.FROSTY_PEAKS -> app.ruuun.ui.theme.FrostTint
+    World.COMET_RUN -> app.ruuun.ui.theme.CometTint
 }
 
 fun World.icon(): ImageVector = when (this) {
@@ -45,6 +54,10 @@ fun World.icon(): ImageVector = when (this) {
     World.DESERT_DASH -> Icons.Outlined.WbSunny
     World.SKY_KINGDOM -> Icons.Outlined.Cloud
     World.PLANET_ZOOM -> Icons.Outlined.Public
+    World.CORAL_COAST -> Icons.Outlined.BeachAccess
+    World.JUNGLE_RUN -> Icons.Outlined.Forest
+    World.FROSTY_PEAKS -> Icons.Outlined.AcUnit
+    World.COMET_RUN -> Icons.Outlined.AutoAwesome
 }
 
 /**
@@ -58,6 +71,7 @@ fun BadgeCategory.earnedColor(): Color = when (this) {
     BadgeCategory.REFLECTION -> SkyTint
     BadgeCategory.STORY -> Lime
     BadgeCategory.QUESTS, BadgeCategory.SEASONS -> Orange
+    BadgeCategory.NON_STOP -> Sky
     BadgeCategory.SECRET -> Lime
 }
 
@@ -72,6 +86,7 @@ fun BadgeCategory.icon(): ImageVector = when (this) {
     BadgeCategory.STORY -> Icons.AutoMirrored.Outlined.MenuBook
     BadgeCategory.QUESTS -> Icons.Outlined.Flag
     BadgeCategory.SEASONS -> Icons.Outlined.Eco
+    BadgeCategory.NON_STOP -> Icons.Outlined.DoubleArrow
     BadgeCategory.SECRET -> Icons.Outlined.Star
 }
 

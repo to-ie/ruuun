@@ -10,6 +10,7 @@ import app.ruuun.data.RunnerSettings
 import app.ruuun.logic.BadgeEvaluator
 import app.ruuun.logic.JourneyView
 import app.ruuun.logic.StatsCalculator
+import app.ruuun.logic.StopGoal
 import app.ruuun.logic.TargetRecommender
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -54,6 +55,8 @@ class InvariantSweepTest {
                     mode = if (rng.nextBoolean()) RunMode.entries.random(rng) else null,
                     tags = RunTag.entries.filter { rng.nextInt(5) == 0 }.toSet(),
                     note = if (rng.nextBoolean()) "n" else null,
+                    stops = if (rng.nextInt(4) == 0) null else rng.nextInt(0, 13),
+                    stopsGoalAtLog = StopGoal.next(logs, settings),
                     createdAt = step.toLong(),
                     updatedAt = step.toLong(),
                 )
@@ -62,12 +65,16 @@ class InvariantSweepTest {
                 val was = settings.currentTargetM
                 val next = TargetRecommender.afterLog(settings, logs, log)
                 val why = "seed $seed step $step: ran ${log.distanceM} ${log.effort} " +
+                    "with ${log.stops} stops " +
                     "on a $was mission (cap ${settings.maxTargetM}) -> $next"
 
                 assertTrue("$why: below the floor", next >= RunnerSettings.MIN_TARGET_M)
                 assertTrue("$why: above the cap", next <= settings.maxTargetM)
                 assertEquals("$why: not a round 25 m", 0, next % 25)
-                if (next < settings.maxTargetM && log.distanceM > was) {
+                if (!TargetRecommender.lowStops(log, settings.lowStopsLimit)) {
+                    assertTrue("$why: rose without low stops", next <= was)
+                }
+                if (next < settings.maxTargetM && log.distanceM > was && TargetRecommender.lowStops(log, settings.lowStopsLimit)) {
                     assertTrue("$why: beat the mission but it did not move past", next > log.distanceM)
                 }
                 if (log.effort == Effort.HARD && log.distanceM < was) {

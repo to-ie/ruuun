@@ -43,32 +43,32 @@ class MissionNoteTest {
     fun `beating the mission names the old distance and the effort`() {
         assertEquals(
             "You beat 300 m and it felt easy, so it goes up.",
-            note(TestData.log(day1, distanceM = 320, effort = Effort.EASY)),
+            note(TestData.lowStopsLog(day1, distanceM = 320, effort = Effort.EASY)),
         )
         assertEquals(
             "You beat 300 m and it felt okay, so it goes up a step.",
-            note(TestData.log(day1, distanceM = 320, effort = Effort.OKAY)),
+            note(TestData.lowStopsLog(day1, distanceM = 320, effort = Effort.OKAY)),
         )
         assertEquals(
             "You beat 300 m. It felt hard, so it only goes up a little.",
-            note(TestData.log(day1, distanceM = 320, effort = Effort.HARD)),
+            note(TestData.lowStopsLog(day1, distanceM = 320, effort = Effort.HARD)),
         )
     }
 
     @Test
     fun `two easy days at the mission explain the step up`() {
-        val first = TestData.log(day1, distanceM = 300, effort = Effort.EASY)
+        val first = TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.EASY)
         assertEquals(
-            "Two easy days at 300 m, so it goes up a step.",
-            note(TestData.log(day2, distanceM = 300, effort = Effort.EASY), earlier = listOf(first)),
+            "Two days at 300 m with 2 stops or fewer, so it goes up a step.",
+            note(TestData.lowStopsLog(day2, distanceM = 300, effort = Effort.EASY), earlier = listOf(first)),
         )
     }
 
     @Test
     fun `one easy day at the mission says what is still needed`() {
         assertEquals(
-            "One more easy day at 300 m and it goes up.",
-            note(TestData.log(day1, distanceM = 300, effort = Effort.EASY)),
+            "One more run at 300 m with 2 stops or fewer and it goes up.",
+            note(TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.EASY)),
         )
     }
 
@@ -76,15 +76,15 @@ class MissionNoteTest {
     fun `hard and short eases off, short otherwise repeats`() {
         assertEquals(
             "That felt hard, so next time is a bit shorter.",
-            note(TestData.log(day1, distanceM = 200, effort = Effort.HARD)),
+            note(TestData.lowStopsLog(day1, distanceM = 200, effort = Effort.HARD)),
         )
         assertEquals(
             "Same again next time. Turning up still counts.",
-            note(TestData.log(day1, distanceM = 200, effort = Effort.OKAY)),
+            note(TestData.lowStopsLog(day1, distanceM = 200, effort = Effort.OKAY)),
         )
         assertEquals(
-            "Same again next time. Repeating is how it sticks.",
-            note(TestData.log(day1, distanceM = 300, effort = Effort.OKAY)),
+            "One more run at 300 m with 2 stops or fewer and it goes up.",
+            note(TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.OKAY)),
         )
     }
 
@@ -92,7 +92,7 @@ class MissionNoteTest {
     fun `a backdated run says it cannot move the mission`() {
         assertEquals(
             "Runs on earlier days don't change the mission.",
-            note(TestData.log(day1, distanceM = 900, effort = Effort.EASY), backdated = true),
+            note(TestData.lowStopsLog(day1, distanceM = 900, effort = Effort.EASY), backdated = true),
         )
     }
 
@@ -101,13 +101,13 @@ class MissionNoteTest {
         assertEquals(
             "You are at your longest mission setting.",
             note(
-                TestData.log(day1, distanceM = 3_500, effort = Effort.EASY, targetMAtLog = 3_000),
+                TestData.lowStopsLog(day1, distanceM = 3_500, effort = Effort.EASY, targetMAtLog = 3_000),
                 currentTargetM = 3_000,
             ),
         )
         assertTrue(
             note(
-                TestData.log(day1, distanceM = 2_960, effort = Effort.EASY, targetMAtLog = 2_950),
+                TestData.lowStopsLog(day1, distanceM = 2_960, effort = Effort.EASY, targetMAtLog = 2_950),
                 currentTargetM = 2_950,
             ).endsWith("That is your longest mission setting."),
         )

@@ -160,8 +160,10 @@ object JourneyView {
      */
     fun nextMissionNote(outcome: SaveOutcome, settings: RunnerSettings): String {
         val log = outcome.log
+        val limit = settings.lowStopsLimit
         val was = Formatters.distance(outcome.previousTargetM)
         val beat = log.distanceM > outcome.previousTargetM
+        val matched = !beat && log.distanceM >= log.targetMAtLog && log.effort != Effort.HARD
         val went = outcome.nextTargetM.compareTo(outcome.previousTargetM)
         val atCap = outcome.nextTargetM >= settings.maxTargetM
         val capNote = " That is your longest mission setting."
@@ -172,14 +174,82 @@ object JourneyView {
                 Effort.OKAY -> "You beat $was and it felt okay, so it goes up a step."
                 Effort.HARD -> "You beat $was. It felt hard, so it only goes up a little."
             } + if (atCap) capNote else ""
-            went > 0 -> "Two easy days at $was, so it goes up a step." + if (atCap) capNote else ""
+            went > 0 -> "Two days at $was with ${stopsOrFewer(limit)}, so it goes up a step." +
+                if (atCap) capNote else ""
             went < 0 -> "That felt hard, so next time is a bit shorter."
             atCap -> "You are at your longest mission setting."
+            // Would have gone up, but the stops were not low enough (or not counted).
+            (beat || matched) && !TargetRecommender.lowStops(log, limit) -> when (val stops = log.stops) {
+                null -> "Same distance again. Count your stops: it gets longer after a run " +
+                    "with ${stopsOrFewer(limit)}."
+                else -> (if (beat) "You beat $was! " else "") +
+                    "With ${StopGoal.stopsLabel(stops)} the distance stays the same. " +
+                    fewerToGo(stops - limit) + " and it gets longer."
+            }
             log.distanceM < log.targetMAtLog -> "Same again next time. Turning up still counts."
-            log.effort == Effort.EASY -> "One more easy day at $was and it goes up."
+            // Below 250 m one step is more than 10%, so matching never steps it up there.
+            matched && TargetRecommender.increase(outcome.previousTargetM, settings.maxTargetM) ==
+                outcome.previousTargetM -> "Same again next time. Go a little further to move it on."
+            matched -> "One more run at $was with ${stopsOrFewer(limit)} and it goes up."
             else -> "Same again next time. Repeating is how it sticks."
         }
     }
+
+    /**
+     * The line beside the stop count on the Run saved screen, or null when this run's
+     * stops were not counted. Stopping is never treated as failing.
+     */
+    fun stopNote(outcome: SaveOutcome): String? {
+        val log = outcome.log
+        val stops = log.stops ?: return null
+        val label = StopGoal.stopsLabel(stops)
+        val goal = outcome.previousStopGoal
+        val next = outcome.nextStopGoal
+        val nextLine = when {
+            next == null -> ""
+            next == 0 -> " Next time, try it non-stop."
+            log.effort == Effort.HARD && next == stops ->
+                " It felt hard, so the goal stays at ${goalText(next)}."
+            // Within the parent's limit: the distance grows and the stops only need to hold.
+            next == stops -> " Keep it at ${goalText(next)} while the distance grows."
+            else -> " Next time, try ${goalText(next)}."
+        }
+        return when {
+            stops == 0 -> "Non-stop! You went the whole way."
+            outcome.backdated -> "$label. Runs on earlier days don't change the stop goal."
+            !StopGoal.countsForGoal(log) -> "$label. Short runs don't change the stop goal."
+            !outcome.setsStopGoal -> "$label on this extra run. Your longest run today sets the stop goal."
+            goal == null -> "First count: $label.$nextLine"
+            stops < goal -> "$label. You beat your stop goal!$nextLine"
+            stops == goal -> "$label. Stop goal met!$nextLine"
+            else -> "$label this time. Breaks are fine.$nextLine"
+        }
+    }
+
+    /** New personal bests from this run, for the Run saved screen. Empty on the first run. */
+    fun records(outcome: SaveOutcome): List<String> {
+        val before = outcome.before
+        val after = outcome.after
+        if (before.runDays == 0 && before.maxSingleDistanceM == 0) return emptyList()
+        return buildList {
+            if (after.maxSingleDistanceM > before.maxSingleDistanceM) {
+                add("New longest run: ${Formatters.distance(after.maxSingleDistanceM)}")
+            }
+            val nonStopBefore = before.metric(app.ruuun.content.BadgeMetric.NONSTOP_MAX_M)
+            val nonStopAfter = after.metric(app.ruuun.content.BadgeMetric.NONSTOP_MAX_M)
+            if (nonStopAfter > nonStopBefore) {
+                add("New longest non-stop run: ${Formatters.distance(nonStopAfter)}")
+            }
+        }
+    }
+
+    /** "2 stops or fewer", "non-stop" for a limit of zero. */
+    fun stopsOrFewer(limit: Int): String =
+        if (limit == 0) "no stops" else "${StopGoal.stopsLabel(limit)} or fewer"
+
+    private fun fewerToGo(n: Int): String = if (n == 1) "1 fewer stop" else "$n fewer stops"
+
+    private fun goalText(goal: Int): String = StopGoal.goalLabel(goal).lowercase()
 
     /** Cheerful line under the big check on the Run saved screen. */
     fun savedHeadline(nickname: String): String = "Nice one, $nickname!"

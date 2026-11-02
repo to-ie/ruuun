@@ -42,6 +42,8 @@ object TestData {
         tags: Set<RunTag> = emptySet(),
         note: String? = null,
         durationMinutes: Int? = null,
+        stops: Int? = null,
+        stopsGoalAtLog: Int? = null,
         id: String = "log-${counter++}",
     ) = RunLog(
         id = id,
@@ -53,9 +55,27 @@ object TestData {
         mode = mode,
         tags = tags,
         note = note,
+        stops = stops,
+        stopsGoalAtLog = stopsGoalAtLog,
         createdAt = counter.toLong(),
         updatedAt = counter.toLong(),
     )
+
+    /**
+     * A run with 0 stops counted: low enough for the distance rules to let the mission
+     * grow. Use it where a test is about distance, not stops.
+     */
+    fun lowStopsLog(
+        date: LocalDate,
+        distanceM: Int = 300,
+        effort: Effort = Effort.OKAY,
+        targetMAtLog: Int = 300,
+        mode: RunMode? = null,
+        tags: Set<RunTag> = emptySet(),
+        note: String? = null,
+        durationMinutes: Int? = null,
+        id: String = "log-${counter++}",
+    ) = log(date, distanceM, effort, targetMAtLog, mode, tags, note, durationMinutes, stops = 0, id = id)
 
     /** [days] distinct run days, one per day starting at [from]. */
     fun run(days: Int, from: LocalDate = ONBOARDED, distanceM: Int = 300): List<RunLog> =

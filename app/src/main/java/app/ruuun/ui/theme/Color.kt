@@ -31,6 +31,10 @@ val LimeTint = Color(0xFFE8FBC2)     // "Easy" effort
 val OrangeTint = Color(0xFFFFE4CC)   // "Hard" effort, badge icon bg, progress pill
 val OrangeTintLight = Color(0xFFFFF1E3) // selected setup plan card
 val SunTint = Color(0xFFFFE9A8)      // Desert Dash world banner
+val CoralTint = Color(0xFFFFD9D1)    // Coral Coast world banner (season 2)
+val JungleTint = Color(0xFFCFEFD6)   // Jungle Run world banner
+val FrostTint = Color(0xFFE2EAFF)    // Frosty Peaks world banner
+val CometTint = Color(0xFFEADFFF)    // Comet Run world banner
 
 // On-navy (hero, celebration)
 val HeroOutline = Color(0xFF3A4A63)

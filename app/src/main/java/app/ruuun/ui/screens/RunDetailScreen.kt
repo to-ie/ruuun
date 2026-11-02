@@ -117,6 +117,12 @@ fun RunDetailScreen(
                 }
                 Spacer(Modifier.height(12.dp))
                 DetailLine("Mission at the time", Formatters.distance(log.targetMAtLog))
+                log.stops?.let {
+                    DetailLine("Stops", if (it == 0) "Non-stop" else "$it")
+                }
+                log.stopsGoalAtLog?.let {
+                    DetailLine("Stop goal at the time", app.ruuun.logic.StopGoal.goalLabel(it))
+                }
                 log.durationMinutes?.let { DetailLine("Minutes", "$it") }
                 log.mode?.let { DetailLine("Walk or jog", modeLabel(it)) }
                 if (log.tags.isNotEmpty()) {

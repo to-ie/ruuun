@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +36,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +44,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.ruuun.data.Effort
@@ -51,7 +58,9 @@ import app.ruuun.data.RunMode
 import app.ruuun.data.RunTag
 import app.ruuun.logic.DistanceUnit
 import app.ruuun.logic.Formatters
+import app.ruuun.logic.JourneyView
 import app.ruuun.logic.RunInput
+import app.ruuun.logic.StopGoal
 import app.ruuun.ui.AppState
 import app.ruuun.ui.RuuunViewModel
 import app.ruuun.ui.components.EffortButton
@@ -130,6 +139,18 @@ fun LogRunScreen(
         mutableStateOf(editing?.durationMinutes?.toString() ?: "")
     }
     var note by rememberSaveable(key) { mutableStateOf(editing?.note ?: "") }
+    // -1 while nobody has counted: stops are optional, and 0 means non-stop.
+    var stopsCount by rememberSaveable(key) { mutableIntStateOf(editing?.stops ?: NOT_COUNTED) }
+    val stops = stopsCount.takeIf { it != NOT_COUNTED }
+    val latestDate = remember(state.logs) { state.logs.maxOfOrNull { it.date } }
+    val stopGoal = remember(editing, state.logs, date, settings) {
+        when {
+            editing != null -> editing.stopsGoalAtLog
+            // A run on an earlier date is saved without a stop goal, so none is shown.
+            latestDate != null && date.isBefore(latestDate) -> null
+            else -> StopGoal.next(state.logs, settings)
+        }
+    }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
     val distanceM = RunInput.parseDistanceM(distanceText, unit)
@@ -252,6 +273,28 @@ fun LogRunScreen(
                 Spacer(Modifier.height(10.dp))
                 InfoPanel("That is a long way. Worth double-checking the number.")
             }
+
+            Spacer(Modifier.height(Dimens.SectionGap))
+            Text("How many times did you stop?", style = RuuunText.BodyStrong, color = Navy)
+            Spacer(Modifier.height(10.dp))
+            StopsStepper(
+                stops = stops,
+                onChange = { stopsCount = it ?: NOT_COUNTED },
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                when {
+                    stops == 0 -> "Non-stop! The whole way."
+                    stopGoal != null -> "Your stop goal: ${StopGoal.goalLabel(stopGoal).lowercase()}. " +
+                        "Breaks are fine."
+                    stops != null -> "The mission gets longer after a run with " +
+                        "${JourneyView.stopsOrFewer(settings.lowStopsLimit)}."
+                    else -> "Count each time you stopped to walk or rest. The mission gets " +
+                        "longer after a run with ${JourneyView.stopsOrFewer(settings.lowStopsLimit)}."
+                },
+                style = RuuunText.Secondary,
+                color = TextMuted,
+            )
 
             Spacer(Modifier.height(Dimens.SectionGap))
             Text("How did it feel?", style = RuuunText.BodyStrong, color = Navy)
@@ -386,6 +429,7 @@ fun LogRunScreen(
                                     mode = mode,
                                     tags = tags,
                                     note = cleanNote,
+                                    stops = stops,
                                     onSaved = onSaved,
                                 )
                             } else {
@@ -398,6 +442,7 @@ fun LogRunScreen(
                                     mode = mode,
                                     tags = tags,
                                     note = cleanNote,
+                                    stops = stops,
                                     onSaved = onSaved,
                                 )
                             }
@@ -447,6 +492,81 @@ fun LogRunScreen(
 }
 
 private const val MILLIS_PER_DAY = 86_400_000L
+private const val NOT_COUNTED = -1
+
+/**
+ * Minus, the count, plus. Starts at "Not counted"; minus from there means non-stop,
+ * plus means one stop. "Clear" goes back to not counted.
+ */
+@Composable
+private fun StopsStepper(stops: Int?, onChange: (Int?) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        StepButton(
+            icon = Icons.Outlined.Remove,
+            description = if (stops == null) "No stops, non-stop" else "One fewer stop",
+            enabled = stops != 0,
+            onClick = { onChange(if (stops == null) 0 else stops - 1) },
+        )
+        Box(
+            Modifier
+                .weight(1f)
+                .heightIn(min = Dimens.InputHeight)
+                .semantics {
+                    contentDescription = when (stops) {
+                        null -> "Stops not counted"
+                        0 -> "No stops, non-stop"
+                        else -> StopGoal.stopsLabel(stops)
+                    }
+                    // Read the new count out after each tap.
+                    liveRegion = LiveRegionMode.Polite
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            if (stops == null) {
+                Text("Not counted", style = RuuunText.BodyLarge, color = TextMuted)
+            } else {
+                Text(
+                    if (stops == 0) "0 · non-stop" else StopGoal.stopsLabel(stops),
+                    style = RuuunText.CardTitle,
+                    color = Navy,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        StepButton(
+            icon = Icons.Outlined.Add,
+            description = if (stops == null) "One stop" else "One more stop",
+            enabled = (stops ?: 0) < RunLog.MAX_STOPS,
+            onClick = { onChange(if (stops == null) 1 else stops + 1) },
+        )
+    }
+    if (stops != null) {
+        TextButton(onClick = { onChange(null) }) {
+            Text("Clear, nobody counted", style = RuuunText.Body, color = app.ruuun.ui.theme.Link)
+        }
+    }
+}
+
+@Composable
+private fun StepButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    description: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = Shapes.Input,
+        color = SurfaceColor,
+        border = androidx.compose.foundation.BorderStroke(2.dp, if (enabled) Navy else InputBorder),
+        modifier = Modifier.size(Dimens.InputHeight),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = description, tint = if (enabled) Navy else TextMuted)
+        }
+    }
+}
 
 /** Chips wrap onto extra rows at large font scales. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)

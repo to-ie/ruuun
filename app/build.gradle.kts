@@ -18,8 +18,8 @@ android {
         minSdk = 26
         targetSdk = 34
         // Must only ever increase; it is independent of the 0.x name below.
-        versionCode = 8
-        versionName = "1.2"
+        versionCode = 9
+        versionName = "1.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }
@@ -68,6 +68,9 @@ android {
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
+
+// MigrationTest reads the exported schemas.
+android.sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
 
 dependencies {
     implementation(libs.androidx.core.ktx)

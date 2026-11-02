@@ -2,7 +2,11 @@ package app.ruuun.content
 
 /**
  * The 141-badge seed catalogue from the build handoff, Appendix A, plus six badges for
- * the four run tags added in 0.3: 147 in all.
+ * the four run tags added in 0.3, and in 1.3 nineteen Non-stop badges, twelve season 2
+ * chapter badges and fifteen long-tail badges: 193 in all.
+ *
+ * Never raise an existing badge's threshold: badges are recomputed from the logs, so a
+ * child who had earned it would see it lock again. Add a new id instead.
  *
  * Every rule is a typed `metric >= threshold` comparison against a
  * [app.ruuun.logic.StatsSnapshot]; nothing is parsed from text at runtime. Badges are
@@ -21,6 +25,7 @@ enum class BadgeCategory(val title: String) {
     STORY("Story"),
     QUESTS("Quests"),
     SEASONS("Seasons"),
+    NON_STOP("Non-stop"),
     SECRET("Secret"),
 }
 
@@ -72,6 +77,13 @@ enum class BadgeMetric {
     TAG_PARK,
     TOTAL_M,
     WEEKS_MET,
+    STOPS_COUNTED_DAYS,
+    FEWER_STOPS_DAYS,
+    STOP_GOALS_MET,
+    NONSTOP_RUNS,
+    NONSTOP_MAX_M,
+    /** Days from the first run to the latest one: one year on, two years on. */
+    JOURNEY_DAYS,
 }
 
 data class BadgeDef(
@@ -220,6 +232,18 @@ object Achievements {
         B("CH-010", "Chapter 10: Landing Day", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 10, "Finish chapter 10 of the story.", "chapters"),
         B("CH-011", "Chapter 11: The Rainbow Rings", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 11, "Finish chapter 11 of the story.", "chapters"),
         B("CH-012", "Chapter 12: The Great ruuun! Festival", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 12, "Finish chapter 12 of the story.", "chapters"),
+        B("CH-013", "Chapter 13: The Tide Pools", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 13, "Finish chapter 13 of the story.", "chapters"),
+        B("CH-014", "Chapter 14: Shell Beach", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 14, "Finish chapter 14 of the story.", "chapters"),
+        B("CH-015", "Chapter 15: The Lighthouse", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 15, "Finish chapter 15 of the story.", "chapters"),
+        B("CH-016", "Chapter 16: Vines and Rivers", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 16, "Finish chapter 16 of the story.", "chapters"),
+        B("CH-017", "Chapter 17: The Waterfall Steps", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 17, "Finish chapter 17 of the story.", "chapters"),
+        B("CH-018", "Chapter 18: The Hidden Temple", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 18, "Finish chapter 18 of the story.", "chapters"),
+        B("CH-019", "Chapter 19: Snowy Switchbacks", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 19, "Finish chapter 19 of the story.", "chapters"),
+        B("CH-020", "Chapter 20: The Ice Cave", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 20, "Finish chapter 20 of the story.", "chapters"),
+        B("CH-021", "Chapter 21: Summit Lights", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 21, "Finish chapter 21 of the story.", "chapters"),
+        B("CH-022", "Chapter 22: The Launch Pad", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 22, "Finish chapter 22 of the story.", "chapters"),
+        B("CH-023", "Chapter 23: Riding the Comet", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 23, "Finish chapter 23 of the story.", "chapters"),
+        B("CH-024", "Chapter 24: The Grand Finish", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 24, "Finish chapter 24 of the story.", "chapters"),
         B("QS-001", "Quest Starter", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 1, "Tick off your first weekly goal or side quest.", "done"),
         B("QS-002", "Quest Apprentice", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 5, "Tick off 5 weekly goals or side quests.", "done"),
         B("QS-003", "Side Quest Hero", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 10, "Tick off 10 weekly goals or side quests.", "done"),
@@ -247,6 +271,40 @@ object Achievements {
         B("SE-005", "Park Explorer", BadgeCategory.SECRET, BadgeMetric.TAG_PARK, 3, "Three runs at the park.", "runs"),
         B("SE-006", "Three Routes", BadgeCategory.SECRET, BadgeMetric.TAG_NEW_ROUTE, 3, "Three new routes.", "runs"),
         B("SE-007", "Every Effort Counts", BadgeCategory.SECRET, BadgeMetric.ALL_THREE_EFFORTS_RECORDED, 1, "Log an easy, an okay and a hard run.", ""),
+        B("NS-001", "Stop Counter", BadgeCategory.NON_STOP, BadgeMetric.STOPS_COUNTED_DAYS, 1, "Count your stops on a run.", "days"),
+        B("NS-002", "Keeping Count", BadgeCategory.NON_STOP, BadgeMetric.STOPS_COUNTED_DAYS, 10, "Count your stops on 10 run days.", "days"),
+        B("NS-003", "One Fewer", BadgeCategory.NON_STOP, BadgeMetric.FEWER_STOPS_DAYS, 1, "Stop fewer times than the run before.", "days"),
+        B("NS-004", "Fewer and Fewer", BadgeCategory.NON_STOP, BadgeMetric.FEWER_STOPS_DAYS, 5, "Stop fewer times than the run before, 5 times.", "days"),
+        B("NS-005", "Smooth Strider", BadgeCategory.NON_STOP, BadgeMetric.FEWER_STOPS_DAYS, 12, "Stop fewer times than the run before, 12 times.", "days"),
+        B("NS-006", "Stop Goal Star", BadgeCategory.NON_STOP, BadgeMetric.STOP_GOALS_MET, 1, "Meet your stop goal.", "days"),
+        B("NS-007", "Goal Keeper", BadgeCategory.NON_STOP, BadgeMetric.STOP_GOALS_MET, 5, "Meet your stop goal on 5 different days.", "days"),
+        B("NS-008", "Stop Goal Pro", BadgeCategory.NON_STOP, BadgeMetric.STOP_GOALS_MET, 15, "Meet your stop goal on 15 different days.", "days"),
+        B("NS-009", "Non-stop!", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_RUNS, 1, "Go at least 100 m without stopping.", "days"),
+        B("NS-010", "Non-stop Habit", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_RUNS, 10, "Go the whole way without stopping on 10 different days.", "days"),
+        B("NS-011", "Non-stop 500", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 500, "Go 500 m without stopping.", "m"),
+        B("NS-012", "Non-stop Kilometre", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 1000, "Go 1 km without stopping.", "m"),
+        B("NS-013", "Non-stop Two-K", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 2000, "Go 2 km without stopping.", "m"),
+        B("NS-014", "Non-stop Three-K", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 3000, "Go 3 km without stopping.", "m"),
+        B("NS-015", "Non-stop Five-K", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 5000, "Go 5 km without stopping.", "m"),
+        B("NS-016", "Non-stop One and a Half", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 1500, "Go 1.5 km without stopping.", "m"),
+        B("NS-017", "Non-stop Four-K", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_MAX_M, 4000, "Go 4 km without stopping.", "m"),
+        B("NS-018", "Stop Goal Legend", BadgeCategory.NON_STOP, BadgeMetric.STOP_GOALS_MET, 30, "Meet your stop goal on 30 different days.", "days"),
+        B("NS-019", "Non-stop Hero", BadgeCategory.NON_STOP, BadgeMetric.NONSTOP_RUNS, 25, "Go the whole way without stopping on 25 different days.", "days"),
+        B("RC-023", "Still Going Strong", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 175, "Run on 175 different days.", "days"),
+        B("RC-024", "Double Century", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 200, "Run on 200 different days.", "days"),
+        B("RC-025", "Two-Fifty Trailblazer", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 250, "Run on 250 different days.", "days"),
+        B("TD-019", "Two Hundred K", BadgeCategory.TOTAL_DISTANCE, BadgeMetric.TOTAL_M, 200000, "Clock up 200 km in total.", "m"),
+        B("TD-020", "Quarter of a Thousand K", BadgeCategory.TOTAL_DISTANCE, BadgeMetric.TOTAL_M, 250000, "Clock up 250 km in total.", "m"),
+        B("WK-016", "Sixty-Five Good Weeks", BadgeCategory.WEEKLY, BadgeMetric.WEEKS_MET, 65, "Hit your weekly goal in 65 different weeks.", "weeks"),
+        B("WK-017", "Year and a Half of Weeks", BadgeCategory.WEEKLY, BadgeMetric.WEEKS_MET, 78, "Hit your weekly goal in 78 different weeks.", "weeks"),
+        B("QS-009", "Quest Champion", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 150, "Tick off 150 weekly goals or side quests.", "done"),
+        B("RC-021", "Three Hundred Club", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 300, "Run on 300 different days.", "days"),
+        B("RC-022", "A Run for Every Day of the Year", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 365, "Run on 365 different days.", "days"),
+        B("TD-017", "Three Hundred K Explorer", BadgeCategory.TOTAL_DISTANCE, BadgeMetric.TOTAL_M, 300000, "Clock up 300 km in total.", "m"),
+        B("TD-018", "Half a Thousand K", BadgeCategory.TOTAL_DISTANCE, BadgeMetric.TOTAL_M, 500000, "Clock up 500 km in total.", "m"),
+        B("WK-015", "Two Years of Weekly Goals", BadgeCategory.WEEKLY, BadgeMetric.WEEKS_MET, 104, "Hit your weekly goal in 104 different weeks.", "weeks"),
+        B("CO-006", "One Year On", BadgeCategory.WEEKLY, BadgeMetric.JOURNEY_DAYS, 365, "Still running a whole year after your first run.", "days"),
+        B("CO-007", "Two Years On", BadgeCategory.WEEKLY, BadgeMetric.JOURNEY_DAYS, 730, "Still running two years after your first run.", "days"),
     )
 
     val BY_ID: Map<String, BadgeDef> = ALL.associateBy { it.id }
@@ -257,7 +315,7 @@ object Achievements {
         }
 
     init {
-        require(ALL.size == 147) { "Expected 147 badges, found ${ALL.size}" }
+        require(ALL.size == 193) { "Expected 193 badges, found ${ALL.size}" }
         require(BY_ID.size == ALL.size) { "Duplicate badge id in the catalogue" }
     }
 }

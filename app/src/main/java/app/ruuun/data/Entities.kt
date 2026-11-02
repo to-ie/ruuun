@@ -1,5 +1,6 @@
 package app.ruuun.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
@@ -29,11 +30,18 @@ data class RunnerSettings(
     /** Frozen at setup: 1 run/week halves the chapter run-day thresholds. */
     val initialStoryPaceOnePerWeek: Boolean = false,
     val onboardingComplete: Boolean = false,
+    /** 1.3: the distance only goes up after a run with this many stops or fewer. */
+    @ColumnInfo(defaultValue = "2")
+    val lowStopsLimit: Int = DEFAULT_LOW_STOPS,
 ) {
     companion object {
         const val DEFAULT_NICKNAME = "Runner"
-        const val DEFAULT_MAX_TARGET_M = 3_000
+        /** Raised from 3 km in 1.3. Rows still on the old default move up in the migration. */
+        const val DEFAULT_MAX_TARGET_M = 5_000
+        const val OLD_DEFAULT_MAX_TARGET_M = 3_000
         const val DEFAULT_WEEKLY_GOAL = 2
+        const val DEFAULT_LOW_STOPS = 2
+        const val MAX_LOW_STOPS = 5
         const val MIN_TARGET_M = 100
         const val MAX_ALLOWED_TARGET_M = 50_000
 
@@ -61,6 +69,10 @@ data class RunLog(
     val mode: RunMode? = null,
     val tags: Set<RunTag> = emptySet(),
     val note: String? = null,
+    /** How many times the runner stopped. Null when nobody counted; 0 means non-stop. */
+    val stops: Int? = null,
+    /** The stop goal shown when this entry was created, if there was one. */
+    val stopsGoalAtLog: Int? = null,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
 ) {
@@ -68,5 +80,6 @@ data class RunLog(
         const val MAX_NOTE_LENGTH = 140
         const val IMPLAUSIBLE_DISTANCE_M = 10_000
         const val MAX_DISTANCE_M = 50_000
+        const val MAX_STOPS = 50
     }
 }

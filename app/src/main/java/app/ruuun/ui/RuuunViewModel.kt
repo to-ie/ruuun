@@ -108,6 +108,7 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
         mode: RunMode?,
         tags: Set<RunTag>,
         note: String?,
+        stops: Int?,
         onSaved: () -> Unit,
     ) {
         if (_saving.value) return
@@ -122,6 +123,7 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
                     mode = mode,
                     tags = tags,
                     note = note,
+                    stops = stops,
                     now = System.currentTimeMillis(),
                 )
                 if (outcome != null) {
@@ -143,6 +145,7 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
         mode: RunMode?,
         tags: Set<RunTag>,
         note: String?,
+        stops: Int?,
         onSaved: () -> Unit,
     ) {
         if (_saving.value) return
@@ -158,6 +161,7 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
                     mode = mode,
                     tags = tags,
                     note = note,
+                    stops = stops,
                     now = System.currentTimeMillis(),
                 )
                 notify("Run updated")
@@ -199,6 +203,11 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
                 it.copy(maxTargetM = safe, currentTargetM = minOf(it.currentTargetM, safe))
             }
         }
+    }
+
+    fun setLowStopsLimit(limit: Int) {
+        val safe = limit.coerceIn(0, RunnerSettings.MAX_LOW_STOPS)
+        viewModelScope.launch { repository.updateSettings { it.copy(lowStopsLimit = safe) } }
     }
 
     fun resetTargetToStart() {

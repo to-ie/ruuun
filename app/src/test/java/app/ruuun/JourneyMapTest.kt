@@ -17,15 +17,19 @@ class JourneyMapTest {
         )
 
     @Test
-    fun `the map is four worlds of three chapters, in story order`() {
+    fun `the map is eight worlds of three chapters over two seasons, in story order`() {
         val worlds = map(0)
-        assertEquals(4, worlds.size)
+        assertEquals(8, worlds.size)
         assertEquals(
-            listOf(World.ROOKIE_WOODS, World.DESERT_DASH, World.SKY_KINGDOM, World.PLANET_ZOOM),
+            listOf(
+                World.ROOKIE_WOODS, World.DESERT_DASH, World.SKY_KINGDOM, World.PLANET_ZOOM,
+                World.CORAL_COAST, World.JUNGLE_RUN, World.FROSTY_PEAKS, World.COMET_RUN,
+            ),
             worlds.map { it.world },
         )
+        assertEquals(listOf(1, 1, 1, 1, 2, 2, 2, 2), worlds.map { it.world.season })
         worlds.forEach { assertEquals(3, it.chapters.size) }
-        assertEquals((1..12).toList(), worlds.flatMap { w -> w.chapters.map { it.chapter.number } })
+        assertEquals((1..24).toList(), worlds.flatMap { w -> w.chapters.map { it.chapter.number } })
     }
 
     @Test
@@ -41,7 +45,7 @@ class JourneyMapTest {
 
     @Test
     fun `exactly one chapter is ever current`() {
-        (0..110).forEach { days ->
+        (0..330).forEach { days ->
             assertTrue(
                 "at $days run days",
                 map(days).flatMap { it.chapters }.count { it.isCurrent } <= 1,
@@ -61,7 +65,10 @@ class JourneyMapTest {
 
     @Test
     fun `after the last chapter nothing is current and all worlds are complete`() {
-        val worlds = map(100)
+        val seasonOne = map(100)
+        assertTrue(seasonOne.filter { it.world.season == 1 }.all { it.isComplete })
+        assertEquals("season 2 opens after the festival", 13, seasonOne.flatMap { it.chapters }.single { it.isCurrent }.chapter.number)
+        val worlds = map(320)
         assertTrue(worlds.all { it.isComplete })
         assertTrue(worlds.flatMap { it.chapters }.none { it.isCurrent })
     }
@@ -70,13 +77,19 @@ class JourneyMapTest {
     fun `the gentle pace halves what each chapter asks for`() {
         val normal = map(0).flatMap { it.chapters }.map { it.runDaysNeeded }
         val gentle = map(0, gentle = true).flatMap { it.chapters }.map { it.runDaysNeeded }
-        assertEquals(listOf(4, 8, 12, 18, 24, 32, 40, 50, 60, 72, 84, 100), normal)
-        assertEquals(listOf(2, 4, 6, 9, 12, 16, 20, 25, 30, 36, 42, 50), gentle)
+        assertEquals(
+            listOf(4, 8, 12, 18, 24, 32, 40, 50, 60, 72, 84, 100, 112, 124, 136, 150, 165, 180, 200, 220, 240, 265, 290, 320),
+            normal,
+        )
+        assertEquals(
+            listOf(2, 4, 6, 9, 12, 16, 20, 25, 30, 36, 42, 50, 56, 62, 68, 75, 83, 90, 100, 110, 120, 133, 145, 160),
+            gentle,
+        )
     }
 
     @Test
     fun `progress fractions stay in range`() {
-        (0..110 step 7).forEach { days ->
+        (0..330 step 7).forEach { days ->
             map(days).flatMap { it.chapters }.forEach {
                 assertTrue("$days days, chapter ${it.chapter.number}", it.fraction in 0f..1f)
             }
@@ -88,7 +101,7 @@ class JourneyMapTest {
         val settings = TestData.settings()
         val early = JourneyView.chapterProgress(StatsCalculator.snapshot(TestData.run(1), settings), settings)
         assertEquals("1 of 4 runs · any distance counts", early.progressLabel)
-        val done = JourneyView.chapterProgress(StatsCalculator.snapshot(TestData.run(100), settings), settings)
+        val done = JourneyView.chapterProgress(StatsCalculator.snapshot(TestData.run(320), settings), settings)
         assertEquals("Every chapter complete", done.progressLabel)
     }
 }

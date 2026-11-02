@@ -28,7 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.ruuun.content.Chapters
 import app.ruuun.logic.JourneyView
+import app.ruuun.logic.StopGoal
+import app.ruuun.ui.components.StopsTrendCard
 import app.ruuun.logic.WeekCalculator
 import app.ruuun.ui.AppState
 import app.ruuun.ui.bannerColor
@@ -120,6 +123,16 @@ fun JourneyScreen(
                     )
                 }
 
+                if (state.logs.any { it.stops != null }) {
+                    Spacer(Modifier.height(Dimens.SectionGap))
+                    StopsTrendCard(
+                        logs = state.logs,
+                        stopGoal = remember(state.logs, settings) {
+                            StopGoal.next(state.logs, settings)
+                        },
+                    )
+                }
+
                 Spacer(Modifier.height(Dimens.SectionGap))
                 WorldCard(
                     bannerColor = chapter.chapter?.world?.bannerColor() ?: Lime,
@@ -140,14 +153,25 @@ fun JourneyScreen(
                 Text("The whole journey", style = RuuunText.SectionTitle, color = Navy)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Four worlds, twelve chapters. Every day you run moves the story on, " +
-                        "whatever the distance. Finished worlds fold up: tap one to look back.",
+                    "Two seasons, eight worlds, 24 chapters. Every day you run moves the story " +
+                        "on, whatever the distance. Finished worlds fold up: tap one to look back.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                 )
                 Spacer(Modifier.height(10.dp))
-                journey.forEach { world ->
-                    WorldJourneyCard(world)
+                journey.groupBy { it.world.season }.forEach { (season, worlds) ->
+                    Overline(
+                        when {
+                            season == 1 -> "Season 1"
+                            stats.completedChapters >= Chapters.SEASON_ONE_CHAPTERS -> "Season $season"
+                            else -> "Season $season · opens after the festival"
+                        },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    worlds.forEach { world ->
+                        WorldJourneyCard(world)
+                        Spacer(Modifier.height(Dimens.ItemGap))
+                    }
                     Spacer(Modifier.height(Dimens.ItemGap))
                 }
 

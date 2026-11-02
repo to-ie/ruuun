@@ -52,7 +52,8 @@ class RepositoryTest {
         effort: Effort = Effort.OKAY,
         tags: Set<RunTag> = emptySet(),
         note: String? = null,
-    ) = repo.saveRun(date, distanceM, effort, null, null, tags, note, now = 1L)
+        stops: Int? = null,
+    ) = repo.saveRun(date, distanceM, effort, null, null, tags, note, stops = stops, now = 1L)
 
     @Test
     fun setup_writes_exactly_one_settings_row() = runTest {
@@ -81,7 +82,7 @@ class RepositoryTest {
     @Test
     fun saving_a_run_persists_it_and_moves_the_mission() = runTest {
         onboard()
-        val outcome = save(distanceM = 350, effort = Effort.EASY)
+        val outcome = save(distanceM = 350, effort = Effort.EASY, stops = 0)
         assertNotNull(outcome)
         assertTrue(outcome!!.isNewRunDay)
         assertEquals(400, outcome.nextTargetM)
@@ -107,12 +108,12 @@ class RepositoryTest {
     @Test
     fun editing_a_run_recomputes_and_falls_back_to_a_safe_mission() = runTest {
         onboard()
-        save(date = today.minusDays(3), distanceM = 1_500, effort = Effort.EASY)
+        save(date = today.minusDays(3), distanceM = 1_500, effort = Effort.EASY, stops = 1)
         val raised = repo.settings.first()!!.currentTargetM
         assertTrue("a long run should have raised the mission", raised > 300)
 
         val log = repo.logs.first().single()
-        repo.updateRun(log.id, log.date, 150, Effort.OKAY, null, null, emptySet(), null, now = 2L)
+        repo.updateRun(log.id, log.date, 150, Effort.OKAY, null, null, emptySet(), null, stops = null, now = 2L)
 
         assertEquals(150, repo.logs.first().single().distanceM)
         assertEquals(
@@ -125,7 +126,7 @@ class RepositoryTest {
     @Test
     fun deleting_the_only_run_returns_the_mission_to_the_starting_distance() = runTest {
         onboard(start = 500)
-        save(distanceM = 900, effort = Effort.EASY)
+        save(distanceM = 900, effort = Effort.EASY, stops = 2)
         assertTrue(repo.settings.first()!!.currentTargetM > 500)
 
         repo.deleteRun(repo.logs.first().single())
@@ -138,13 +139,14 @@ class RepositoryTest {
         onboard()
         repo.saveRun(
             today, 400, Effort.HARD, 12, RunMode.WALK_JOG,
-            setOf(RunTag.PARK, RunTag.BEACH, RunTag.FRIEND), "a note", now = 1L,
+            setOf(RunTag.PARK, RunTag.BEACH, RunTag.FRIEND), "a note", stops = 3, now = 1L,
         )
         val log = repo.logs.first().single()
         assertEquals(setOf(RunTag.PARK, RunTag.BEACH, RunTag.FRIEND), log.tags)
         assertEquals(RunMode.WALK_JOG, log.mode)
         assertEquals(12, log.durationMinutes)
         assertEquals("a note", log.note)
+        assertEquals(3, log.stops)
         assertEquals(LocalDate.of(2026, 11, 1), log.date)
     }
 
@@ -215,11 +217,105 @@ class RepositoryTest {
         repeat(150) { i ->
             repo.saveRun(
                 today.minusDays(i.toLong()), 300 + i, Effort.entries[i % 3],
-                null, null, emptySet(), null, now = i.toLong(),
+                null, null, emptySet(), null, stops = null, now = i.toLong(),
             )
         }
         val logs = repo.logs.first()
         assertEquals(150, logs.size)
         assertEquals("newest first", today, logs.first().date)
+    }
+
+    @Test
+    fun counted_stops_set_the_next_runs_stop_goal() = runTest {
+        onboard()
+        val first = save(date = today.minusDays(2), distanceM = 1_100, stops = 8)!!
+        assertNull("no goal before anything was counted", first.previousStopGoal)
+        assertEquals(7, first.nextStopGoal)
+
+        val second = save(date = today, distanceM = 1_150, stops = 6)!!
+        assertEquals(7, second.previousStopGoal)
+        assertEquals(5, second.nextStopGoal)
+        val stored = repo.logs.first().first()
+        assertEquals(6, stored.stops)
+        assertEquals("the goal at the time is stored", 7, stored.stopsGoalAtLog)
+    }
+
+    @Test
+    fun a_backdated_run_carries_no_stop_goal() = runTest {
+        onboard()
+        save(date = today, stops = 8)
+        val earlier = save(date = today.minusDays(5), stops = 9)!!
+        assertNull(earlier.previousStopGoal)
+        assertNull(repo.logs.first().last().stopsGoalAtLog)
+    }
+
+    @Test
+    fun adding_stops_to_an_old_run_keeps_the_mission() = runTest {
+        // A 1.2 phone: it set the mission to 1.2 km before stops existed.
+        onboard()
+        repo.updateSettings { it.copy(currentTargetM = 1_200) }
+        save(date = today.minusDays(1), distanceM = 1_100, effort = Effort.OKAY)
+        assertEquals(1_200, repo.settings.first()!!.currentTargetM)
+
+        val log = repo.logs.first().single()
+        repo.updateRun(
+            log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), "First run!",
+            stops = 8, now = 2L,
+        )
+        assertEquals(8, repo.logs.first().single().stops)
+        assertEquals("a stop count alone keeps the mission", 1_200, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
+    fun correcting_the_latest_runs_stops_across_the_limit_replays_the_mission() = runTest {
+        onboard()
+        repo.updateSettings { it.copy(currentTargetM = 1_200) }
+        save(distanceM = 1_300, effort = Effort.OKAY, stops = 6)
+        assertEquals("6 stops hold the distance", 1_200, repo.settings.first()!!.currentTargetM)
+
+        val log = repo.logs.first().single()
+        repo.updateRun(log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), null, stops = 1, now = 2L)
+        assertEquals("1 stop lets it grow, as if logged that way", 1_350, repo.settings.first()!!.currentTargetM)
+
+        repo.updateRun(log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), null, stops = 6, now = 3L)
+        assertEquals("and back again", 1_200, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
+    fun correcting_an_older_runs_stops_leaves_the_mission() = runTest {
+        onboard()
+        repo.updateSettings { it.copy(currentTargetM = 1_200) }
+        save(date = today.minusDays(2), distanceM = 1_300, effort = Effort.OKAY, stops = 6)
+        save(date = today, distanceM = 1_200, effort = Effort.OKAY, stops = 5)
+        val mission = repo.settings.first()!!.currentTargetM
+        val older = repo.logs.first().last()
+        repo.updateRun(older.id, older.date, older.distanceM, older.effort, null, null, emptySet(), null, stops = 0, now = 9L)
+        assertEquals(mission, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
+    fun a_new_journey_gets_the_five_km_cap() = runTest {
+        onboard()
+        assertEquals(5_000, repo.settings.first()!!.maxTargetM)
+        assertEquals(2, repo.settings.first()!!.lowStopsLimit)
+    }
+
+    @Test
+    fun beating_the_mission_with_many_stops_holds_it() = runTest {
+        onboard()
+        val outcome = save(distanceM = 1_100, effort = Effort.OKAY, stops = 8)!!
+        assertEquals(300, outcome.nextTargetM)
+        assertEquals(300, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
+    fun correcting_stops_after_a_manual_change_keeps_the_parents_mission() = runTest {
+        onboard()
+        repo.updateSettings { it.copy(currentTargetM = 1_200) }
+        save(distanceM = 1_300, effort = Effort.OKAY, stops = 6)
+        repo.makeHarder() // 1,225 m by hand
+        val log = repo.logs.first().single()
+        repo.updateRun(log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), null, stops = 1, now = 2L)
+        assertEquals(1_225, repo.settings.first()!!.currentTargetM)
     }
 }

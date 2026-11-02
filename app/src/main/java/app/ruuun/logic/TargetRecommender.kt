@@ -14,6 +14,13 @@ import kotlin.math.floor
 object TargetRecommender {
 
     const val MIN_TARGET_M = RunnerSettings.MIN_TARGET_M
+
+    /**
+     * True when this run's stops were counted and at most [limit] (the parent's setting,
+     * 2 by default). Since 1.3 the distance only goes up after such a run: running more
+     * of the way comes first, then it gets longer.
+     */
+    fun lowStops(log: RunLog, limit: Int): Boolean = log.stops?.let { it <= limit } ?: false
     private const val HARD_FACTOR = 0.90
     private const val MAX_INCREASE_FRACTION = 0.10
 
@@ -81,10 +88,14 @@ object TargetRecommender {
         val isNewLatestDay = latestOtherDate == null || !newLog.date.isBefore(latestOtherDate)
         if (!isNewLatestDay) return current
 
+        val limit = settings.lowStopsLimit
+
         // 1. Beat the mission? The next one is set a little beyond the distance just
         //    run, by an amount that depends on how hard it felt. Effort never drags it
-        //    back below what was actually covered.
+        //    back below what was actually covered. Only with low stops, though: with
+        //    more stops, or none counted, the mission holds.
         if (newLog.distanceM > current) {
+            if (!lowStops(newLog, limit)) return current
             val base = maxOf(floorTo25(newLog.distanceM), current)
             val next = base + bumpAfterBeating(base, newLog.effort)
             return minOf(next, settings.maxTargetM).coerceAtLeast(current)
@@ -96,21 +107,30 @@ object TargetRecommender {
         // 3. Fell short of the mission: repeat it. Turning up still counts.
         if (newLog.distanceM < newLog.targetMAtLog) return current
 
-        // 4. Okay, and matched the mission without beating it: repeat.
-        if (newLog.effort == Effort.OKAY) return current
-
-        // 5. Easy and matched the mission: step up only after two such days at this
-        //    distance. Only days since the mission became this value count, so an Easy
-        //    day from before an earlier dip cannot carry over and skip the gate.
-        val easyMetDays = allLogs
-            .sortedWith(compareByDescending<RunLog> { it.date }.thenByDescending { it.createdAt })
-            .takeWhile { it.targetMAtLog == current }
-            .filter { it.effort == Effort.EASY && it.distanceM >= it.targetMAtLog }
-            .map { it.date }
-            .distinct()
-            .size
-        return if (easyMetDays >= 2) increase(current, settings.maxTargetM) else current
+        // 4. Matched the mission with low stops: step up after two such days at this
+        //    distance, Easy or Okay (since 1.3; before, only two Easy days counted).
+        //    Only days since the mission became this value count, so a day from before
+        //    an earlier dip cannot carry over and skip the gate.
+        return if (matchedLowStopDays(allLogs, current, limit) >= 2) {
+            increase(current, settings.maxTargetM)
+        } else {
+            current
+        }
     }
+
+    /**
+     * Distinct days at the [current] mission that matched it, did not feel Hard and had
+     * low stops. Two of them step the mission up.
+     */
+    fun matchedLowStopDays(allLogs: List<RunLog>, current: Int, limit: Int): Int = allLogs
+        .sortedWith(compareByDescending<RunLog> { it.date }.thenByDescending { it.createdAt })
+        .takeWhile { it.targetMAtLog == current }
+        .filter {
+            it.effort != Effort.HARD && it.distanceM >= it.targetMAtLog && lowStops(it, limit)
+        }
+        .map { it.date }
+        .distinct()
+        .size
 
     /**
      * Target to use after an edit or a delete: a safe repeat of the most recent

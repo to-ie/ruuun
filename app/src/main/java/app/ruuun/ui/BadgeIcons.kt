@@ -150,6 +150,52 @@ import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material.icons.outlined.Yard
 import androidx.compose.ui.graphics.vector.ImageVector
 import app.ruuun.content.BadgeDef
+import androidx.compose.material.icons.outlined.AllOut
+import androidx.compose.material.icons.outlined.Paragliding
+import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.Moving
+import androidx.compose.material.icons.outlined.Straight
+import androidx.compose.material.icons.outlined.AutoGraph
+import androidx.compose.material.icons.outlined.DoubleArrow
+import androidx.compose.material.icons.outlined.Recommend
+import androidx.compose.material.icons.outlined.GppGood
+import androidx.compose.material.icons.outlined.Adjust
+import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.automirrored.outlined.TrendingDown
+import androidx.compose.material.icons.automirrored.outlined.PlaylistAddCheck
+import androidx.compose.material.icons.outlined.Numbers
+import androidx.compose.material.icons.outlined.Cyclone
+import androidx.compose.material.icons.outlined.EmojiFlags
+import androidx.compose.material.icons.outlined.Cached
+import androidx.compose.material.icons.outlined.DownhillSkiing
+import androidx.compose.material.icons.outlined.HourglassFull
+import androidx.compose.material.icons.outlined.HourglassTop
+import androidx.compose.material.icons.outlined.EmojiTransportation
+import androidx.compose.material.icons.outlined.ModeOfTravel
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Stadium
+import androidx.compose.material.icons.outlined.Festival
+import androidx.compose.material.icons.outlined.Satellite
+import androidx.compose.material.icons.outlined.SatelliteAlt
+import androidx.compose.material.icons.outlined.NightsStay
+import androidx.compose.material.icons.outlined.SevereCold
+import androidx.compose.material.icons.outlined.Snowboarding
+import androidx.compose.material.icons.outlined.TempleBuddhist
+import androidx.compose.material.icons.outlined.Pool
+import androidx.compose.material.icons.outlined.EmojiNature
+import androidx.compose.material.icons.outlined.FlashlightOn
+import androidx.compose.material.icons.outlined.Kitesurfing
+import androidx.compose.material.icons.outlined.Water
+import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.Pentagon
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material.icons.outlined.ForkRight
+import androidx.compose.material.icons.outlined.AirlineStops
+import androidx.compose.material.icons.outlined.LocationCity
+import androidx.compose.material.icons.outlined.Cottage
+import androidx.compose.material.icons.outlined.Fort
 
 /**
  * Each badge's own icon, revealed once it is earned. Locked badges show a padlock and
@@ -311,4 +357,50 @@ private val BADGE_ICONS: Map<String, () -> ImageVector> = mapOf(
     "SE-005" to { Icons.Outlined.NaturePeople }, // Park Explorer
     "SE-006" to { Icons.AutoMirrored.Outlined.CallSplit }, // Three Routes
     "SE-007" to { Icons.Outlined.Equalizer }, // Every Effort Counts
+    "NS-001" to { Icons.Outlined.Numbers }, // Stop Counter
+    "NS-002" to { Icons.AutoMirrored.Outlined.PlaylistAddCheck }, // Keeping Count
+    "NS-003" to { Icons.AutoMirrored.Outlined.TrendingDown }, // One Fewer
+    "NS-004" to { Icons.Outlined.KeyboardDoubleArrowDown }, // Fewer and Fewer
+    "NS-005" to { Icons.Outlined.Insights }, // Smooth Strider
+    "NS-006" to { Icons.Outlined.Adjust }, // Stop Goal Star
+    "NS-007" to { Icons.Outlined.GppGood }, // Goal Keeper
+    "NS-008" to { Icons.Outlined.Recommend }, // Stop Goal Pro
+    "NS-009" to { Icons.Outlined.DoubleArrow }, // Non-stop!
+    "NS-010" to { Icons.Outlined.AutoGraph }, // Non-stop Habit
+    "NS-011" to { Icons.Outlined.Straight }, // Non-stop 500
+    "NS-012" to { Icons.Outlined.Moving }, // Non-stop Kilometre
+    "NS-013" to { Icons.Outlined.ElectricBolt }, // Non-stop Two-K
+    "NS-014" to { Icons.Outlined.Paragliding }, // Non-stop Three-K
+    "NS-015" to { Icons.Outlined.AllOut }, // Non-stop Five-K
+    "CH-013" to { Icons.Outlined.Water }, // Chapter 13: The Tide Pools
+    "CH-014" to { Icons.Outlined.Kitesurfing }, // Chapter 14: Shell Beach
+    "CH-015" to { Icons.Outlined.FlashlightOn }, // Chapter 15: The Lighthouse
+    "CH-016" to { Icons.Outlined.EmojiNature }, // Chapter 16: Vines and Rivers
+    "CH-017" to { Icons.Outlined.Pool }, // Chapter 17: The Waterfall Steps
+    "CH-018" to { Icons.Outlined.TempleBuddhist }, // Chapter 18: The Hidden Temple
+    "CH-019" to { Icons.Outlined.Snowboarding }, // Chapter 19: Snowy Switchbacks
+    "CH-020" to { Icons.Outlined.SevereCold }, // Chapter 20: The Ice Cave
+    "CH-021" to { Icons.Outlined.NightsStay }, // Chapter 21: Summit Lights
+    "CH-022" to { Icons.Outlined.SatelliteAlt }, // Chapter 22: The Launch Pad
+    "CH-023" to { Icons.Outlined.Satellite }, // Chapter 23: Riding the Comet
+    "CH-024" to { Icons.Outlined.Festival }, // Chapter 24: The Grand Finish
+    "RC-021" to { Icons.Outlined.Stadium }, // Three Hundred Club
+    "RC-022" to { Icons.Outlined.CalendarToday }, // A Run for Every Day of the Year
+    "TD-017" to { Icons.Outlined.ModeOfTravel }, // Three Hundred K Explorer
+    "TD-018" to { Icons.Outlined.EmojiTransportation }, // Half a Thousand K
+    "WK-015" to { Icons.Outlined.Event }, // Two Years of Weekly Goals
+    "CO-006" to { Icons.Outlined.HourglassTop }, // One Year On
+    "CO-007" to { Icons.Outlined.HourglassFull }, // Two Years On
+    "NS-016" to { Icons.Outlined.DownhillSkiing }, // Non-stop One and a Half
+    "NS-017" to { Icons.Outlined.Cached }, // Non-stop Four-K
+    "NS-018" to { Icons.Outlined.EmojiFlags }, // Stop Goal Legend
+    "NS-019" to { Icons.Outlined.Cyclone }, // Non-stop Hero
+    "RC-023" to { Icons.Outlined.Fort }, // Still Going Strong
+    "RC-024" to { Icons.Outlined.Cottage }, // Double Century
+    "RC-025" to { Icons.Outlined.LocationCity }, // Two-Fifty Trailblazer
+    "TD-019" to { Icons.Outlined.AirlineStops }, // Two Hundred K
+    "TD-020" to { Icons.Outlined.ForkRight }, // Quarter of a Thousand K
+    "WK-016" to { Icons.Outlined.Update }, // Sixty-Five Good Weeks
+    "WK-017" to { Icons.Outlined.History }, // Year and a Half of Weeks
+    "QS-009" to { Icons.Outlined.Pentagon }, // Quest Champion
 )

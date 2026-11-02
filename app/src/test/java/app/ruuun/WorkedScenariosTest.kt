@@ -19,7 +19,7 @@ class WorkedScenariosTest {
     @Test
     fun `first run - 220m okay against a 300m mission`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val log = TestData.log(TestData.ONBOARDED, distanceM = 220, effort = Effort.OKAY, targetMAtLog = 300)
+        val log = TestData.lowStopsLog(TestData.ONBOARDED, distanceM = 220, effort = Effort.OKAY, targetMAtLog = 300)
         val stats = StatsCalculator.snapshot(listOf(log), settings)
 
         assertEquals(1, stats.runDays)
@@ -32,15 +32,15 @@ class WorkedScenariosTest {
     @Test
     fun `gradual progress - two easy 300m sessions on different days`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val a = TestData.log(TestData.ONBOARDED, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
-        val b = TestData.log(TestData.ONBOARDED.plusDays(3), distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val a = TestData.lowStopsLog(TestData.ONBOARDED, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val b = TestData.lowStopsLog(TestData.ONBOARDED.plusDays(3), distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
         assertEquals(325, TargetRecommender.afterLog(settings, listOf(a, b), b))
     }
 
     @Test
     fun `hard day - 270m hard against 300m suggests 250m`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val log = TestData.log(TestData.ONBOARDED, distanceM = 270, effort = Effort.HARD, targetMAtLog = 300)
+        val log = TestData.lowStopsLog(TestData.ONBOARDED, distanceM = 270, effort = Effort.HARD, targetMAtLog = 300)
         val stats = StatsCalculator.snapshot(listOf(log), settings)
         assertEquals(1, stats.runDays)
         assertEquals(250, TargetRecommender.afterLog(settings, listOf(log), log))
@@ -49,8 +49,8 @@ class WorkedScenariosTest {
     @Test
     fun `two logs today - 200m plus 300m is one day and one 50 XP event`() {
         val settings = TestData.settings()
-        val a = TestData.log(TestData.ONBOARDED, distanceM = 200)
-        val b = TestData.log(TestData.ONBOARDED, distanceM = 300)
+        val a = TestData.lowStopsLog(TestData.ONBOARDED, distanceM = 200)
+        val b = TestData.lowStopsLog(TestData.ONBOARDED, distanceM = 300)
         val before = StatsCalculator.snapshot(listOf(a), settings)
         val after = StatsCalculator.snapshot(listOf(a, b), settings)
         assertEquals(500L, after.totalDistanceM)
@@ -66,7 +66,7 @@ class WorkedScenariosTest {
         val old = TestData.run(4)
         val comebackDate = old.last().date.plusDays(16)
         val before = StatsCalculator.snapshot(old, settings)
-        val after = StatsCalculator.snapshot(old + TestData.log(comebackDate), settings)
+        val after = StatsCalculator.snapshot(old + TestData.lowStopsLog(comebackDate), settings)
 
         assertTrue(TargetRecommender.needsWelcomeBack(old, comebackDate))
         assertTrue(before.earnedBadgeIds.all { it in after.earnedBadgeIds })
@@ -77,8 +77,8 @@ class WorkedScenariosTest {
     @Test
     fun `backdated entry - last month counts for history but not for today's target`() {
         val settings = TestData.settings(currentTargetM = 500)
-        val recent = TestData.log(LocalDate.of(2026, 11, 1), distanceM = 500, targetMAtLog = 500)
-        val backdated = TestData.log(
+        val recent = TestData.lowStopsLog(LocalDate.of(2026, 11, 1), distanceM = 500, targetMAtLog = 500)
+        val backdated = TestData.lowStopsLog(
             LocalDate.of(2026, 10, 2),
             distanceM = 800,
             effort = Effort.EASY,
@@ -93,7 +93,7 @@ class WorkedScenariosTest {
     @Test
     fun `correction - changing 1500m to 150m recomputes every total`() {
         val settings = TestData.settings()
-        val wrong = TestData.log(TestData.ONBOARDED, distanceM = 1_500, id = "fix-me")
+        val wrong = TestData.lowStopsLog(TestData.ONBOARDED, distanceM = 1_500, id = "fix-me")
         val before = StatsCalculator.snapshot(listOf(wrong), settings)
         assertTrue("SD-011" in before.earnedBadgeIds)
 
@@ -108,14 +108,14 @@ class WorkedScenariosTest {
     @Test
     fun `one per week - 48 run days still finishes the story`() {
         val settings = TestData.settings(onePerWeekPace = true)
-        val logs = (0 until 48).map { TestData.log(TestData.ONBOARDED.plusWeeks(it.toLong())) }
+        val logs = (0 until 48).map { TestData.lowStopsLog(TestData.ONBOARDED.plusWeeks(it.toLong())) }
         val stats = StatsCalculator.snapshot(logs, settings)
         assertEquals(48, stats.runDays)
         assertEquals(11, stats.completedChapters)
 
         val twoMore = logs + listOf(
-            TestData.log(TestData.ONBOARDED.plusWeeks(48)),
-            TestData.log(TestData.ONBOARDED.plusWeeks(49)),
+            TestData.lowStopsLog(TestData.ONBOARDED.plusWeeks(48)),
+            TestData.lowStopsLog(TestData.ONBOARDED.plusWeeks(49)),
         )
         assertEquals(12, StatsCalculator.snapshot(twoMore, settings).completedChapters)
     }
@@ -123,7 +123,7 @@ class WorkedScenariosTest {
     @Test
     fun `year two - the 53rd week reuses week one without resetting anything`() {
         val settings = TestData.settings()
-        val logs = (0 until 60).map { TestData.log(TestData.ONBOARDED.plusWeeks(it.toLong())) }
+        val logs = (0 until 60).map { TestData.lowStopsLog(TestData.ONBOARDED.plusWeeks(it.toLong())) }
         val stats = StatsCalculator.snapshot(logs, settings)
         val weekFiftyThree = TestData.ONBOARDED.plusWeeks(52)
 
@@ -142,9 +142,9 @@ class WorkedScenariosTest {
         // UI spec section 7: 11 run days and 4,050 m, then a 450 m run.
         val settings = TestData.settings(currentTargetM = 425)
         val before = (0 until 11).map {
-            TestData.log(TestData.ONBOARDED.plusDays(it.toLong() * 3), distanceM = 4_050 / 11)
+            TestData.lowStopsLog(TestData.ONBOARDED.plusDays(it.toLong() * 3), distanceM = 4_050 / 11)
         }
-        val saved = TestData.log(
+        val saved = TestData.lowStopsLog(
             LocalDate.of(2026, 11, 1),
             distanceM = 450,
             effort = Effort.EASY,

@@ -64,6 +64,8 @@ Collect only: optional nickname (default `Runner`), starting distance plan (`New
 **Required fields:** session date (defaults today; may backdate, never future); *actual* distance (positive number; metres or kilometres); how it felt (`Easy`, `Okay`, `Hard`).  
 **Optional:** duration (minutes, not used for pacing, rankings or progression), movement mode (`Walk`, `Walk + jog`, `Mostly jog`), brief note (140 chars), and simple self-reported tags (`Park`, `Family`, `New route`, `Nature`). Multi-select tags. No location/time/weather permission is required. Nothing about tags is checked remotely.
 
+*Added in 1.3:* an optional **stop counter** ("How many times did you stop?"), a minus/plus stepper that starts at "Not counted". 0 means non-stop. When there is a stop goal, the hint under it shows the goal and "Breaks are fine."
+
 Distance input displays suggested mission distance as a **hint only**; never silently saves the suggested distance as the actual distance. Validate input; keep save enabled after edits and protect against double taps. Confirmation shows actual distance, participation XP, any newly earned badges, chapter progress, and next mission. Provide `Done` and `View badges`; keep animations short and optional.
 
 **Definition of an outing day:** Multiple valid sessions on the same local calendar date are allowed. All distances contribute to lifetime total, but that date counts as **one** run day for XP, weekly outing goal, run-count badges and chapter milestones. No same-day grinding. A 1-metre real effort may be logged without punishment; warn (do not prevent) implausible extreme manual entries.
@@ -93,13 +95,15 @@ Newest-first dated list of logged runs; each item shows actual distance, effort 
 
 ### 3.7 Settings (parent-assisted, no PIN)
 
-Nickname, weekly target (1/2/3 outings), maximum suggested session distance (default 3,000 m), initial story pacing (view only), `Reset next mission to [distance]`, export progress to JSON, import JSON replacing all existing progress (with preview and warning), `Delete all progress` (double confirmation), about/privacy. No account settings, remote parent dashboard or separate parental authentication system. Any app user with device access can change settings; this is a local family app, not security software.
+Nickname, weekly target (1/2/3 outings), maximum suggested session distance (default 5,000 m since 1.3, was 3,000 m), initial story pacing (view only), `Reset next mission to [distance]`, export progress to JSON, import JSON replacing all existing progress (with preview and warning), `Delete all progress` (double confirmation), about/privacy. No account settings, remote parent dashboard or separate parental authentication system. Any app user with device access can change settings; this is a local family app, not security software.
+
+*Added in 1.3:* "Distance goes up after", the stop limit for the distance rule (0 to 5 stops, default 2).
 
 ## 4. Beginner distance progression (one small deterministic function)
 
-This is a gentle suggestion algorithm, **not medical advice or a rigid coaching schedule**. Walking is always welcome. A parent chooses an achievable starting distance. No badge requires running continuously. A user can log any actual distance regardless of the suggestion.
+This is a gentle suggestion algorithm, **not medical advice or a rigid coaching schedule**. Walking is always welcome. A parent chooses an achievable starting distance. No badge requires running continuously. *Revised in 1.3, at the parent's request after the first real run (1.1 km with 8 stops):* the optional Non-stop badges and the stop goal do reward stopping less over time. Counting stays optional, nothing is lost by not counting, and stopping is never described as failing. A user can log any actual distance regardless of the suggestion.
 
-**Defaults:** New 300 m; Moderate 500 m; Jogging 800 m; 2 outing days/week; cap 3,000 m; minimum 100 m. Current target is an integer number of metres.
+**Defaults:** New 300 m; Moderate 500 m; Jogging 800 m; 2 outing days/week; cap 5,000 m (3,000 m before 1.3); minimum 100 m. Current target is an integer number of metres.
 
 Rules applied when a *new, latest-date qualifying outing day* is logged:
 
@@ -110,8 +114,9 @@ Rules applied when a *new, latest-date qualifying outing day* is logged:
 5. **Step size:** +25 m below 500 m, +50 m from 500 to 1,499 m, +100 m from 1,500 m upward. Never increase by more than 10% in one decision or above the configured cap. When the step would exceed 10%, hold target steady. Thus 300 -> 325 m is valid; 300 -> 350 m is not.
 6. **14+ days without an outing:** on the next mission display offer a gentle `Welcome back: repeat or reduce` option; do not erase earlier progress or drop the target automatically.
 7. `Make this easier` on Home explicitly lowers the suggested mission to the nearest lower 25 m increment (not below 100 m); the parent can also reset the target in Settings.
+8. **Stop goal (added in 1.3).** Once any run has its stops counted, the mission has a second half shown under the distance, built on the latest counted day (its longest counted run): one fewer stop, never below 0 ("non-stop"). It holds at the same number after a `Hard` run, and while the stops are already within the parent's limit (the distance does the growing then), except at the longest mission setting, where it asks for one fewer again. A worse day relaxes the goal instead of piling on. Runs shorter than half their mission and runs entered for an earlier date (worked out from the order the logs were created) never move the goal. The goal is derived from the logs, not stored; each new log stores the goal shown at the time as `stopsGoalAtLog` (none for a backdated log). **The distance only grows after a run with few stops:** at most `lowStopsLimit` (Settings "Distance goes up after", 0 to 5, default 2). Any rise from beating the mission needs a counted run within the limit, and rule 4 becomes: two days that matched the mission with low stops, `Easy` or `Okay`, step it up one band. A run with more stops, or none counted, repeats the mission instead. Rule 1 (Hard eases off) is unaffected. Run saved explains a held mission and how far off it is: "With 3 stops the distance stays the same. 1 fewer stop and it gets longer."
 
-Store `targetMAtLog` on each session as the suggestion displayed when the entry was created. It is used for `met target` badges. Store only `currentTargetM` in settings, not a full target decision/history table. On editing/deleting runs, recompute basic counters and badges and set next suggested target to a safe repeat of the most recent remaining log's `targetMAtLog` (or onboarding starting distance if no logs); this deliberately simple recovery behavior is fine. Target progression only considers **new logs on or after the latest existing outing date**; backdated entries affect history/badges/weekly quests but must not automatically raise the current target.
+Store `targetMAtLog` on each session as the suggestion displayed when the entry was created. It is used for `met target` badges. Store only `currentTargetM` in settings, not a full target decision/history table. On editing/deleting runs, recompute basic counters and badges and set next suggested target to a safe repeat of the most recent remaining log's `targetMAtLog` (or onboarding starting distance if no logs); this deliberately simple recovery behavior is fine. *Since 1.3* this reset only happens when the edit changed the run's date, distance or effort. Correcting the latest run's stops across the limit replays the rules for that run instead; adding a stop count, a note or tags otherwise leaves the mission alone. Target progression only considers **new logs on or after the latest existing outing date**; backdated entries affect history/badges/weekly quests but must not automatically raise the current target.
 
 Safety copy: `Start gently. Walk whenever you need. Stop and tell a trusted adult if you feel pain, dizziness or unwell.` Do not set fixed pace or one-year distance targets; one-week or more rest breaks are okay.
 
@@ -148,11 +153,11 @@ The 52-row table below includes the fixed side quest; no random quest generation
 
 `Total quests completed` for achievement purposes = sum, over the *journey weeks so far*, of 1 for each completed main quest and 1 for each completed side quest. Never count the same week/task twice, even when opened repeatedly. Changing the weekly goal uses the current goal for all weeks as a simple deterministic policy; in settings explain that historical weekly-goal badge counts may change. An alternative snapshot per week is outside the v1 scope.
 
-## 7. Four worlds / twelve chapters (text-based)
+## 7. Eight worlds / twenty-four chapters, two seasons (text-based)
 
 Chapters are a linear story and require **only the number of distinct outing days**, never coins, purchases, gear, collectible characters, location tracking or specific run distances. Finishing a chapter reveals the next title, one short congratulatory sentence and the related badge. No choice trees or saved chapter-state rows.
 
-Story milestones below are default for a 2+ outing/week initial plan. If the initial plan was 1/week, use `ceil(milestone / 2)` for each chapter throughout that journey; preserve this initial pacing even if the current weekly goal later changes. A child who does fewer outings still sees fresh weekly themes without being penalized. After chapter 12, display `Legend of the Trail` and keep logging as usual.
+Story milestones below are default for a 2+ outing/week initial plan. If the initial plan was 1/week, use `ceil(milestone / 2)` for each chapter throughout that journey; preserve this initial pacing even if the current weekly goal later changes. A child who does fewer outings still sees fresh weekly themes without being penalized. *Revised in 1.3:* after chapter 12 a second season of four worlds opens (below). After chapter 24, display `Legend of the Trail` and keep logging as usual.
 
 | No. | World | Chapter | Distinct run days needed | Simple reveal text |
 |---:|---|---|---:|---|
@@ -168,6 +173,18 @@ Story milestones below are default for a 2+ outing/week initial plan. If the ini
 | 10 | Planet Zoom | Landing Day | 72 | Welcome to a brand-new planet. |
 | 11 | Planet Zoom | The Rainbow Rings | 84 | The rings come alive with colour. |
 | 12 | Planet Zoom | The Great ruuun! Festival | 100 | A big celebration of every step. |
+| 13 | Coral Coast | The Tide Pools | 112 | The sea has found you. |
+| 14 | Coral Coast | Shell Beach | 124 | Every shell hums a little song of the sea. |
+| 15 | Coral Coast | The Lighthouse | 136 | The lighthouse lamp is shining. |
+| 16 | Jungle Run | Vines and Rivers | 150 | You are deep in the jungle now. |
+| 17 | Jungle Run | The Waterfall Steps | 165 | You climbed the waterfall steps. |
+| 18 | Jungle Run | The Hidden Temple | 180 | The temple doors swing open. |
+| 19 | Frosty Peaks | Snowy Switchbacks | 200 | Your footprints zigzag up the mountain. |
+| 20 | Frosty Peaks | The Ice Cave | 220 | The ice cave glows blue. |
+| 21 | Frosty Peaks | Summit Lights | 240 | The sky lights up over the summit. |
+| 22 | Comet Run | The Launch Pad | 265 | Lift off! |
+| 23 | Comet Run | Riding the Comet | 290 | You are riding a comet's tail. |
+| 24 | Comet Run | The Grand Finish | 320 | Every world, every run: you did it. |
 
 **Year-one finish:** On/after the 52nd weekly theme, show a summary card with personal total outing days, distance, chapters, and badges. This is a **computed view**, not a saved annual event, downloadable poster or extra app subsystem. Never reset progress at one year. Chapters can also complete earlier or later than the calendar.
 
@@ -191,8 +208,8 @@ app/src/main/
 
 | Record | Required fields | Notes |
 |---|---|---|
-| `RunnerSettings` | `id=1`, `nickname`, `onboardedDate`, `startingTargetM`, `currentTargetM`, `maxTargetM`, `weeklyGoal`, `initialStoryPaceOnePerWeek` | Just one row; values edited via settings; may include `onboardingComplete` boolean |
-| `RunLog` | `id` UUID, `date` local `YYYY-MM-DD`, `distanceM` positive integer, `effort` enum, `targetMAtLog`, `durationMinutes?`, `mode?`, `tags` list, `note?`, `createdAt`, `updatedAt` | All run facts; tags stored as a small JSON string or converter |
+| `RunnerSettings` | `id=1`, `nickname`, `onboardedDate`, `startingTargetM`, `currentTargetM`, `maxTargetM`, `weeklyGoal`, `initialStoryPaceOnePerWeek`, `lowStopsLimit` (1.3, default 2) | Just one row; values edited via settings; may include `onboardingComplete` boolean |
+| `RunLog` | `id` UUID, `date` local `YYYY-MM-DD`, `distanceM` positive integer, `effort` enum, `targetMAtLog`, `durationMinutes?`, `mode?`, `tags` list, `note?`, `stops?` (1.3), `stopsGoalAtLog?` (1.3), `createdAt`, `updatedAt` | All run facts; tags stored as a small JSON string or converter |
 
 **All else is derived**: number of unique run days, distance totals, XP/level, week goal checkmarks, completed side quests, completed chapters, badge eligibility, personal records. No inventory tables, currency tables, purchase/equip tables, award history, reward source IDs, target-history table, separate quest instances or chapter completion table. For badges, if the criterion is true, it is earned; otherwise it is not.
 
@@ -409,6 +426,66 @@ Every row is a working requirement, not a decorative placeholder. IDs are stable
 | `SE-005` | Park Explorer | `TAG_PARK >= 3` | Return to the park. |
 | `SE-006` | Three Routes | `TAG_NEW_ROUTE >= 3` | Find three different paths. |
 | `SE-007` | Every Effort Counts | `ALL_THREE_EFFORTS_RECORDED` | All feelings are okay. |
+
+**Non-stop badges (added in 1.3).**
+
+| ID | Name | Rule | Hint |
+|---|---|---|---|
+| `NS-001` | Stop Counter | `STOPS_COUNTED_DAYS >= 1` | Count your stops on a run. |
+| `NS-002` | Keeping Count | `STOPS_COUNTED_DAYS >= 10` | Count your stops on 10 run days. |
+| `NS-003` | One Fewer | `FEWER_STOPS_DAYS >= 1` | Stop fewer times than the run before. |
+| `NS-004` | Fewer and Fewer | `FEWER_STOPS_DAYS >= 5` | Stop fewer times than the run before, 5 times. |
+| `NS-005` | Smooth Strider | `FEWER_STOPS_DAYS >= 12` | Stop fewer times than the run before, 12 times. |
+| `NS-006` | Stop Goal Star | `STOP_GOALS_MET >= 1` | Meet your stop goal. |
+| `NS-007` | Goal Keeper | `STOP_GOALS_MET >= 5` | Meet your stop goal on 5 different days. |
+| `NS-008` | Stop Goal Pro | `STOP_GOALS_MET >= 15` | Meet your stop goal on 15 different days. |
+| `NS-009` | Non-stop! | `NONSTOP_RUNS >= 1` | Go at least 100 m without stopping. |
+| `NS-010` | Non-stop Habit | `NONSTOP_RUNS >= 10` | Go the whole way without stopping on 10 different days. |
+| `NS-011` | Non-stop 500 | `NONSTOP_MAX_M >= 500` | Go 500 m without stopping. |
+| `NS-012` | Non-stop Kilometre | `NONSTOP_MAX_M >= 1000` | Go 1 km without stopping. |
+| `NS-013` | Non-stop Two-K | `NONSTOP_MAX_M >= 2000` | Go 2 km without stopping. |
+| `NS-014` | Non-stop Three-K | `NONSTOP_MAX_M >= 3000` | Go 3 km without stopping. |
+| `NS-015` | Non-stop Five-K | `NONSTOP_MAX_M >= 5000` | Go 5 km without stopping. |
+| `NS-016` | Non-stop One and a Half | `NONSTOP_MAX_M >= 1500` | Go 1.5 km without stopping. |
+| `NS-017` | Non-stop Four-K | `NONSTOP_MAX_M >= 4000` | Go 4 km without stopping. |
+| `NS-018` | Stop Goal Legend | `STOP_GOALS_MET >= 30` | Meet your stop goal on 30 different days. |
+| `NS-019` | Non-stop Hero | `NONSTOP_RUNS >= 25` | Go the whole way without stopping on 25 different days. |
+
+`STOPS_COUNTED_DAYS` counts days with at least one counted run; `FEWER_STOPS_DAYS` compares each counted day (its longest counted run) with the counted day before; `STOP_GOALS_MET` counts **days** with a log at least half its mission whose `stops <= stopsGoalAtLog`; `NONSTOP_RUNS` counts **days** with a log of at least 100 m and `stops = 0`, and `NONSTOP_MAX_M` is the longest such log. Counting days, not logs, keeps extra laps from farming them.
+
+**Long tail and season 2 (added in 1.3).** Badges are recomputed from the logs, so an existing badge's threshold must never be raised: a child who earned it would see it lock again. New tiers always get new ids.
+
+| ID | Name | Rule | Hint |
+|---|---|---|---|
+| `CH-013` | Chapter 13: The Tide Pools | `CHAPTER_COMPLETED >= 13` | Finish chapter 13 of the story. |
+| `CH-014` | Chapter 14: Shell Beach | `CHAPTER_COMPLETED >= 14` | Finish chapter 14 of the story. |
+| `CH-015` | Chapter 15: The Lighthouse | `CHAPTER_COMPLETED >= 15` | Finish chapter 15 of the story. |
+| `CH-016` | Chapter 16: Vines and Rivers | `CHAPTER_COMPLETED >= 16` | Finish chapter 16 of the story. |
+| `CH-017` | Chapter 17: The Waterfall Steps | `CHAPTER_COMPLETED >= 17` | Finish chapter 17 of the story. |
+| `CH-018` | Chapter 18: The Hidden Temple | `CHAPTER_COMPLETED >= 18` | Finish chapter 18 of the story. |
+| `CH-019` | Chapter 19: Snowy Switchbacks | `CHAPTER_COMPLETED >= 19` | Finish chapter 19 of the story. |
+| `CH-020` | Chapter 20: The Ice Cave | `CHAPTER_COMPLETED >= 20` | Finish chapter 20 of the story. |
+| `CH-021` | Chapter 21: Summit Lights | `CHAPTER_COMPLETED >= 21` | Finish chapter 21 of the story. |
+| `CH-022` | Chapter 22: The Launch Pad | `CHAPTER_COMPLETED >= 22` | Finish chapter 22 of the story. |
+| `CH-023` | Chapter 23: Riding the Comet | `CHAPTER_COMPLETED >= 23` | Finish chapter 23 of the story. |
+| `CH-024` | Chapter 24: The Grand Finish | `CHAPTER_COMPLETED >= 24` | Finish chapter 24 of the story. |
+| `RC-023` | Still Going Strong | `RUN_DAYS >= 175` | Run on 175 different days. |
+| `RC-024` | Double Century | `RUN_DAYS >= 200` | Run on 200 different days. |
+| `RC-025` | Two-Fifty Trailblazer | `RUN_DAYS >= 250` | Run on 250 different days. |
+| `TD-019` | Two Hundred K | `TOTAL_M >= 200000` | Clock up 200 km in total. |
+| `TD-020` | Quarter of a Thousand K | `TOTAL_M >= 250000` | Clock up 250 km in total. |
+| `WK-016` | Sixty-Five Good Weeks | `WEEKS_MET >= 65` | Hit your weekly goal in 65 different weeks. |
+| `WK-017` | Year and a Half of Weeks | `WEEKS_MET >= 78` | Hit your weekly goal in 78 different weeks. |
+| `QS-009` | Quest Champion | `QUEST_COMPLETIONS >= 150` | Tick off 150 weekly goals or side quests. |
+| `RC-021` | Three Hundred Club | `RUN_DAYS >= 300` | Run on 300 different days. |
+| `RC-022` | A Run for Every Day of the Year | `RUN_DAYS >= 365` | Run on 365 different days. |
+| `TD-017` | Three Hundred K Explorer | `TOTAL_M >= 300000` | Clock up 300 km in total. |
+| `TD-018` | Half a Thousand K | `TOTAL_M >= 500000` | Clock up 500 km in total. |
+| `WK-015` | Two Years of Weekly Goals | `WEEKS_MET >= 104` | Hit your weekly goal in 104 different weeks. |
+| `CO-006` | One Year On | `JOURNEY_DAYS >= 365` | Still running a whole year after your first run. |
+| `CO-007` | Two Years On | `JOURNEY_DAYS >= 730` | Still running two years after your first run. |
+
+`JOURNEY_DAYS` is the number of days from the first run date to the latest. The catalogue is 193 badges. Run saved also shows personal bests (longest run, longest non-stop run) from the second run on; they are not badges.
 
 
 **Rule semantics and implementation details:** `RUN_DAYS` is distinct local calendar days containing valid logs. `MAX_SESSION_M` and `TOTAL_M` use actual recorded metres, including extra same-day sessions. `WEEKS_MET` uses ISO weeks on/after journey start and current weekly goal. `ACTIVE_MONTHS` is distinct year-months, not months-of-year. `MAX_DAYS_IN_ANY_WEEK` counts unique days in an ISO week. `MET_TARGET_LOGS` compares each log with its saved `targetMAtLog`; `BELOW_TARGET_LOGS` uses the inverse; `LOGS_AT_LEAST_100M` and `LOGS_AT_MOST_500M` count individual sessions; `RUN_LOGS_WITH_EFFORT` counts logs with an effort value (required, so this equals total valid logs). `COMEBACK_GAPS_14D` and `_30D` count gaps between **consecutive distinct outing days** at least that many calendar days apart, counting the return outing once per gap. `RUNS_IN_MONTH_MM` is at least one run on that calendar month in any year. `CHAPTER_COMPLETED` is the count of completed chapter thresholds adjusted for initial story pace. `QUEST_COMPLETIONS` counts complete weekly main + side quests, with an absolute week identity.

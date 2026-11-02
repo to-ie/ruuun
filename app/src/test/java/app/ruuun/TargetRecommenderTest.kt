@@ -20,22 +20,22 @@ class TargetRecommenderTest {
     @Test
     fun `two easy days that exactly match the mission step up one band`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val first = TestData.log(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val first = TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
         assertEquals(
             "one easy day is not enough",
             300,
             TargetRecommender.afterLog(settings, listOf(first), first),
         )
 
-        val second = TestData.log(day2, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val second = TestData.lowStopsLog(day2, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
         assertEquals(325, TargetRecommender.afterLog(settings, listOf(first, second), second))
     }
 
     @Test
     fun `two exactly-on-target easy logs on the same day do not step up`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val a = TestData.log(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
-        val b = TestData.log(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val a = TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val b = TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
         assertEquals(300, TargetRecommender.afterLog(settings, listOf(a, b), b))
     }
 
@@ -43,7 +43,7 @@ class TargetRecommenderTest {
     @Test
     fun `hard effort below the mission eases off ten percent, rounded down to 25m`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val hard = TestData.log(day1, distanceM = 270, effort = Effort.HARD, targetMAtLog = 300)
+        val hard = TestData.lowStopsLog(day1, distanceM = 270, effort = Effort.HARD, targetMAtLog = 300)
         assertEquals(250, TargetRecommender.afterLog(settings, listOf(hard), hard))
     }
 
@@ -51,14 +51,14 @@ class TargetRecommenderTest {
     @Test
     fun `a hard run that beat the mission still raises it past that distance`() {
         val settings = TestData.settings(currentTargetM = 500)
-        val hard = TestData.log(day1, distanceM = 900, effort = Effort.HARD, targetMAtLog = 500)
+        val hard = TestData.lowStopsLog(day1, distanceM = 900, effort = Effort.HARD, targetMAtLog = 500)
         assertEquals(925, TargetRecommender.afterLog(settings, listOf(hard), hard))
     }
 
     @Test
     fun `a hard run that fell short eases the mission off`() {
         val settings = TestData.settings(currentTargetM = 500)
-        val hard = TestData.log(day1, distanceM = 300, effort = Effort.HARD, targetMAtLog = 500)
+        val hard = TestData.lowStopsLog(day1, distanceM = 300, effort = Effort.HARD, targetMAtLog = 500)
         val next = TargetRecommender.afterLog(settings, listOf(hard), hard)
         assertTrue("next=$next", next < 500)
         assertEquals(450, next)
@@ -73,10 +73,10 @@ class TargetRecommenderTest {
     @Test
     fun `matching or falling short of the mission repeats it`() {
         val settings = TestData.settings(currentTargetM = 400)
-        val matched = TestData.log(day1, distanceM = 400, effort = Effort.OKAY, targetMAtLog = 400)
+        val matched = TestData.lowStopsLog(day1, distanceM = 400, effort = Effort.OKAY, targetMAtLog = 400)
         assertEquals(400, TargetRecommender.afterLog(settings, listOf(matched), matched))
 
-        val short = TestData.log(day2, distanceM = 200, effort = Effort.EASY, targetMAtLog = 400)
+        val short = TestData.lowStopsLog(day2, distanceM = 200, effort = Effort.EASY, targetMAtLog = 400)
         assertEquals(400, TargetRecommender.afterLog(settings, listOf(matched, short), short))
     }
 
@@ -85,7 +85,7 @@ class TargetRecommenderTest {
     fun `beating the mission pushes past the distance, scaled by effort`() {
         val settings = TestData.settings(currentTargetM = 300)
         fun next(distance: Int, effort: Effort): Int {
-            val log = TestData.log(day1, distanceM = distance, effort = effort, targetMAtLog = 300)
+            val log = TestData.lowStopsLog(day1, distanceM = distance, effort = effort, targetMAtLog = 300)
             return TargetRecommender.afterLog(settings, listOf(log), log)
         }
         // Ran 350 m against a 300 m mission.
@@ -96,7 +96,7 @@ class TargetRecommenderTest {
         // Above 500 m the band widens, so the gap between easy and hard widens too.
         val big = TestData.settings(currentTargetM = 600)
         fun nextBig(distance: Int, effort: Effort): Int {
-            val log = TestData.log(day1, distanceM = distance, effort = effort, targetMAtLog = 600)
+            val log = TestData.lowStopsLog(day1, distanceM = distance, effort = effort, targetMAtLog = 600)
             return TargetRecommender.afterLog(big, listOf(log), log)
         }
         assertEquals(825, nextBig(800, Effort.HARD))
@@ -109,7 +109,7 @@ class TargetRecommenderTest {
         val settings = TestData.settings(currentTargetM = 200, maxTargetM = 50_000)
         listOf(201, 210, 249, 250, 251, 999, 1_000, 1_501).forEach { distance ->
             Effort.entries.forEach { effort ->
-                val log = TestData.log(day1, distanceM = distance, effort = effort, targetMAtLog = 200)
+                val log = TestData.lowStopsLog(day1, distanceM = distance, effort = effort, targetMAtLog = 200)
                 val next = TargetRecommender.afterLog(settings, listOf(log), log)
                 assertTrue(
                     "$distance m $effort gave $next, which is not further",
@@ -124,7 +124,7 @@ class TargetRecommenderTest {
     fun `beating a 200 m mission with 250 m sets the next mission past 250 m`() {
         val settings = TestData.settings(currentTargetM = 200)
         mapOf(Effort.HARD to 275, Effort.OKAY to 275, Effort.EASY to 300).forEach { (effort, want) ->
-            val log = TestData.log(day1, distanceM = 250, effort = effort, targetMAtLog = 200)
+            val log = TestData.lowStopsLog(day1, distanceM = 250, effort = effort, targetMAtLog = 200)
             assertEquals(
                 "a $effort run of 250 m",
                 want,
@@ -136,14 +136,14 @@ class TargetRecommenderTest {
     @Test
     fun `a short hard run after a long one eases from the raised mission`() {
         val settings = TestData.settings(currentTargetM = 250)
-        val short = TestData.log(day2, distanceM = 50, effort = Effort.HARD, targetMAtLog = 250)
+        val short = TestData.lowStopsLog(day2, distanceM = 50, effort = Effort.HARD, targetMAtLog = 250)
         assertEquals(225, TargetRecommender.afterLog(settings, listOf(short), short))
     }
 
     @Test
     fun `beating the mission never jumps past the cap`() {
         val settings = TestData.settings(currentTargetM = 900, maxTargetM = 1_000)
-        val huge = TestData.log(day1, distanceM = 4_000, effort = Effort.EASY, targetMAtLog = 900)
+        val huge = TestData.lowStopsLog(day1, distanceM = 4_000, effort = Effort.EASY, targetMAtLog = 900)
         assertEquals(1_000, TargetRecommender.afterLog(settings, listOf(huge), huge))
     }
 
@@ -197,8 +197,8 @@ class TargetRecommenderTest {
     @Test
     fun `a backdated easy log cannot raise the target`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val recent = TestData.log(day2, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
-        val backdated = TestData.log(
+        val recent = TestData.lowStopsLog(day2, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300)
+        val backdated = TestData.lowStopsLog(
             day1.minusDays(30),
             distanceM = 900,
             effort = Effort.EASY,
@@ -214,13 +214,13 @@ class TargetRecommenderTest {
     @Test
     fun `the easy gate only counts days since the target became this value`() {
         val settings = TestData.settings(currentTargetM = 300)
-        val beforeTheDip = TestData.log(
+        val beforeTheDip = TestData.lowStopsLog(
             day1, distanceM = 300, effort = Effort.EASY, targetMAtLog = 300,
         )
-        val atALowerTarget = TestData.log(
+        val atALowerTarget = TestData.lowStopsLog(
             day1.plusDays(4), distanceM = 260, effort = Effort.EASY, targetMAtLog = 250,
         )
-        val backAtThreeHundred = TestData.log(
+        val backAtThreeHundred = TestData.lowStopsLog(
             day1.plusDays(9), distanceM = 300, effort = Effort.EASY, targetMAtLog = 300,
         )
         assertEquals(
@@ -233,7 +233,7 @@ class TargetRecommenderTest {
         )
 
         // A second Easy day at the restored target does step up, as it should.
-        val second = TestData.log(
+        val second = TestData.lowStopsLog(
             day1.plusDays(11), distanceM = 300, effort = Effort.EASY, targetMAtLog = 300,
         )
         assertEquals(
@@ -250,8 +250,8 @@ class TargetRecommenderTest {
     fun `corrections fall back to the latest remaining log's suggestion`() {
         val settings = TestData.settings(startingTargetM = 300, currentTargetM = 800)
         val remaining = listOf(
-            TestData.log(day1, targetMAtLog = 400),
-            TestData.log(day2, targetMAtLog = 500),
+            TestData.lowStopsLog(day1, targetMAtLog = 400),
+            TestData.lowStopsLog(day2, targetMAtLog = 500),
         )
         assertEquals(500, TargetRecommender.afterCorrection(settings, remaining))
         assertEquals(300, TargetRecommender.afterCorrection(settings, emptyList()))
@@ -259,7 +259,7 @@ class TargetRecommenderTest {
 
     @Test
     fun `welcome back appears only after fourteen quiet days`() {
-        val logs = listOf(TestData.log(LocalDate.of(2026, 10, 1)))
+        val logs = listOf(TestData.lowStopsLog(LocalDate.of(2026, 10, 1)))
         assertFalse(TargetRecommender.needsWelcomeBack(logs, LocalDate.of(2026, 10, 14)))
         assertTrue(TargetRecommender.needsWelcomeBack(logs, LocalDate.of(2026, 10, 15)))
         assertFalse(TargetRecommender.needsWelcomeBack(emptyList(), LocalDate.of(2026, 10, 15)))

@@ -54,7 +54,7 @@ class BackupFileTest {
     fun `the envelope carries the format and schema version`() {
         val text = BackupFile.write(settings, logs, exportedAt = "2026-11-01T18:00:00Z")
         assertTrue(text.contains("\"format\": \"ruuun-offline-backup\""))
-        assertTrue(text.contains("\"schemaVersion\": 1"))
+        assertTrue(text.contains("\"schemaVersion\": 2"))
         assertTrue("No derived state is exported", !text.contains("\"badges\""))
         assertTrue("No derived state is exported", !text.contains("\"xp\""))
     }
