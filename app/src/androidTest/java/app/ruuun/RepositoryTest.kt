@@ -271,14 +271,14 @@ class RepositoryTest {
         onboard()
         repo.updateSettings { it.copy(currentTargetM = 1_200) }
         save(distanceM = 1_300, effort = Effort.OKAY, stops = 6)
-        assertEquals("6 stops hold the distance", 1_200, repo.settings.first()!!.currentTargetM)
+        assertEquals("6 stops: caught up, not stretched", 1_300, repo.settings.first()!!.currentTargetM)
 
         val log = repo.logs.first().single()
         repo.updateRun(log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), null, stops = 1, now = 2L)
-        assertEquals("1 stop lets it grow, as if logged that way", 1_350, repo.settings.first()!!.currentTargetM)
+        assertEquals("1 stop lets it stretch, as if logged that way", 1_350, repo.settings.first()!!.currentTargetM)
 
         repo.updateRun(log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), null, stops = 6, now = 3L)
-        assertEquals("and back again", 1_200, repo.settings.first()!!.currentTargetM)
+        assertEquals("and back again", 1_300, repo.settings.first()!!.currentTargetM)
     }
 
     @Test
@@ -301,11 +301,12 @@ class RepositoryTest {
     }
 
     @Test
-    fun beating_the_mission_with_many_stops_holds_it() = runTest {
+    fun beating_the_mission_with_many_stops_catches_up_to_the_distance_run() = runTest {
         onboard()
         val outcome = save(distanceM = 1_100, effort = Effort.OKAY, stops = 8)!!
-        assertEquals(300, outcome.nextTargetM)
-        assertEquals(300, repo.settings.first()!!.currentTargetM)
+        assertEquals(1_100, outcome.nextTargetM)
+        assertEquals(1_100, repo.settings.first()!!.currentTargetM)
+        assertEquals("then fewer stops at that distance", 7, outcome.nextStopGoal)
     }
 
     @Test
@@ -313,9 +314,9 @@ class RepositoryTest {
         onboard()
         repo.updateSettings { it.copy(currentTargetM = 1_200) }
         save(distanceM = 1_300, effort = Effort.OKAY, stops = 6)
-        repo.makeHarder() // 1,225 m by hand
+        repo.makeHarder() // 1,325 m by hand
         val log = repo.logs.first().single()
         repo.updateRun(log.id, log.date, log.distanceM, log.effort, null, null, emptySet(), null, stops = 1, now = 2L)
-        assertEquals(1_225, repo.settings.first()!!.currentTargetM)
+        assertEquals(1_325, repo.settings.first()!!.currentTargetM)
     }
 }

@@ -90,12 +90,13 @@ object TargetRecommender {
 
         val limit = settings.lowStopsLimit
 
-        // 1. Beat the mission? The next one is set a little beyond the distance just
-        //    run, by an amount that depends on how hard it felt. Effort never drags it
-        //    back below what was actually covered. Only with low stops, though: with
-        //    more stops, or none counted, the mission holds.
+        // 1. Beat the mission? With low stops, the next one is set a little beyond the
+        //    distance just run, by an amount that depends on how hard it felt. With more
+        //    stops, or none counted, it catches up to the distance run and no further:
+        //    the same distance next time, with fewer stops. Effort never drags it back
+        //    below what was actually covered.
         if (newLog.distanceM > current) {
-            if (!lowStops(newLog, limit)) return current
+            if (!lowStops(newLog, limit)) return catchUp(newLog, current, settings.maxTargetM)
             val base = maxOf(floorTo25(newLog.distanceM), current)
             val next = base + bumpAfterBeating(base, newLog.effort)
             return minOf(next, settings.maxTargetM).coerceAtLeast(current)
@@ -117,6 +118,10 @@ object TargetRecommender {
             current
         }
     }
+
+    /** The distance just run, rounded down to 25 m: a new mission, but no stretch on top. */
+    fun catchUp(log: RunLog, current: Int, maxTargetM: Int): Int =
+        minOf(floorTo25(log.distanceM), maxTargetM).coerceAtLeast(current)
 
     /**
      * Distinct days at the [current] mission that matched it, did not feel Hard and had

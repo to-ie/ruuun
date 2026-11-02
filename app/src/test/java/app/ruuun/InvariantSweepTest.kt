@@ -72,7 +72,9 @@ class InvariantSweepTest {
                 assertTrue("$why: above the cap", next <= settings.maxTargetM)
                 assertEquals("$why: not a round 25 m", 0, next % 25)
                 if (!TargetRecommender.lowStops(log, settings.lowStopsLimit)) {
-                    assertTrue("$why: rose without low stops", next <= was)
+                    // Without low stops it may only catch up to the distance run, never past it.
+                    val caughtUp = maxOf(was, TargetRecommender.floorTo25(log.distanceM))
+                    assertTrue("$why: went past the distance run without low stops", next <= caughtUp)
                 }
                 if (next < settings.maxTargetM && log.distanceM > was && TargetRecommender.lowStops(log, settings.lowStopsLimit)) {
                     assertTrue("$why: beat the mission but it did not move past", next > log.distanceM)

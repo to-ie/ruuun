@@ -231,9 +231,18 @@ class StopGoalTest {
     }
 
     @Test
-    fun `beating the mission with many stops holds the distance`() {
+    fun `beating the mission with many stops catches up to the distance run, no further`() {
         val run = TestData.log(day1, distanceM = 1_300, effort = Effort.EASY, targetMAtLog = 1_200, stops = 6)
-        assertEquals(1_200, nextMission(run))
+        assertEquals(1_300, nextMission(run))
+    }
+
+    @Test
+    fun `a 1_1 km run with 8 stops on a 300 m mission makes the mission 1_1 km`() {
+        val run = TestData.log(day1, distanceM = 1_100, effort = Effort.OKAY, targetMAtLog = 300, stops = 8)
+        assertEquals(1_100, nextMission(run, current = 300))
+        assertEquals("then the same distance, with fewer stops", 7, StopGoal.next(listOf(run), TestData.settings(currentTargetM = 1_100)))
+        val again = TestData.log(day2, distanceM = 1_100, effort = Effort.OKAY, targetMAtLog = 1_100, stops = 7)
+        assertEquals("matching it with 7 stops holds it", 1_100, nextMission(again, listOf(run), current = 1_100))
     }
 
     @Test
@@ -243,13 +252,13 @@ class StopGoalTest {
             assertEquals("with $stops stops", 1_350, nextMission(run))
         }
         val three = TestData.log(day1, distanceM = 1_300, effort = Effort.OKAY, targetMAtLog = 1_200, stops = 3)
-        assertEquals(1_200, nextMission(three))
+        assertEquals("3 stops: caught up, not stretched", 1_300, nextMission(three))
     }
 
     @Test
-    fun `an uncounted run holds the distance`() {
+    fun `an uncounted run catches up to the distance run, no further`() {
         val run = TestData.log(day1, distanceM = 1_300, effort = Effort.EASY, targetMAtLog = 1_200)
-        assertEquals(1_200, nextMission(run))
+        assertEquals(1_300, nextMission(run))
     }
 
     @Test
@@ -286,11 +295,11 @@ class StopGoalTest {
     @Test
     fun `the mission note says why the distance held`() {
         assertEquals(
-            "You beat 1.2 km! With 6 stops the distance stays the same. 4 fewer stops and it gets longer.",
+            "You beat 1.2 km, so the new mission is 1.3 km. Now try it with fewer stops: 4 fewer stops and it gets longer.",
             missionNote(TestData.log(day1, distanceM = 1_300, effort = Effort.OKAY, targetMAtLog = 1_200, stops = 6)),
         )
         assertEquals(
-            "Same distance again. Count your stops: it gets longer after a run with 2 stops or fewer.",
+            "You beat 1.2 km, so the new mission is 1.3 km. Count your stops: it gets longer after a run with 2 stops or fewer.",
             missionNote(TestData.log(day1, distanceM = 1_300, effort = Effort.OKAY, targetMAtLog = 1_200)),
         )
         assertEquals(

@@ -51,9 +51,10 @@ Derived from those rows every time the UI reads them, by pure functions in
 - **XP and level**: `XP = 50 × outing days`, `level = 1 + outingDays / 5`. Nothing else grants XP.
 - **Next mission**: [`TargetRecommender`](app/src/main/java/app/ruuun/logic/TargetRecommender.kt):
   **The distance only grows after a run with few stops** (since 1.3): at most `lowStopsLimit`, 2
-  by default, set in Settings ("Distance goes up after", 0 to 5). A run with more stops, or with
-  stops not counted, holds the mission; a `Hard` short run still eases it off. With low stops,
-  **beating the mission sets the next one beyond the distance just run**, by a bump that depends on
+  by default, set in Settings ("Distance goes up after", 0 to 5). A run that beats the mission
+  with more stops, or with stops not counted, **catches the mission up to the distance run and no
+  further** (1.3.1): the same distance next time, with fewer stops. A `Hard` short run still eases
+  it off. With low stops, **beating the mission sets the next one beyond the distance just run**, by a bump that depends on
   how it felt: +25 m for `Hard`, one band step for `Okay`, two for `Easy` (bands are 25 m under
   500 m, 50 m under 1,500 m, 100 m above). Effort never drags the mission back below what was
   actually covered. Falling short repeats the mission, or eases off 10% if it felt `Hard`. Matching
@@ -165,7 +166,7 @@ on a connected device or emulator: onboarding, saving, same-date runs, editing, 
 note persistence, atomic import, delete-everything, the mission controls against the cap, and 150
 runs.
 
-`./gradlew :app:testDebugUnitTest` runs 160 JVM tests with no emulator required:
+`./gradlew :app:testDebugUnitTest` runs 161 JVM tests with no emulator required:
 
 | File | Covers |
 |---|---|
@@ -209,7 +210,7 @@ reports zero errors.
 
 ## Known gaps
 
-- **No UI tests.** The Room layer has 23 instrumented tests (including the 1 to 2 migration), but the Compose screens are exercised
+- **No UI tests.** The Room layer has 28 instrumented tests (including the 1 to 2 and 2 to 3 migrations), but the Compose screens are exercised
   by hand on an emulator.
 - **Release build is unminified.** R8 is off; the signed release APK is about 12 MB.
 - **The updater has no automated test against a live release.** Its parsing and URL rules are unit
@@ -244,8 +245,14 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-The Android `versionCode` counts up independently of the name (currently 9) because it must never
+The Android `versionCode` counts up independently of the name (currently 10) because it must never
 decrease.
+
+- **1.3.1**: a run that beats the mission with more than 2 stops (or none counted) now sets the
+  next mission to the distance run, instead of holding it: a 1.1 km run with 8 stops on a 300 m
+  mission makes the mission 1.1 km with a stop goal of 7. Phones that 1.3 left stuck are caught
+  up once by a data-only database migration (2 to 3) that only touches a mission nobody moved
+  since. 161 unit tests and 28 device tests.
 
 - **1.3**: after the first real run (1.1 km with 8 stops), stops became part of the mission.
   - **Stops:** an optional stop counter on the log screen, above "How did it feel?". Once stops

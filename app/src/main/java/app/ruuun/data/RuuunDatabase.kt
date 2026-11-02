@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [RunnerSettings::class, RunLog::class], version = 2, exportSchema = true)
+@Database(entities = [RunnerSettings::class, RunLog::class], version = 3, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class RuuunDatabase : RoomDatabase() {
     abstract fun dao(): RuuunDao
@@ -36,12 +36,40 @@ abstract class RuuunDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * 1.3.1, data only: 1.3.0 held the mission when a run beat it with high or
+         * uncounted stops (a 1.1 km run left a 300 m mission). The rule now catches the
+         * mission up to the distance run. This applies that once to the latest run, only
+         * if the mission was never moved after it. The schema does not change.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    UPDATE runner_settings SET currentTargetM = (
+                        SELECT MIN((l.distanceM / 25) * 25, runner_settings.maxTargetM)
+                        FROM run_log l ORDER BY l.date DESC, l.createdAt DESC LIMIT 1
+                    )
+                    WHERE EXISTS (
+                        SELECT 1 FROM (
+                            SELECT * FROM run_log ORDER BY date DESC, createdAt DESC LIMIT 1
+                        ) l
+                        WHERE l.distanceM > l.targetMAtLog
+                          AND (l.stops IS NULL OR l.stops > runner_settings.lowStopsLimit)
+                          AND runner_settings.currentTargetM = l.targetMAtLog
+                          AND (l.distanceM / 25) * 25 > runner_settings.currentTargetM
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
+
         fun get(context: Context): RuuunDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(
                 context.applicationContext,
                 RuuunDatabase::class.java,
                 "ruuun.db",
-            ).addMigrations(MIGRATION_1_2).build().also { instance = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
         }
     }
 }

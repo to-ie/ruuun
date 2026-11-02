@@ -169,6 +169,14 @@ object JourneyView {
         val capNote = " That is your longest mission setting."
         return when {
             outcome.backdated -> "Runs on earlier days don't change the mission."
+            // Caught up to the distance run, without stretching further.
+            went > 0 && beat && !TargetRecommender.lowStops(log, limit) -> {
+                val now = Formatters.distance(outcome.nextTargetM)
+                "You beat $was, so the new mission is $now. " + when (val stops = log.stops) {
+                    null -> "Count your stops: it gets longer after a run with ${stopsOrFewer(limit)}."
+                    else -> "Now try it with fewer stops: ${fewerToGo(stops - limit)} and it gets longer."
+                } + if (atCap) capNote else ""
+            }
             went > 0 && beat -> when (log.effort) {
                 Effort.EASY -> "You beat $was and it felt easy, so it goes up."
                 Effort.OKAY -> "You beat $was and it felt okay, so it goes up a step."
