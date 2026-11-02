@@ -128,7 +128,8 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
         containerColor = Ground,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            if (showNav) {
+            // Settings too: that is where "Check for updates" lives, so its answer shows there.
+            if (showNav || currentRoute == Routes.SETTINGS) {
                 UpdateBanner(
                     state = update,
                     onUpdate = viewModel::downloadUpdate,

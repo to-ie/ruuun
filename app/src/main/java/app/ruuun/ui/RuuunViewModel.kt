@@ -287,9 +287,18 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
             when {
                 info == null -> if (manual) notify("Could not check for updates. Are you online?")
                 info.isNewerThan(BuildConfig.VERSION_CODE) -> {
-                    val busy = _update.value is UpdateState.Downloading ||
-                        _update.value is UpdateState.Ready
+                    val current = _update.value
+                    val busy = current is UpdateState.Downloading || current is UpdateState.Ready
                     if (!busy) _update.value = UpdateState.Available(info)
+                    if (manual) {
+                        notify(
+                            when (current) {
+                                is UpdateState.Downloading -> "ruuun ${info.versionName} is downloading"
+                                is UpdateState.Ready -> "ruuun ${info.versionName} is ready. Tap Install at the top."
+                                else -> "ruuun ${info.versionName} is ready. Tap Update at the top."
+                            },
+                        )
+                    }
                 }
                 else -> if (manual) notify("You have the newest version")
             }

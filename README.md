@@ -245,8 +245,13 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-The Android `versionCode` counts up independently of the name (currently 10) because it must never
+The Android `versionCode` counts up independently of the name (currently 11) because it must never
 decrease.
+
+- **1.3.2**: **Check for updates** in Settings works. It found new versions, but the update banner
+  was only drawn on the four tabs, so on Settings nothing visible happened. The banner now shows on
+  Settings too, and a manual check always says what it found ("ruuun 1.3.2 is ready. Tap Update at
+  the top.").
 
 - **1.3.1**: a run that beats the mission with more than 2 stops (or none counted) now sets the
   next mission to the distance run, instead of holding it: a 1.1 km run with 8 stops on a 300 m
