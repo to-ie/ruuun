@@ -5,7 +5,7 @@
     <style name="Theme.Ruuun.Splash" parent="Theme.SplashScreen">
         <item name="android:windowSplashScreenBackground">@color/ic_launcher_background</item>
         <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-        <item name="android:windowSplashScreenBrandingImage">@drawable/ruuun_logo_light</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/ruuun_wordmark</item>
         <item name="postSplashScreenTheme">@style/Theme.Ruuun</item>
     </style>
 </resources>

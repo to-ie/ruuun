@@ -1,15 +1,19 @@
 package app.ruuun.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.ruuun.logic.BadgeEvaluator
 import app.ruuun.logic.Formatters
@@ -43,8 +49,10 @@ import app.ruuun.ui.components.RuuunProgressBar
 import app.ruuun.ui.components.SecondaryButton
 import app.ruuun.ui.components.StatTile
 import app.ruuun.ui.components.WorldCard
-import app.ruuun.ui.components.decorative
 import app.ruuun.ui.icon
+import app.ruuun.ui.Mascot
+import app.ruuun.ui.ruu
+import app.ruuun.ui.scene
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.Ground
 import app.ruuun.ui.theme.IconButtonBg
@@ -174,12 +182,13 @@ fun HomeScreen(
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "Weekly goal: ${week.runDays} of ${week.weeklyGoal} runs",
+                        "Weekly goal: ${week.runDays} of ${week.weeklyGoal}",
                         style = RuuunText.CardTitle,
                         color = Navy,
                         modifier = Modifier.weight(1f),
                     )
                     // Dots filled since Home last showed them bounce in, one after another.
+                    Spacer(Modifier.width(10.dp))
                     val fresh = remember(week.weekStart, week.runDays) {
                         newlyFilledDots(week.weekStart, week.runDays)
                     }
@@ -252,11 +261,17 @@ fun HomeScreen(
                 teaser = chapter.teaser,
                 progressFraction = chapter.fraction,
                 progressLabel = chapter.progressLabel,
+                picture = chapter.chapter?.world?.scene() ?: Mascot.FINALE_SCENE,
+                ruu = chapter.chapter?.world?.ruu() ?: Mascot.CHEER,
             )
             Spacer(Modifier.height(Dimens.ScreenPadding))
         }
     }
 }
+
+private val RUU_HERO_HEIGHT = 108.dp
+private val RUU_HERO_MIN_HEIGHT = 64.dp
+private val RUU_GAP = 8.dp
 
 @Composable
 private fun NextMissionHero(
@@ -271,87 +286,94 @@ private fun NextMissionHero(
     onMakeHarder: () -> Unit,
 ) {
     Surface(shape = Shapes.Hero, color = Navy, modifier = Modifier.fillMaxWidth()) {
-        Box {
-            // Decorative only.
-            Box(
-                Modifier
-                    .size(120.dp)
-                    .offset(x = 250.dp, y = (-40).dp)
-                    .clip(Shapes.Pill)
-                    .background(Orange.copy(alpha = 0.18f))
-                    .decorative(),
-            )
-            Box(
-                Modifier
-                    .size(80.dp)
-                    .offset(x = 300.dp, y = 60.dp)
-                    .clip(Shapes.Pill)
-                    .background(Sky.copy(alpha = 0.16f))
-                    .decorative(),
-            )
-            Column(Modifier.padding(Dimens.HeroPadding)) {
-                Overline("Next mission", color = Sky)
-                Spacer(Modifier.height(6.dp))
-                // Easier rolls the number down, Harder rolls it up.
-                val motion = LocalMotion.current
-                AnimatedContent(
-                    targetState = targetM,
-                    transitionSpec = {
-                        when {
-                            !motion -> EnterTransition.None togetherWith ExitTransition.None
-                            targetState > initialState ->
-                                (slideInVertically { it } + fadeIn()) togetherWith
-                                    (slideOutVertically { -it } + fadeOut())
-                            else ->
-                                (slideInVertically { -it } + fadeIn()) togetherWith
-                                    (slideOutVertically { it } + fadeOut())
+        Column(Modifier.padding(Dimens.HeroPadding)) {
+            // Ruu stands beside the distance when both fit on one line. On a narrow phone
+            // or with large text Ruu gets smaller, and steps aside rather than wrap the number.
+            val measurer = rememberTextMeasurer()
+            val density = LocalDensity.current
+            BoxWithConstraints {
+                val numberWidth = with(density) {
+                    measurer.measure(Formatters.distance(targetM), RuuunText.HeroNumber).size.width.toDp()
+                }
+                val room = maxWidth - numberWidth - RUU_GAP
+                val ruuHeight = (room / Mascot.RUU_ASPECT).coerceAtMost(RUU_HERO_HEIGHT)
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Column(Modifier.weight(1f)) {
+                        Overline("Next mission", color = Sky)
+                        Spacer(Modifier.height(6.dp))
+                        // Easier rolls the number down, Harder rolls it up.
+                        val motion = LocalMotion.current
+                        AnimatedContent(
+                            targetState = targetM,
+                            transitionSpec = {
+                                when {
+                                    !motion -> EnterTransition.None togetherWith ExitTransition.None
+                                    targetState > initialState ->
+                                        (slideInVertically { it } + fadeIn()) togetherWith
+                                            (slideOutVertically { -it } + fadeOut())
+                                    else ->
+                                        (slideInVertically { -it } + fadeIn()) togetherWith
+                                            (slideOutVertically { it } + fadeOut())
+                                }
+                            },
+                            label = "mission",
+                        ) { metres ->
+                            Text(
+                                Formatters.distance(metres),
+                                style = RuuunText.HeroNumber,
+                                color = Ground,
+                            )
                         }
-                    },
-                    label = "mission",
-                ) { metres ->
-                    Text(
-                        Formatters.distance(metres),
-                        style = RuuunText.HeroNumber,
-                        color = Ground,
-                    )
+                    }
+                    if (ruuHeight >= RUU_HERO_MIN_HEIGHT) {
+                        Spacer(Modifier.width(RUU_GAP))
+                        Image(
+                            painter = painterResource(if (welcomeBack) Mascot.WELCOME_BACK else Mascot.READY),
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .height(ruuHeight)
+                                .aspectRatio(Mascot.RUU_ASPECT),
+                        )
+                    }
                 }
-                if (stopGoal != null) {
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        "Stop goal: ${StopGoal.goalLabel(stopGoal).lowercase()}" +
-                            (lastStops?.let { " · from $it" } ?: ""),
-                        style = RuuunText.BodyStrong,
-                        color = Lime,
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
+            }
+            if (stopGoal != null) {
+                Spacer(Modifier.height(2.dp))
                 Text(
-                    when {
-                        welcomeBack -> "Welcome back. Repeat this one, or make it easier."
-                        atCap -> "Breaks are fine. This is your longest mission setting."
-                        else -> "Breaks are fine. It gets longer after a run with " +
-                            "${JourneyView.stopsOrFewer(lowStopsLimit)}."
-                    },
-                    style = RuuunText.BodyLarge,
-                    color = Ground,
+                    "Stop goal: ${StopGoal.goalLabel(stopGoal).lowercase()}" +
+                        (lastStops?.takeIf { it > stopGoal }?.let { " · from $it" } ?: ""),
+                    style = RuuunText.BodyStrong,
+                    color = Lime,
                 )
-                Spacer(Modifier.height(18.dp))
-                PrimaryCta("Log a run", onLogRun, icon = Icons.Outlined.Add)
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SecondaryButton(
-                        text = "Easier",
-                        onClick = onMakeEasier,
-                        onNavy = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                    SecondaryButton(
-                        text = "Harder",
-                        onClick = onMakeHarder,
-                        onNavy = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                when {
+                    welcomeBack -> "Welcome back. Repeat this one, or make it easier."
+                    atCap -> "Breaks are fine. This is your longest mission setting."
+                    else -> "Breaks are fine. It gets longer after a run with " +
+                        "${JourneyView.stopsOrFewer(lowStopsLimit)}."
+                },
+                style = RuuunText.BodyLarge,
+                color = Ground,
+            )
+            Spacer(Modifier.height(18.dp))
+            PrimaryCta("Log a run", onLogRun, icon = Icons.Outlined.Add)
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                SecondaryButton(
+                    text = "Easier",
+                    onClick = onMakeEasier,
+                    onNavy = true,
+                    modifier = Modifier.weight(1f),
+                )
+                SecondaryButton(
+                    text = "Harder",
+                    onClick = onMakeHarder,
+                    onNavy = true,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }

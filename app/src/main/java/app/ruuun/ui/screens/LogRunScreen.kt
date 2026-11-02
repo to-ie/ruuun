@@ -412,7 +412,29 @@ fun LogRunScreen(
         Surface(color = SurfaceColor, modifier = Modifier.fillMaxWidth()) {
             Column {
                 Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
-                Box(Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 22.dp)) {
+                Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 22.dp)) {
+                    // The grey number in the distance box is only a hint, so say what is
+                    // still missing rather than leave a greyed-out button unexplained.
+                    val missing = when {
+                        saving -> null
+                        distanceText.isBlank() -> "Type how far you went to save."
+                        distanceM == null -> "Check the distance to save."
+                        effort == null -> "Pick how it felt to save."
+                        !durationValid -> "Check the minutes to save."
+                        else -> null
+                    }
+                    if (missing != null) {
+                        Text(
+                            missing,
+                            style = RuuunText.Secondary,
+                            color = TextMuted,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 10.dp)
+                                .semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                    }
                     PrimaryCta(
                         text = if (editing == null) "Save run" else "Save changes",
                         onClick = {

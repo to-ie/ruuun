@@ -294,6 +294,45 @@ class RepositoryTest {
     }
 
     @Test
+    fun correcting_an_older_runs_distance_or_effort_keeps_the_mission() = runTest {
+        onboard()
+        save(date = today.minusDays(4), distanceM = 300, effort = Effort.OKAY, stops = 2)
+        save(date = today.minusDays(2), distanceM = 600, effort = Effort.EASY, stops = 1)
+        repo.makeHarder()
+        val mission = repo.settings.first()!!.currentTargetM
+
+        val older = repo.logs.first().last()
+        repo.updateRun(older.id, older.date, 350, Effort.HARD, null, null, emptySet(), null, stops = 2, now = 9L)
+        assertEquals(350, repo.logs.first().last().distanceM)
+        assertEquals("an old correction leaves the newer mission alone", mission, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
+    fun deleting_an_older_run_keeps_the_mission_and_deleting_the_latest_resets_it() = runTest {
+        onboard()
+        save(date = today.minusDays(4), distanceM = 300, effort = Effort.OKAY, stops = 2)
+        save(date = today.minusDays(2), distanceM = 600, effort = Effort.EASY, stops = 1)
+        val mission = repo.settings.first()!!.currentTargetM
+        val (latest, older) = repo.logs.first().let { it.first() to it.last() }
+
+        repo.deleteRun(older)
+        assertEquals(mission, repo.settings.first()!!.currentTargetM)
+
+        repo.deleteRun(latest)
+        assertEquals("nothing left: back to the start", 300, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
+    fun moving_an_older_run_to_be_the_latest_resets_the_mission() = runTest {
+        onboard()
+        save(date = today.minusDays(4), distanceM = 300, effort = Effort.OKAY, stops = 2)
+        save(date = today.minusDays(2), distanceM = 600, effort = Effort.EASY, stops = 1)
+        val older = repo.logs.first().last()
+        repo.updateRun(older.id, today, older.distanceM, older.effort, null, null, emptySet(), null, stops = 2, now = 9L)
+        assertEquals("it now stands for the latest run", older.targetMAtLog, repo.settings.first()!!.currentTargetM)
+    }
+
+    @Test
     fun a_new_journey_gets_the_five_km_cap() = runTest {
         onboard()
         assertEquals(5_000, repo.settings.first()!!.maxTargetM)

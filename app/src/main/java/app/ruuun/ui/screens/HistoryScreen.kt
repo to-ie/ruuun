@@ -1,5 +1,9 @@
 package app.ruuun.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import app.ruuun.ui.Mascot
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -86,7 +90,16 @@ fun HistoryScreen(
 
             if (state.logs.isEmpty()) {
                 item {
-                    Spacer(Modifier.height(40.dp))
+                    Spacer(Modifier.height(28.dp))
+                    Image(
+                        painter = painterResource(Mascot.NOTEBOOK),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp),
+                    )
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         "No runs yet. Your first one will show up here.",
                         style = RuuunText.BodyLarge,

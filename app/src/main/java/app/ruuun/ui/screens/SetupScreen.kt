@@ -81,7 +81,7 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
                     painter = painterResource(R.drawable.ruuun_logo),
                     contentDescription = stringResource(R.string.logo_description),
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.width(210.dp),
+                    modifier = Modifier.width(190.dp),
                 )
                 Spacer(Modifier.height(18.dp))
                 Text(

@@ -1,6 +1,16 @@
 package app.ruuun.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import app.ruuun.content.Chapters
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.window.Dialog
+import app.ruuun.content.Chapter
+import app.ruuun.ui.Mascot
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -71,6 +81,11 @@ import app.ruuun.ui.LocalMotion
 @Composable
 fun WorldJourneyCard(status: WorldStatus, modifier: Modifier = Modifier) {
     var expanded by rememberSaveable(status.world.name) { mutableStateOf(false) }
+    // The open picture is kept by chapter number, so it survives rotation.
+    var shownNumber by rememberSaveable { mutableStateOf<Int?>(null) }
+    shownNumber?.let { number ->
+        Chapters.ALL.getOrNull(number - 1)?.let { ChapterPictureDialog(it) { shownNumber = null } }
+    }
     val foldable = status.isComplete
     val folded = foldable && !expanded
     val motion = LocalMotion.current
@@ -152,22 +167,44 @@ fun WorldJourneyCard(status: WorldStatus, modifier: Modifier = Modifier) {
                                     "in progress, ${chapter.runDays} of ${chapter.runDaysNeeded} runs"
                                 else -> "needs ${chapter.runDaysNeeded} runs"
                             }
+                        val opens = chapter.isComplete
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(Shapes.Input)
                                 .background(if (chapter.isCurrent) InfoBg else Color.Transparent)
+                                .then(
+                                    if (opens) {
+                                        Modifier.clickable(
+                                            role = Role.Button,
+                                            onClickLabel = "See the picture",
+                                        ) { shownNumber = chapter.chapter.number }
+                                    } else {
+                                        Modifier
+                                    },
+                                )
                                 .padding(horizontal = 8.dp, vertical = 10.dp)
                                 .semantics { contentDescription = label },
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            StatusDot(
-                                complete = chapter.isComplete,
-                                current = chapter.isCurrent,
-                                modifier = Modifier.clearAndSetSemantics { },
-                            )
+                            if (opens) {
+                                Image(
+                                    painter = painterResource(Mascot.chapterThumb(chapter.chapter.number)),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(width = 48.dp, height = 32.dp)
+                                        .clip(Shapes.Segment),
+                                )
+                            } else {
+                                StatusDot(
+                                    complete = false,
+                                    current = chapter.isCurrent,
+                                    modifier = Modifier.clearAndSetSemantics { },
+                                )
+                            }
                             Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
+                            Column(Modifier.weight(1f).clearAndSetSemantics { }) {
                                 Text(
                                     "${chapter.chapter.number}. ${chapter.chapter.title}",
                                     style = RuuunText.Body,
@@ -193,9 +230,43 @@ fun WorldJourneyCard(status: WorldStatus, modifier: Modifier = Modifier) {
                                 },
                                 style = RuuunText.Label,
                                 color = TextMuted,
+                                modifier = Modifier.clearAndSetSemantics { },
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/** A finished chapter's picture, full width, with what happened in it. */
+@Composable
+fun ChapterPictureDialog(chapter: Chapter, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(shape = Shapes.Card, color = SurfaceColor, modifier = Modifier.fillMaxWidth()) {
+            // Scrolls, so the text and Close stay reachable in landscape.
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                Image(
+                    painter = painterResource(Mascot.chapter(chapter.number)),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(Mascot.CHAPTER_ASPECT),
+                )
+                Column(Modifier.padding(16.dp)) {
+                    Overline("Chapter ${chapter.number} · ${chapter.world.title}")
+                    Spacer(Modifier.height(4.dp))
+                    Text(chapter.title, style = RuuunText.CardTitle, color = Navy)
+                    Spacer(Modifier.height(4.dp))
+                    Text(chapter.revealText, style = RuuunText.Body, color = TextMuted)
+                    Spacer(Modifier.height(16.dp))
+                    SecondaryButton(
+                        text = "Close",
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }

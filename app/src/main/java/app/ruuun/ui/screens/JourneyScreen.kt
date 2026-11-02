@@ -42,6 +42,9 @@ import app.ruuun.ui.components.SecondaryButton
 import app.ruuun.ui.components.WorldCard
 import app.ruuun.ui.components.WorldJourneyCard
 import app.ruuun.ui.icon
+import app.ruuun.ui.Mascot
+import app.ruuun.ui.ruu
+import app.ruuun.ui.scene
 import app.ruuun.ui.theme.Border
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.Ground
@@ -123,6 +126,8 @@ fun JourneyScreen(
                     )
                 }
 
+            }
+            item {
                 if (state.logs.any { it.stops != null }) {
                     Spacer(Modifier.height(Dimens.SectionGap))
                     StopsTrendCard(
@@ -133,6 +138,8 @@ fun JourneyScreen(
                     )
                 }
 
+            }
+            item {
                 Spacer(Modifier.height(Dimens.SectionGap))
                 WorldCard(
                     bannerColor = chapter.chapter?.world?.bannerColor() ?: Lime,
@@ -147,14 +154,19 @@ fun JourneyScreen(
                     progressFraction = chapter.fraction,
                     progressLabel = chapter.progressLabel,
                     animateProgress = true,
+                    picture = chapter.chapter?.world?.scene() ?: Mascot.FINALE_SCENE,
+                    ruu = chapter.chapter?.world?.ruu() ?: Mascot.CHEER,
                 )
 
+            }
+            item {
                 Spacer(Modifier.height(Dimens.SectionGap))
                 Text("The whole journey", style = RuuunText.SectionTitle, color = Navy)
                 Spacer(Modifier.height(2.dp))
                 Text(
                     "Two seasons, eight worlds, 24 chapters. Every day you run moves the story " +
-                        "on, whatever the distance. Finished worlds fold up: tap one to look back.",
+                        "on, whatever the distance. Finished worlds fold up: tap one to look back, " +
+                        "and tap a finished chapter to see its picture.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                 )
@@ -175,6 +187,8 @@ fun JourneyScreen(
                     Spacer(Modifier.height(Dimens.ItemGap))
                 }
 
+            }
+            item {
                 Spacer(Modifier.height(Dimens.SectionGap))
                 Text("Week by week", style = RuuunText.SectionTitle, color = Navy)
                 Spacer(Modifier.height(2.dp))

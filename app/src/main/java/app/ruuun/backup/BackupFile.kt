@@ -155,6 +155,11 @@ object BackupFile {
             val log = parseLog(item, index) ?: return ParseResult.Invalid(
                 "Run ${index + 1} in the backup is unreadable.",
             )
+            // One day of slack for a phone in another time zone. A run further ahead would
+            // make every real run until then count as backdated, freezing the mission.
+            if (log.date.isAfter(today.plusDays(1))) {
+                return ParseResult.Invalid("Run ${index + 1} in the backup is dated in the future.")
+            }
             if (!seenIds.add(log.id)) {
                 return ParseResult.Invalid("The backup lists the same run twice.")
             }

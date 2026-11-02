@@ -101,7 +101,11 @@ class RuuunRepository(private val dao: RuuunDao) {
         )
     }
 
-    /** Editing recomputes everything; the target falls back to a safe repeat. */
+    /**
+     * Editing recomputes everything that is derived. The mission only falls back to a
+     * safe repeat when the corrected run is, or becomes, the latest one: fixing an older
+     * run must not undo what newer runs (or Easier and Harder) set.
+     */
     suspend fun updateRun(
         id: String,
         date: LocalDate,
@@ -116,6 +120,7 @@ class RuuunRepository(private val dao: RuuunDao) {
     ) {
         val settings = dao.getSettings() ?: return
         val existing = dao.getLog(id) ?: return
+        val wasLatest = latestOf(dao.getLogs())?.id == existing.id
         val updated = existing.copy(
             date = date,
             distanceM = distanceM,
@@ -134,7 +139,9 @@ class RuuunRepository(private val dao: RuuunDao) {
             existing.distanceM != distanceM ||
             existing.effort != effort
         if (missionInputsChanged) {
-            resetTargetAfterCorrection(settings)
+            if (wasLatest || latestOf(dao.getLogs())?.id == updated.id) {
+                resetTargetAfterCorrection(settings)
+            }
             return
         }
         // A corrected stop count on the latest run that crosses the low-stops limit
@@ -160,11 +167,16 @@ class RuuunRepository(private val dao: RuuunDao) {
         }
     }
 
+    /** Deleting the latest run falls back to a safe repeat; an older one keeps the mission. */
     suspend fun deleteRun(log: RunLog) {
         val settings = dao.getSettings() ?: return
+        val wasLatest = latestOf(dao.getLogs())?.id == log.id
         dao.deleteLog(log)
-        resetTargetAfterCorrection(settings)
+        if (wasLatest) resetTargetAfterCorrection(settings)
     }
+
+    private fun latestOf(logs: List<RunLog>): RunLog? =
+        logs.maxWithOrNull(compareBy<RunLog> { it.date }.thenBy { it.createdAt })
 
     private suspend fun resetTargetAfterCorrection(settings: RunnerSettings) {
         val remaining = dao.getLogs()

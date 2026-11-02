@@ -1,18 +1,23 @@
 package app.ruuun.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Info
@@ -26,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
@@ -61,9 +68,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.graphicsLayer
 import app.ruuun.ui.LocalMotion
+import app.ruuun.ui.Mascot
 import kotlinx.coroutines.launch
 
-/** Card with a coloured world banner across the top. */
+/**
+ * Card with a world banner across the top. With a [picture], the banner is that picture
+ * (a world scene or a chapter picture) with the world name on a chip, and [ruu], if
+ * given, standing on the right. Without one it is a plain coloured band.
+ */
 @Composable
 fun WorldCard(
     bannerColor: Color,
@@ -76,6 +88,9 @@ fun WorldCard(
     progressLabel: String? = null,
     progressColor: Color = Navy,
     animateProgress: Boolean = false,
+    @DrawableRes picture: Int? = null,
+    pictureAspect: Float = WIDE_BANNER_ASPECT,
+    @DrawableRes ruu: Int? = null,
 ) {
     Surface(
         shape = Shapes.Card,
@@ -84,16 +99,64 @@ fun WorldCard(
         modifier = modifier.fillMaxWidth(),
     ) {
         Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(bannerColor)
-                    .padding(horizontal = 16.dp, vertical = 13.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(bannerIcon, contentDescription = null, tint = Navy, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.width(10.dp))
-                Overline(worldName, color = Navy)
+            if (picture != null) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(pictureAspect)
+                        .background(bannerColor),
+                ) {
+                    Image(
+                        painter = painterResource(picture),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    if (ruu != null) {
+                        Image(
+                            painter = painterResource(ruu),
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(end = 10.dp)
+                                .fillMaxHeight(0.92f)
+                                .aspectRatio(Mascot.RUU_ASPECT),
+                        )
+                    }
+                    // With Ruu on the right, the chip keeps to the left part so the two never
+                    // overlap; a long name at a large text size wraps instead.
+                    Surface(
+                        shape = Shapes.Pill,
+                        color = bannerColor,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth(if (ruu != null) CHIP_SHARE_WITH_RUU else 1f)
+                            .padding(12.dp)
+                            .wrapContentWidth(Alignment.Start),
+                    ) {
+                        Row(
+                            Modifier.padding(start = 10.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(bannerIcon, contentDescription = null, tint = Navy, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Overline(worldName, color = Navy)
+                        }
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(bannerColor)
+                        .padding(horizontal = 16.dp, vertical = 13.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(bannerIcon, contentDescription = null, tint = Navy, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Overline(worldName, color = Navy)
+                }
             }
             Column(Modifier.padding(16.dp)) {
                 Text(title, style = RuuunText.CardTitle, color = Navy)
@@ -116,6 +179,12 @@ fun WorldCard(
         }
     }
 }
+
+/** How much of the banner's width the world chip may use when Ruu stands on the right. */
+private const val CHIP_SHARE_WITH_RUU = 0.62f
+
+/** A short wide strip cut from the middle of a world scene. */
+const val WIDE_BANNER_ASPECT = 2.4f
 
 /** Light blue information panel. */
 @Composable

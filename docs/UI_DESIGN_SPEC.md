@@ -7,7 +7,7 @@
 ## 0. How to use this
 
 1. Copy `app/src/main/java/app/ruuun/ui/theme/*` into the project (adjust the package) and wrap the app in `RuuunTheme { }`.
-2. Copy `app/src/main/res/drawable-nodpi/ruuun_logo.png` (cropped, 640x446, transparent-free white background). Use it on Home header (48 dp tall) and Setup (210 dp wide). `contentDescription = "ruuun!"`.
+2. The logo is Ruu's head over the ruuun! name: `app/src/main/res/drawable-nodpi/ruuun_logo.webp`, on Setup (190 dp wide). `contentDescription = "ruuun!"`. The splash shows the launcher icon (Ruu's head on Navy) with `ruuun_wordmark.png` underneath on Android 12 and up.
 3. Add fonts to `res/font` (see `Type.kt` header). Fallback to `FontFamily.Default` is acceptable.
 4. Icons: use `androidx.compose.material:material-icons-extended` (bundled, offline). Mapping in section 3.
 5. All numbers in the mockups are **sample data for one example child**. In the app every value is derived from Room as the handoff defines. Copy strings are final unless marked `[sample]`.
@@ -28,7 +28,8 @@
 | **PrimaryCta** | Height 56, fill `Orange`, text `Navy` `RuuunText.Cta`, `Shapes.Button`, optional leading icon 22 dp. Full width. Disabled: fill `Track`, text `TextMuted`. Debounce taps (handoff 3.3). |
 | **SecondaryButton** | Height 48 to 56, `Surface` fill, 2 dp `Navy` border (or `InputBorder` for low-emphasis), text `Navy` 15 to 17 ExtraBold. On navy backgrounds: transparent fill, 2 dp `HeroOutline`, text `Ground`. |
 | **Card** | `Surface`, 1 dp `Border`, 20 dp corners, 16 dp padding. |
-| **WorldCard** | Card with a coloured banner row on top (12 to 14 dp vertical, 16 dp horizontal): icon 22 to 24 dp + world name in `Overline` uppercase. Banner colour per world below. Body: chapter title (`CardTitle`), teaser (`Body`, `TextMuted`), progress row. |
+| **WorldCard** | Card with a banner on top, then the chapter title (`CardTitle`), teaser (`Body`, `TextMuted`) and progress row. With a picture (Home, Journey, Run saved): the world scene cropped to 2.4:1 with Ruu in the world's outfit standing bottom right (92% of the banner height), and the world name on a chip in the banner colour, bottom left, kept to the left 62% so it never covers Ruu. A finished chapter uses its own 3:2 picture with no Ruu. Without a picture: a coloured banner row (12 to 14 dp vertical, 16 dp horizontal) with icon and world name in `Overline`. |
+| **Ruu** | Decorative only (`contentDescription = null`): the words next to Ruu say the same thing. All Ruu pictures share one canvas (425:480) with the feet on the same line, so poses swap without a jump. Home hero: `ready` (or `welcome_back` after 14 days away) beside the distance, 108 dp tall, smaller or hidden when the distance needs the room. Run saved: 156 dp, `cheer` for anything new, `tired_proud` after Hard, `proud` otherwise. History empty: `notebook`. |
 | **ProgressBar** | Height 10 (XP bar 12), `Track` background, fully rounded. Fill: XP `Sky`; badge progress `Orange`; chapter `Navy`. Expose `progressBarRangeInfo` semantics. |
 | **StatTile** | `Shapes.Tile` card, 14 dp padding, value `Greeting`/`StatValue`, label `Label` `TextMuted` (14 sp Bold). |
 | **CheckDot** | 30 to 34 dp circle, `Lime` fill, 2 dp `Navy` border, Navy check (stroke heavy). Empty state: white fill, 2 dp dashed `PipDashed`. Never red. |

@@ -110,7 +110,10 @@ app/src/main/java/app/ruuun/
              JourneyView, RunInput, Formatters   (pure Kotlin, no Android imports, fully unit tested)
   content/   Chapters, Weeks, Achievements
   backup/    BackupFile (JSON read/write and validation)
-  ui/        theme/, components/, screens/, RuuunApp (navigation), RuuunViewModel
+  ui/        theme/, components/, screens/, RuuunApp (navigation), RuuunViewModel,
+             Mascot (which picture of Ruu, each world and each chapter shows where)
+app/src/main/res/drawable-nodpi/
+             ruu_*.webp (Ruu, one shared canvas), scene_*.webp (worlds), chapter_*.webp
 ```
 
 ## Privacy and the network
@@ -161,12 +164,12 @@ The landing page is static HTML in [`site/`](site/), deployed to GitHub Pages by
 
 ## Tests
 
-`./gradlew :app:connectedDebugAndroidTest` runs 13 instrumented tests against a real Room database
-on a connected device or emulator: onboarding, saving, same-date runs, editing, deleting, tag and
-note persistence, atomic import, delete-everything, the mission controls against the cap, and 150
-runs.
+`./gradlew :app:connectedDebugAndroidTest` runs 31 instrumented tests against a real Room database
+on a connected device or emulator: onboarding, saving, same-date runs, editing, deleting (only the
+latest run moves the mission), tag and note persistence, atomic import, delete-everything, the
+mission controls against the cap, the database migrations, and 150 runs.
 
-`./gradlew :app:testDebugUnitTest` runs 161 JVM tests with no emulator required:
+`./gradlew :app:testDebugUnitTest` runs 169 JVM tests with no emulator required:
 
 | File | Covers |
 |---|---|
@@ -175,13 +178,14 @@ runs.
 | `WeekCalculatorTest` | ISO week identity, Dec/Jan rollover, leap day, journey weeks, week 53 rotation, side quests |
 | `BadgeEvaluatorTest` | badge rules, progress, secret handling, a 150-outing journey |
 | `ContentTest` | 193 badges / 52 weeks / 24 chapters, every rule backed by a computed metric, early badges keep their thresholds, banned-words check |
-| `BackupFileTest` | export/import round trip, duplicate ids, out-of-range and malformed files |
+| `BackupFileTest` | export/import round trip, duplicate ids, out-of-range, future-dated and malformed files |
 | `StopGoalTest` | the stop goal rules, the low-stops gate on distance, the Run saved stop note, Non-stop badge metrics, stops in backups, version 1 backups |
 | `StopEdgeCaseTest` | same-day badge farming, back-filled and short runs, the stop limit setting, extra-run notes, personal bests, one year on, old backups and the cap |
 | `RunInputTest` | distance and duration parsing, note/nickname cleaning, distance formatting |
 | `WorkedScenariosTest` | all ten Appendix D scenarios plus the UI spec's sample child |
 | `JourneyMapTest` | the four-world map: ordering, exactly one chapter current, world completion, gentle pacing |
 | `InvariantSweepTest` | 1,000 randomised journeys, every rule re-checked after each run |
+| `MascotTest` | which Ruu shows after a save (a cheer, Hard, ordinary, warm-ups and extra runs), one picture per chapter |
 | `EdgeCaseTest` | backups missing optional keys or carrying unknown ones, runs logged before onboarding, weekly-goal changes, a future onboarding date, a 1 m outing, a decade of logs |
 
 ## Verified on a device
@@ -210,7 +214,7 @@ reports zero errors.
 
 ## Known gaps
 
-- **No UI tests.** The Room layer has 28 instrumented tests (including the 1 to 2 and 2 to 3 migrations), but the Compose screens are exercised
+- **No UI tests.** The Room layer has 31 instrumented tests (including the 1 to 2 and 2 to 3 migrations), but the Compose screens are exercised
   by hand on an emulator.
 - **Release build is unminified.** R8 is off; the signed release APK is about 12 MB.
 - **The updater has no automated test against a live release.** Its parsing and URL rules are unit
@@ -245,8 +249,19 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-The Android `versionCode` counts up independently of the name (currently 11) because it must never
+The Android `versionCode` counts up independently of the name (currently 12) because it must never
 decrease.
+
+- **1.4**: Ruu the fox joins. Ruu is the new logo (with the ruuun! name) and the app icon, stands
+  beside the next mission on Home (arms wide after a long break), cheers on Run saved for anything
+  new, wipes its brow after a Hard run, and is proud the rest of the time. Every world card shows the
+  world's picture with Ruu dressed for it. Finishing a chapter shows that chapter's own picture, and
+  finished chapters on the Journey map open their picture when tapped. Also: editing or deleting an
+  older run no longer resets the mission (only the latest run does), Home's mission number never
+  wraps next to Ruu on a small phone or with large text, and the stop goal only says "from N" when it
+  is lower than N. Log a run says what is missing ("Type how far you went to save.") instead of
+  leaving a grey Save button unexplained. A backup with a run dated after tomorrow is refused.
+  169 unit tests and 31 device tests.
 
 - **1.3.2**: **Check for updates** in Settings works. It found new versions, but the update banner
   was only drawn on the four tabs, so on Settings nothing visible happened. The banner now shows on

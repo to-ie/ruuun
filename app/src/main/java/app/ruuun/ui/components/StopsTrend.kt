@@ -60,7 +60,9 @@ fun StopsTrendCard(logs: List<RunLog>, stopGoal: Int?) {
                 counted.size == 1 -> "Count them again next run to start your chart."
                 latest < first -> "${first - latest} fewer than your first count. Shorter bars mean fewer stops."
                 else -> "Shorter bars mean fewer stops. Breaks are fine; this is just to see the change."
-            } + (stopGoal?.let { " Stop goal: ${StopGoal.goalLabel(it).lowercase()}." } ?: ""),
+            } + (stopGoal?.let { " Stop goal: ${StopGoal.goalLabel(it).lowercase()}." } ?: "") +
+                // The chart only has room for the latest days, so say so when it starts later.
+                (if (counted.size > RUNS_SHOWN) " The chart shows the last $RUNS_SHOWN days you counted." else ""),
             style = RuuunText.Secondary,
             color = TextMuted,
         )

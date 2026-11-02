@@ -108,6 +108,15 @@ class BackupFileTest {
     }
 
     @Test
+    fun `runs dated in the future are rejected, with a day of slack`() {
+        val today = LocalDate.of(2026, 11, 1)
+        val tomorrow = BackupFile.write(settings, listOf(TestData.log(today.plusDays(1), id = "a")), exportedAt = "x")
+        assertTrue(BackupFile.parse(tomorrow, today) is BackupFile.ParseResult.Ok)
+        val later = BackupFile.write(settings, listOf(TestData.log(today.plusDays(2), id = "b")), exportedAt = "x")
+        assertTrue(BackupFile.parse(later, today) is BackupFile.ParseResult.Invalid)
+    }
+
+    @Test
     fun `empty notes and tags survive a round trip`() {
         val plain = listOf(TestData.log(LocalDate.of(2026, 11, 1), id = "plain"))
         val text = BackupFile.write(settings, plain, exportedAt = "2026-11-01T18:00:00Z")
