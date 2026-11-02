@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Release signing comes from ~/.gradle/gradle.properties on the machine that cuts
+// releases, never from this repository. Without it, release builds are unsigned.
+val releaseStoreFile = providers.gradleProperty("RUUUN_RELEASE_STORE_FILE").orNull
+
 android {
     namespace = "app.ruuun"
     compileSdk = 34
@@ -14,14 +18,26 @@ android {
         minSdk = 26
         targetSdk = 34
         // Must only ever increase; it is independent of the 0.x name below.
-        versionCode = 6
-        versionName = "1.0-beta"
+        versionCode = 7
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = providers.gradleProperty("RUUUN_RELEASE_STORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("RUUUN_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("RUUUN_RELEASE_KEY_PASSWORD").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

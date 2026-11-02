@@ -1,7 +1,8 @@
 package app.ruuun.content
 
 /**
- * The 141-badge seed catalogue from the build handoff, Appendix A.
+ * The 141-badge seed catalogue from the build handoff, Appendix A, plus six badges for
+ * the four run tags added in 0.3: 147 in all.
  *
  * Every rule is a typed `metric >= threshold` comparison against a
  * [app.ruuun.logic.StatsSnapshot]; nothing is parsed from text at runtime. Badges are
@@ -108,7 +109,7 @@ object Achievements {
         B("FS-007", "Checked In", BadgeCategory.FIRST_STEPS, BadgeMetric.EFFORT_OKAY, 1, "Log a run that felt okay.", "runs"),
         B("FS-008", "Brave Reporter", BadgeCategory.FIRST_STEPS, BadgeMetric.EFFORT_HARD, 1, "Log a run that felt hard. Being honest counts.", "runs"),
         B("FS-009", "My Story", BadgeCategory.FIRST_STEPS, BadgeMetric.NOTED_LOGS, 1, "Add a note to a run.", "notes"),
-        B("FS-010", "First Quest", BadgeCategory.FIRST_STEPS, BadgeMetric.QUEST_COMPLETIONS, 1, "Finish any weekly quest.", "quests"),
+        B("FS-010", "First Quest", BadgeCategory.FIRST_STEPS, BadgeMetric.QUEST_COMPLETIONS, 1, "Hit a weekly goal or finish a side quest.", "done"),
         B("RC-001", "Third Time Lucky", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 3, "Run on 3 different days.", "days"),
         B("RC-002", "Fourward!", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 4, "Run on 4 different days.", "days"),
         B("RC-003", "High Five", BadgeCategory.RUN_DAYS, BadgeMetric.RUN_DAYS, 5, "Run on 5 different days.", "days"),
@@ -219,14 +220,14 @@ object Achievements {
         B("CH-010", "Chapter 10: Landing Day", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 10, "Finish chapter 10 of the story.", "chapters"),
         B("CH-011", "Chapter 11: The Rainbow Rings", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 11, "Finish chapter 11 of the story.", "chapters"),
         B("CH-012", "Chapter 12: The Great ruuun! Festival", BadgeCategory.STORY, BadgeMetric.CHAPTER_COMPLETED, 12, "Finish chapter 12 of the story.", "chapters"),
-        B("QS-001", "Quest Starter", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 1, "Finish your first weekly quest.", "quests"),
-        B("QS-002", "Quest Apprentice", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 5, "Finish 5 weekly quests.", "quests"),
-        B("QS-003", "Side Quest Hero", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 10, "Finish 10 weekly quests.", "quests"),
-        B("QS-004", "Quest Collector", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 20, "Finish 20 weekly quests.", "quests"),
-        B("QS-005", "Quest Veteran", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 35, "Finish 35 weekly quests.", "quests"),
-        B("QS-006", "Quest Master", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 52, "Finish 52 weekly quests.", "quests"),
-        B("QS-007", "Trail Task Expert", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 75, "Finish 75 weekly quests.", "quests"),
-        B("QS-008", "Quest Legend", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 100, "Finish 100 weekly quests.", "quests"),
+        B("QS-001", "Quest Starter", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 1, "Tick off your first weekly goal or side quest.", "done"),
+        B("QS-002", "Quest Apprentice", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 5, "Tick off 5 weekly goals or side quests.", "done"),
+        B("QS-003", "Side Quest Hero", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 10, "Tick off 10 weekly goals or side quests.", "done"),
+        B("QS-004", "Quest Collector", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 20, "Tick off 20 weekly goals or side quests.", "done"),
+        B("QS-005", "Quest Veteran", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 35, "Tick off 35 weekly goals or side quests.", "done"),
+        B("QS-006", "Quest Master", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 52, "Tick off 52 weekly goals or side quests.", "done"),
+        B("QS-007", "Trail Task Expert", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 75, "Tick off 75 weekly goals or side quests.", "done"),
+        B("QS-008", "Quest Legend", BadgeCategory.QUESTS, BadgeMetric.QUEST_COMPLETIONS, 100, "Tick off 100 weekly goals or side quests.", "done"),
         B("MO-001", "Fresh Start", BadgeCategory.SEASONS, BadgeMetric.RUNS_IN_MONTH_01, 1, "Run at least once in January.", "runs"),
         B("MO-002", "Heart of Adventure", BadgeCategory.SEASONS, BadgeMetric.RUNS_IN_MONTH_02, 1, "Run at least once in February.", "runs"),
         B("MO-003", "Spring Steps", BadgeCategory.SEASONS, BadgeMetric.RUNS_IN_MONTH_03, 1, "Run at least once in March.", "runs"),

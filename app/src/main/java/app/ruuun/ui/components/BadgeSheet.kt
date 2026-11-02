@@ -27,9 +27,8 @@ import app.ruuun.ui.theme.Track
 import app.ruuun.ui.theme.Surface as SurfaceColor
 
 /**
- * What a badge is and how close you are. Shared by the badge cabinet, the
- * `Closest badges` list and the celebration after a save, so a badge explains
- * itself wherever it is tapped.
+ * What a badge is and how close you are. Shared by the badge cabinet and the
+ * celebration after a save, so a badge explains itself wherever it is tapped.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

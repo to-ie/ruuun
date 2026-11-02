@@ -115,8 +115,10 @@ fun HomeScreen(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                if (stats.runsToNextLevel == 1) "1 more run to Level ${stats.level + 1}"
-                else "${stats.runsToNextLevel} more runs to Level ${stats.level + 1}",
+                "50 XP for each day you run. " + (
+                    if (stats.runsToNextLevel == 1) "1 more to Level ${stats.level + 1}"
+                    else "${stats.runsToNextLevel} more to Level ${stats.level + 1}"
+                    ),
                 style = RuuunText.Secondary,
                 color = TextMuted,
             )
@@ -143,7 +145,7 @@ fun HomeScreen(
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "${week.runDays} / ${week.weeklyGoal} runs this week",
+                        "Weekly goal: ${week.runDays} of ${week.weeklyGoal} runs",
                         style = RuuunText.CardTitle,
                         color = Navy,
                         modifier = Modifier.weight(1f),
@@ -209,11 +211,7 @@ fun HomeScreen(
                 },
                 teaser = chapter.teaser,
                 progressFraction = chapter.fraction,
-                progressLabel = if (chapter.isFinale) {
-                    "Every chapter complete"
-                } else {
-                    "${chapter.runDays} of ${chapter.runDaysNeeded} runs"
-                },
+                progressLabel = chapter.progressLabel,
             )
             Spacer(Modifier.height(Dimens.ScreenPadding))
         }

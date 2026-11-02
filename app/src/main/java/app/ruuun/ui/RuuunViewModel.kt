@@ -1,6 +1,8 @@
 package app.ruuun.ui
 
 import android.app.Application
+import android.content.Intent
+import app.ruuun.BuildConfig
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.ruuun.backup.BackupFile
@@ -14,6 +16,8 @@ import app.ruuun.data.RuuunRepository
 import app.ruuun.logic.SaveOutcome
 import app.ruuun.logic.StatsCalculator
 import app.ruuun.logic.StatsSnapshot
+import app.ruuun.update.AppUpdater
+import app.ruuun.update.UpdateState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -64,6 +68,22 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
     /** Guards the save button against double taps. */
     private val _saving = MutableStateFlow(false)
     val saving: StateFlow<Boolean> = _saving.asStateFlow()
+
+    private val updater = AppUpdater(application)
+
+    private val _update = MutableStateFlow<UpdateState>(UpdateState.None)
+    val update: StateFlow<UpdateState> = _update.asStateFlow()
+
+    private val _checkingForUpdate = MutableStateFlow(false)
+    val checkingForUpdate: StateFlow<Boolean> = _checkingForUpdate.asStateFlow()
+
+    init {
+        // One quiet check per launch. Offline simply means no banner.
+        viewModelScope.launch {
+            updater.cleanUp(BuildConfig.VERSION_CODE)
+            checkForUpdate(manual = false)
+        }
+    }
 
     fun today(): LocalDate = LocalDate.now()
 
@@ -234,6 +254,70 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cancelImport() {
         _pendingImport.value = null
+    }
+
+    // --- Updates ------------------------------------------------------------
+
+    /** The Settings button: like the launch check, but says what it found. */
+    fun checkForUpdates() {
+        viewModelScope.launch { checkForUpdate(manual = true) }
+    }
+
+    private suspend fun checkForUpdate(manual: Boolean) {
+        if (_checkingForUpdate.value) return
+        _checkingForUpdate.value = true
+        try {
+            val info = updater.fetchLatest()
+            when {
+                info == null -> if (manual) notify("Could not check for updates. Are you online?")
+                info.isNewerThan(BuildConfig.VERSION_CODE) -> {
+                    val busy = _update.value is UpdateState.Downloading ||
+                        _update.value is UpdateState.Ready
+                    if (!busy) _update.value = UpdateState.Available(info)
+                }
+                else -> if (manual) notify("You have the newest version")
+            }
+        } finally {
+            _checkingForUpdate.value = false
+        }
+    }
+
+    fun downloadUpdate() {
+        val info = when (val current = _update.value) {
+            is UpdateState.Available -> current.info
+            is UpdateState.Failed -> current.info
+            else -> return
+        }
+        _update.value = UpdateState.Downloading(info, 0f)
+        viewModelScope.launch {
+            val file = updater.download(info) { progress ->
+                _update.value = UpdateState.Downloading(info, progress)
+            }
+            _update.value = if (file != null) {
+                UpdateState.Ready(info, file)
+            } else {
+                UpdateState.Failed(info)
+            }
+        }
+    }
+
+    /**
+     * What to open when Install is tapped: Android's installer, or first the switch
+     * that lets ruuun install apps. Null when there is nothing ready.
+     */
+    fun installIntent(): Intent? {
+        val ready = _update.value as? UpdateState.Ready ?: return null
+        return if (updater.canInstall()) {
+            updater.installIntent(ready.file)
+        } else {
+            notify("Turn on Allow from this source, then come back and tap Install")
+            updater.installPermissionIntent()
+        }
+    }
+
+    /** "Later": hidden until the next launch or a check from Settings. */
+    fun dismissUpdate() {
+        if (_update.value !is UpdateState.Downloading) _update.value = UpdateState.None
     }
 
     fun deleteEverything() {

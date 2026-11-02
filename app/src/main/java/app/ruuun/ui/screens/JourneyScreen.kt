@@ -2,7 +2,6 @@ package app.ruuun.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,21 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.ruuun.logic.BadgeEvaluator
-import app.ruuun.logic.Formatters
 import app.ruuun.logic.JourneyView
 import app.ruuun.logic.WeekCalculator
 import app.ruuun.ui.AppState
 import app.ruuun.ui.bannerColor
-import app.ruuun.ui.components.BadgeDetailSheet
 import app.ruuun.ui.components.Overline
 import app.ruuun.ui.components.QuestRow
 import app.ruuun.ui.components.RuuunCard
-import app.ruuun.ui.components.RuuunProgressBar
 import app.ruuun.ui.components.SecondaryButton
 import app.ruuun.ui.components.WorldCard
 import app.ruuun.ui.components.WorldJourneyCard
-import app.ruuun.ui.components.decorative
 import app.ruuun.ui.icon
 import app.ruuun.ui.theme.Border
 import app.ruuun.ui.theme.Dimens
@@ -52,11 +45,9 @@ import app.ruuun.ui.theme.Ground
 import app.ruuun.ui.theme.InfoBg
 import app.ruuun.ui.theme.Lime
 import app.ruuun.ui.theme.Navy
-import app.ruuun.ui.theme.Orange
 import app.ruuun.ui.theme.RuuunText
 import app.ruuun.ui.theme.SegmentBg
 import app.ruuun.ui.theme.Shapes
-import app.ruuun.ui.theme.Sky
 import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Surface as SurfaceColor
 import java.time.LocalDate
@@ -66,25 +57,25 @@ private const val WEEKS_AHEAD = 2
 /** Twenty years of weeks. Far past any real journey, and a hard stop on bad data. */
 private const val MAX_JOURNEY_WEEKS = 1_040
 
+/**
+ * The Journey tab, ordered by time span: this week, then the story, then every week.
+ * The next mission lives on Home only, and badges on the Badges tab.
+ */
 @Composable
-fun MissionsScreen(
+fun JourneyScreen(
     state: AppState,
     today: LocalDate,
-    onMakeEasier: () -> Unit,
-    onMakeHarder: () -> Unit,
 ) {
     val settings = state.settings ?: return
     val stats = state.stats
     val thisWeek = JourneyView.thisWeek(state.logs, settings, today)
     val chapter = JourneyView.chapterProgress(stats, settings)
-    val reachable = JourneyView.badgesWithinReach(stats)
     val journey = remember(stats, settings) { JourneyView.journeyMap(stats, settings) }
     // Clamped: a corrupted start date must not ask for thousands of rows.
     val currentJourneyWeek = WeekCalculator.journeyWeek(settings.onboardedDate, today)
         .coerceIn(1, MAX_JOURNEY_WEEKS)
 
     var showAllWeeks by remember { mutableStateOf(false) }
-    var selectedBadge by remember { mutableStateOf<app.ruuun.content.BadgeDef?>(null) }
 
     val weeksToShow = if (showAllWeeks) {
         maxOf(52, currentJourneyWeek + WEEKS_AHEAD)
@@ -96,144 +87,60 @@ fun MissionsScreen(
     }
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Missions")
+        ScreenHeader("Journey")
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(Dimens.ScreenPadding),
         ) {
             item {
-            Surface(shape = Shapes.Hero, color = Navy, modifier = Modifier.fillMaxWidth()) {
-                Box {
-                    Box(
-                        Modifier
-                            .size(110.dp)
-                            .offset(x = 260.dp, y = (-30).dp)
-                            .clip(Shapes.Pill)
-                            .background(Sky.copy(alpha = 0.16f))
-                            .decorative(),
+                RuuunCard {
+                    Overline("Week ${thisWeek.journeyWeek} · ${thisWeek.theme.flavour}")
+                    Spacer(Modifier.height(4.dp))
+                    Text(thisWeek.theme.title, style = RuuunText.CardTitle, color = Navy)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Your weekly goal, plus an optional side quest. They reset every " +
+                            "Monday, and missing a week costs you nothing.",
+                        style = RuuunText.Secondary,
+                        color = TextMuted,
                     )
-                    Row(
-                        Modifier.padding(Dimens.HeroPadding),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Overline("Next target", color = Sky)
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                Formatters.distance(settings.currentTargetM),
-                                style = RuuunText.BigNumber,
-                                color = Ground,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                "The distance to aim for on your next run.",
-                                style = RuuunText.Body,
-                                color = Ground,
-                            )
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            SecondaryButton("Easier", onMakeEasier, onNavy = true)
-                            SecondaryButton("Harder", onMakeHarder, onNavy = true)
-                        }
-                    }
+                    Spacer(Modifier.height(12.dp))
+                    QuestRow(
+                        label = "Weekly goal",
+                        description = "Run on ${thisWeek.weeklyGoal} days this week",
+                        progressText = "${thisWeek.runDays}/${thisWeek.weeklyGoal}",
+                        done = thisWeek.mainQuestMet,
+                    )
+                    Spacer(Modifier.height(Dimens.ItemGap))
+                    QuestRow(
+                        label = "Side quest (optional)",
+                        description = thisWeek.theme.sideQuest.description,
+                        progressText = if (thisWeek.sideQuestMet) "1/1" else "0/1",
+                        done = thisWeek.sideQuestMet,
+                    )
                 }
-            }
 
-            Spacer(Modifier.height(Dimens.SectionGap))
-            RuuunCard {
-                Overline("Week ${thisWeek.journeyWeek} · ${thisWeek.theme.flavour}")
-                Spacer(Modifier.height(4.dp))
-                Text(thisWeek.theme.title, style = RuuunText.CardTitle, color = Navy)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    "Two things to tick off. They reset every Monday, and missing a " +
-                        "week costs you nothing.",
-                    style = RuuunText.Secondary,
-                    color = TextMuted,
-                )
-                Spacer(Modifier.height(12.dp))
-                QuestRow(
-                    label = "Main quest",
-                    description = "Run on ${thisWeek.weeklyGoal} days this week",
-                    progressText = "${thisWeek.runDays}/${thisWeek.weeklyGoal}",
-                    done = thisWeek.mainQuestMet,
-                )
-                Spacer(Modifier.height(Dimens.ItemGap))
-                QuestRow(
-                    label = "Side quest (optional)",
-                    description = thisWeek.theme.sideQuest.description,
-                    progressText = if (thisWeek.sideQuestMet) "1/1" else "0/1",
-                    done = thisWeek.sideQuestMet,
-                )
-            }
-
-            Spacer(Modifier.height(Dimens.SectionGap))
-            WorldCard(
-                bannerColor = chapter.chapter?.world?.bannerColor() ?: Lime,
-                bannerIcon = chapter.chapter?.world?.icon() ?: Icons.Outlined.Flag,
-                worldName = chapter.worldTitle,
-                title = if (chapter.isFinale) {
-                    chapter.title
-                } else {
-                    "Chapter ${chapter.chapter?.number} · ${chapter.title}"
-                },
-                teaser = chapter.teaser,
-                progressFraction = chapter.fraction,
-                progressLabel = if (chapter.isFinale) {
-                    "Every chapter complete"
-                } else {
-                    "${chapter.runDays} of ${chapter.runDaysNeeded} runs"
-                },
-            )
-
-            if (reachable.isNotEmpty()) {
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Text("Closest badges", style = RuuunText.SectionTitle, color = Navy)
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "The ones you are nearest to earning.",
-                    style = RuuunText.Secondary,
-                    color = TextMuted,
+                WorldCard(
+                    bannerColor = chapter.chapter?.world?.bannerColor() ?: Lime,
+                    bannerIcon = chapter.chapter?.world?.icon() ?: Icons.Outlined.Flag,
+                    worldName = chapter.worldTitle,
+                    title = if (chapter.isFinale) {
+                        chapter.title
+                    } else {
+                        "Chapter ${chapter.chapter?.number} · ${chapter.title}"
+                    },
+                    teaser = chapter.teaser,
+                    progressFraction = chapter.fraction,
+                    progressLabel = chapter.progressLabel,
                 )
-                Spacer(Modifier.height(10.dp))
-                reachable.forEach { badge ->
-                    RuuunCard(
-                        modifier = Modifier.padding(bottom = Dimens.ItemGap),
-                        onClick = { selectedBadge = badge },
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                badge.title,
-                                style = RuuunText.BodyStrong,
-                                color = Navy,
-                                modifier = Modifier.weight(1f),
-                            )
-                            Text(
-                                "${BadgeEvaluator.progress(badge, stats)}/${badge.threshold} " +
-                                    badge.unit,
-                                style = RuuunText.Label,
-                                color = TextMuted,
-                            )
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(badge.hint, style = RuuunText.Secondary, color = TextMuted)
-                        Spacer(Modifier.height(10.dp))
-                        RuuunProgressBar(
-                            fraction = BadgeEvaluator.progressFraction(badge, stats),
-                            color = Orange,
-                            description = badge.hint,
-                        )
-                    }
-                }
-            }
 
                 Spacer(Modifier.height(Dimens.SectionGap))
                 Text("The whole journey", style = RuuunText.SectionTitle, color = Navy)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Four worlds, twelve chapters. Chapters open on the number of days " +
-                        "you run, not on dates.",
+                    "Four worlds, twelve chapters. Every day you run moves the story on, " +
+                        "whatever the distance.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                 )
@@ -274,10 +181,6 @@ fun MissionsScreen(
                 Spacer(Modifier.height(Dimens.ScreenPadding))
             }
         }
-    }
-
-    selectedBadge?.let { badge ->
-        BadgeDetailSheet(badge = badge, stats = stats, onDismiss = { selectedBadge = null })
     }
 }
 

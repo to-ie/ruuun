@@ -28,9 +28,9 @@ private fun body(size: Int, weight: FontWeight, line: Int = (size * 1.35).toInt(
 
 object RuuunText {
     val HeroNumber = display(60, 60)      // Home "425 m"
-    val BigNumber = display(44, 46)       // Missions next target
+    val BigNumber = display(44, 46)       // large figures
     val Greeting = display(30, 34)        // "Hello, Runner", stat tile values
-    val ScreenTitle = display(28, 34)     // Missions, Badges, History
+    val ScreenTitle = display(28, 34)     // Journey, Badges, History
     val SubTitle = display(24, 28)        // Log a run, Settings headers
     val CardTitle = display(22, 27)       // chapter and week titles
     val SectionTitle = display(20, 26)

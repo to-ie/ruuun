@@ -4,6 +4,7 @@ import app.ruuun.content.BadgeDef
 import app.ruuun.content.Chapter
 import app.ruuun.content.Chapters
 import app.ruuun.content.World
+import app.ruuun.data.Effort
 import app.ruuun.data.RunLog
 import app.ruuun.data.RunnerSettings
 import java.time.LocalDate
@@ -22,6 +23,11 @@ data class ChapterProgress(
     val fraction: Float
         get() = if (isFinale || runDaysNeeded <= 0) 1f
         else (runDays.toFloat() / runDaysNeeded).coerceIn(0f, 1f)
+
+    /** Says what moves the story: days run, not distance. */
+    val progressLabel: String
+        get() = if (isFinale) "Every chapter complete"
+        else "$runDays of $runDaysNeeded runs · any distance counts"
 }
 
 /** One chapter's standing in the overall journey. */
@@ -148,15 +154,32 @@ object JourneyView {
             .size,
     )
 
-    /** Supportive one-liner beside the next mission on the Run saved screen. */
-    fun nextMissionNote(outcome: SaveOutcome, settings: RunnerSettings): String = when {
-        outcome.nextTargetM < outcome.previousTargetM -> "Taking it down a notch next time."
-        outcome.nextTargetM > outcome.previousTargetM -> "Mission went up. Walk breaks still fine."
-        outcome.log.effort == app.ruuun.data.Effort.EASY &&
-            outcome.log.distanceM >= outcome.log.targetMAtLog ->
-            "One more easy run at ${Formatters.distance(outcome.nextTargetM)} and it goes up."
-        else -> "Same mission next time. Repeating is how it sticks."
-    }.let { if (settings.currentTargetM >= settings.maxTargetM) "You are at your longest mission setting." else it }
+    /**
+     * The line beside the next mission on the Run saved screen: what happened to the
+     * mission and why, following the same rules as [TargetRecommender.afterLog].
+     */
+    fun nextMissionNote(outcome: SaveOutcome, settings: RunnerSettings): String {
+        val log = outcome.log
+        val was = Formatters.distance(outcome.previousTargetM)
+        val beat = log.distanceM > outcome.previousTargetM
+        val went = outcome.nextTargetM.compareTo(outcome.previousTargetM)
+        val atCap = outcome.nextTargetM >= settings.maxTargetM
+        val capNote = " That is your longest mission setting."
+        return when {
+            outcome.backdated -> "Runs on earlier days don't change the mission."
+            went > 0 && beat -> when (log.effort) {
+                Effort.EASY -> "You beat $was and it felt easy, so it goes up."
+                Effort.OKAY -> "You beat $was and it felt okay, so it goes up a step."
+                Effort.HARD -> "You beat $was. It felt hard, so it only goes up a little."
+            } + if (atCap) capNote else ""
+            went > 0 -> "Two easy days at $was, so it goes up a step." + if (atCap) capNote else ""
+            went < 0 -> "That felt hard, so next time is a bit shorter."
+            atCap -> "You are at your longest mission setting."
+            log.distanceM < log.targetMAtLog -> "Same again next time. Turning up still counts."
+            log.effort == Effort.EASY -> "One more easy day at $was and it goes up."
+            else -> "Same again next time. Repeating is how it sticks."
+        }
+    }
 
     /** Cheerful line under the big check on the Run saved screen. */
     fun savedHeadline(nickname: String): String = "Nice one, $nickname!"

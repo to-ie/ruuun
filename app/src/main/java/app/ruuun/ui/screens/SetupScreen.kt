@@ -147,7 +147,7 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
             }
 
             Spacer(Modifier.height(6.dp))
-            Text("Runs each week", style = RuuunText.BodyStrong, color = Navy)
+            Text("Weekly goal", style = RuuunText.BodyStrong, color = Navy)
             Spacer(Modifier.height(10.dp))
             SegmentedPicker(
                 options = listOf(1, 2, 3),
@@ -158,7 +158,7 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "You can change this later in Settings.",
+                "How many days to run each week. You can change this later in Settings.",
                 style = RuuunText.Secondary,
                 color = TextMuted,
             )

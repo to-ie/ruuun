@@ -16,6 +16,8 @@ data class SaveOutcome(
     val completedChapter: Chapter?,
     val nextTargetM: Int,
     val previousTargetM: Int,
+    /** Logged for a date before the latest existing run, so it could not move the mission. */
+    val backdated: Boolean = false,
 ) {
     /** A second log on a day already recorded adds distance, but not an run day. */
     val isNewRunDay: Boolean get() = after.runDays > before.runDays

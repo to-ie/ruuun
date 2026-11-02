@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MilitaryTech
 import androidx.compose.material.icons.outlined.Schedule
@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +50,8 @@ import app.ruuun.ui.screens.BadgesScreen
 import app.ruuun.ui.screens.HistoryScreen
 import app.ruuun.ui.screens.HomeScreen
 import app.ruuun.ui.screens.LogRunScreen
-import app.ruuun.ui.screens.MissionsScreen
+import app.ruuun.ui.screens.JourneyScreen
+import app.ruuun.ui.components.UpdateBanner
 import app.ruuun.ui.screens.RunDetailScreen
 import app.ruuun.ui.screens.RunSavedScreen
 import app.ruuun.ui.screens.SettingsScreen
@@ -67,7 +69,7 @@ import app.ruuun.ui.theme.Surface as SurfaceColor
 object Routes {
     const val SETUP = "setup"
     const val HOME = "home"
-    const val MISSIONS = "missions"
+    const val JOURNEY = "journey"
     const val BADGES = "badges"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
@@ -84,7 +86,7 @@ private data class NavItem(val route: String, val label: String, val icon: Image
 
 private val NAV_ITEMS = listOf(
     NavItem(Routes.HOME, "Home", Icons.Outlined.Home),
-    NavItem(Routes.MISSIONS, "Missions", Icons.Outlined.Flag),
+    NavItem(Routes.JOURNEY, "Journey", Icons.Outlined.Map),
     NavItem(Routes.BADGES, "Badges", Icons.Outlined.MilitaryTech),
     NavItem(Routes.HISTORY, "History", Icons.Outlined.Schedule),
 )
@@ -93,6 +95,8 @@ private val NAV_ITEMS = listOf(
 fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val update by viewModel.update.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -123,6 +127,16 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
     Scaffold(
         containerColor = Ground,
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            if (showNav) {
+                UpdateBanner(
+                    state = update,
+                    onUpdate = viewModel::downloadUpdate,
+                    onInstall = { viewModel.installIntent()?.let(context::startActivity) },
+                    onLater = viewModel::dismissUpdate,
+                )
+            }
+        },
         bottomBar = { if (showNav) BottomNav(navController, currentRoute) },
     ) { padding ->
         NavHost(
@@ -150,12 +164,10 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
                     onSettings = { navController.navigate(Routes.SETTINGS) },
                 )
             }
-            composable(Routes.MISSIONS) {
-                MissionsScreen(
+            composable(Routes.JOURNEY) {
+                JourneyScreen(
                     state = state,
                     today = viewModel.today(),
-                    onMakeEasier = viewModel::makeEasier,
-                    onMakeHarder = viewModel::makeHarder,
                 )
             }
             composable(Routes.BADGES) {

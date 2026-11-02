@@ -161,7 +161,7 @@ fun RunSavedScreen(
                         title = "Chapter ${next.number} · ${next.title}",
                         teaser = next.teaser,
                         progressFraction = progress.fraction,
-                        progressLabel = "${progress.runDays} of ${progress.runDaysNeeded} runs",
+                        progressLabel = progress.progressLabel,
                     )
                 }
             } else {
@@ -177,18 +177,14 @@ fun RunSavedScreen(
                     },
                     teaser = progress.teaser,
                     progressFraction = progress.fraction,
-                    progressLabel = if (progress.isFinale) {
-                        "Every chapter complete"
-                    } else {
-                        "${progress.runDays} of ${progress.runDaysNeeded} runs"
-                    },
+                    progressLabel = progress.progressLabel,
                 )
             }
 
             Spacer(Modifier.height(Dimens.SectionGap))
             QuestRow(
-                label = "Main quest",
-                description = "Weekly goal: ${week.runDays} / ${week.weeklyGoal} runs",
+                label = "Weekly goal",
+                description = "Run on ${week.weeklyGoal} days this week",
                 progressText = "${week.runDays}/${week.weeklyGoal}",
                 done = week.mainQuestMet,
             )

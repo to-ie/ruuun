@@ -87,6 +87,7 @@ class RuuunRepository(private val dao: RuuunDao) {
             completedChapter = newlyCompletedChapter(before, after),
             nextTargetM = nextTarget,
             previousTargetM = settings.currentTargetM,
+            backdated = existing.maxOfOrNull { it.date }?.let { date.isBefore(it) } ?: false,
         )
     }
 

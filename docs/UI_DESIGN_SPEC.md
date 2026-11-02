@@ -17,7 +17,7 @@
 - Phone portrait, designed at 360 to 412 dp wide. Content is a single column, `Dimens.ScreenPadding` (20 dp) on all sides, `SectionGap` (16 dp) between cards. Every screen scrolls vertically (`LazyColumn` or `verticalScroll`).
 - Background `Ground`. Cards are `Surface` with 1 dp `Border` and `Shapes.Card` (20 dp). No elevation shadows, except the selected segment in segmented controls (1 dp soft shadow).
 - Top bar: white `Surface` with 1 dp bottom `Border`. Not a Material TopAppBar colour change on scroll.
-- Bottom navigation: on Home, Missions, Badges, History only. Not on Setup, Log a run, Run saved, Settings.
+- Bottom navigation: on Home, Journey, Badges, History only. Not on Setup, Log a run, Run saved, Settings.
 - Must work with font scale up to 200%: let cards grow, never fix card heights, allow text to wrap to two lines. Stat tiles may wrap to a 1-column stack above 150% font scale.
 - Respect reduce motion: the only animations are the Run saved check pop and confetti; both skippable.
 
@@ -66,7 +66,7 @@
 
 ## 3. Icon mapping
 
-Settings `Settings`; Home `Home`; Missions `Flag`; Badges `MilitaryTech`; History `Schedule`; add `Add`; check `Check`; close `Close`; back `ArrowBack`; date `CalendarMonth`; locked `Lock`; row chevron `ChevronRight`; info `Info`; export `Upload`; import `Download`; delete `DeleteOutline`. Effort faces: `SentimentSatisfied` (Easy), `SentimentNeutral` (Okay), `SentimentDissatisfied` (Hard). No emoji in UI.
+Settings `Settings`; Home `Home`; Journey `Map`; Badges `MilitaryTech`; History `Schedule`; add `Add`; check `Check`; close `Close`; back `ArrowBack`; date `CalendarMonth`; locked `Lock`; row chevron `ChevronRight`; info `Info`; export `Upload`; import `Download`; delete `DeleteOutline`. Effort faces: `SentimentSatisfied` (Easy), `SentimentNeutral` (Okay), `SentimentDissatisfied` (Hard). No emoji in UI.
 
 ## 4. Screens
 
@@ -77,18 +77,18 @@ No bottom nav.
 1. White header block, centred: logo 210 dp wide; "Let's set up your adventure" (`SubTitle` 26); "Takes about a minute. A grown-up can help." (`Body`, muted).
 2. Text field: label "Nickname (optional)", placeholder "Runner", max 20 chars.
 3. Radio cards, legend "Where are you starting?": "New to it" / "First mission 300 m", "Getting moving" / "First mission 500 m", "Already jogging" / "First mission 800 m". Default New to it. Selected card: 2 dp Navy border, `OrangeTintLight` fill. Idle: 2 dp `Border`, white.
-4. SegmentedPicker, legend "Outings each week": 1 / 2 / 3, default 2. Helper: "You can change this later in Settings."
+4. SegmentedPicker, legend "Weekly goal": 1 / 2 / 3, default 2. Helper: "How many days to run each week. You can change this later in Settings."
 5. Info panel (`InfoBg`, 16 dp corners, info icon): "Walk breaks are encouraged and rest days are good. Stop and tell a trusted adult if you feel pain, dizziness or unwell."
 6. PrimaryCta "Let's go!" pinned to bottom of content.
 
 ### 4.2 Home (`Home.dc.html`)
 1. Header: logo left (48 dp tall); gear icon button right, 48x48, `IconButtonBg`, 14 dp corners, `contentDescription = "Settings"`.
-2. "Hello, {nickname}" (`Greeting`). Row: "Level {n} · {levelName}" (`BodyStrong`) and "{xp} XP" (muted, right). XP bar (`Sky`). Caption "{daysToNext} of 5 outing days to Level {n+1}" where daysToNext counts days done in the current level.
+2. "Hello, {nickname}" (`Greeting`). Row: "Level {n} · {levelName}" (`BodyStrong`) and "{xp} XP" (muted, right). XP bar (`Sky`). Caption "50 XP for each day you run. {n} more to Level {level+1}", saying what earns XP.
 3. **Next Mission hero**: `Navy` fill, `Shapes.Hero`, 20 dp padding. Decorative circles top-right (Orange 18% and Sky 16% alpha), decorative only. Overline "NEXT MISSION" in `Sky`. Distance `HeroNumber` in `Ground`. "Walk or jog. Breaks welcome." 17 SemiBold. PrimaryCta "Log a run" with Add icon. SecondaryButton (on navy) "Make this easier". If 14+ days since last outing, swap subtitle for "Welcome back! Repeat or make it easier." and keep both buttons.
 4. Three StatTiles: `{runDays}` "Runs", `{km one decimal}` "Distance (km)", `{badges}` "Badges".
-5. Weekly card: overline "THIS WEEK · {weekTheme}"; title "{done} / {goal} outings this week"; right side one CheckDot per goal slot (filled for done). Never red, never "overdue".
+5. Weekly card: overline "THIS WEEK · {weekTheme}"; title "Weekly goal: {done} of {goal} runs"; right side one CheckDot per goal slot (filled for done). Never red, never "overdue".
 6. Badge card: 52 dp `OrangeTint` icon square; overline "BADGE ALMOST THERE"; badge title; rule hint; "{cur}/{target}" right; Orange progress bar. Pick the locked numeric badge with the highest progress ratio.
-7. WorldCard: world banner, "Chapter {n} · {title}", teaser, Navy bar + "{days} / {target} days". After chapter 12: title "Legend of the Trail".
+7. WorldCard: world banner, "Chapter {n} · {title}", teaser, Navy bar + "{days} of {target} runs · any distance counts". After chapter 12: title "Legend of the Trail".
 8. BottomNav, Home selected.
 
 **Empty state:** greeting, Level 1 · First Steps, 0 XP, bar empty, hero shows starting distance, tiles all 0, weekly "0 / {goal}", badge card shows "Liftoff!" "Record your first adventure." 0/1, chapter 1 "The First Footprint" 0 / 4 days, teaser "Your adventure starts with one outing."
@@ -110,17 +110,16 @@ No bottom nav. Shown after save.
 1. Navy top panel, centred, 36/24/28 padding: small static confetti shapes (decorative), 84 dp `Lime` circle with Navy check, "Nice one, {nickname}!" (`Greeting` 32), "{distance} saved for today", pill "+50 XP" (`Orange` fill, Navy text) **only if a new outing day was added**, otherwise pill "Distance added" on `SkyTint`. Below: "Level {n} · {name}" and "{x} of 5 days to Level {n+1}", Sky bar on `HeroTrack`.
 2. "{k} new badge(s)" grid of up to 3 earned BadgeCells (no pill), then text button "+{n} more" if needed. Omit section when none.
 3. If a chapter completed: WorldCard variant with `SunTint`-style banner "CHAPTER COMPLETE", reveal text from handoff table, then "Next: {world}" and next chapter progress. Otherwise show the current chapter progress card.
-4. Quest card: CheckDot rows "Weekly goal done: {done} / {goal} outings" and "Side quest done: {quest}". Show only rows that became or are complete; show unfinished main quest as "{done} / {goal} outings this week" with empty dot.
-5. Next mission panel (`InfoBg`): overline "NEXT MISSION" (`InfoLabel`), distance Baloo 28, supporting line on the right, e.g. "One more easy outing at 425 m and it can grow a little." for repeat; "Nice and gentle next time." after Hard.
+4. Quest rows as on Journey: "Weekly goal" / "Run on {goal} days this week" / "{done}/{goal}", and "Side quest (optional)" / quest text / "0/1" or "1/1".
+5. Next mission panel (`InfoBg`): overline "NEXT MISSION" (`InfoLabel`), distance Baloo 28, supporting line on the right saying what happened to the mission and why, following the target rules, e.g. "You beat 300 m and it felt easy, so it goes up.", "One more easy day at 425 m and it goes up.", "That felt hard, so next time is a bit shorter.", "Runs on earlier days don't change the mission."
 6. Two buttons side by side: SecondaryButton "View badges", PrimaryCta "Done".
 
-### 4.5 Missions (`Missions.dc.html`)
-Top bar: "Missions" (`ScreenTitle`).
-1. Navy card: overline "NEXT TARGET" (`Sky`), distance `BigNumber`, "Walk or jog. Breaks welcome."; right: on-navy SecondaryButton "Repeat / Easier" (opens a small dialog: "Repeat {target}" or "Make it {lower}").
-2. Week card: overline "WEEK {n} · {flavour}", title = week theme. Two rows on `QuestRowBg` (14 dp corners): "Main quest" / "Get out on {goal} days this week" / "{done}/{goal}"; "Side quest (optional)" / quest text / "0/1" or "1/1". CheckDot left (filled when complete, dashed otherwise).
-3. WorldCard for the current chapter with a one-sentence narrative.
-4. "Badges within reach": up to 3 small cards (name, "{cur}/{target} {unit}", Orange bar).
-5. "Your 52-week journey": rows with 36 dp number square, theme title, "Side quest: {text}", status right. Past: number square `Lime`, status "{n}/2 done". Current: row `InfoBg` with 2 dp Navy border, square Navy with `Ground` number, status "Now · {n}/2". Future: square `SegmentBg`, status "Coming up". Collapsed list shows weeks 1 to current+2, then SecondaryButton "See all 52 weeks" expands. After week 52 the numbering continues (53, 54) with rotated themes.
+### 4.5 Journey (`Missions.dc.html`, renamed after 1.0 beta)
+Top bar: "Journey" (`ScreenTitle`). No next-mission card and no badge hints here; see handoff §3.4.
+1. Week card: overline "WEEK {n} · {flavour}", title = week theme, helper "Your weekly goal, plus an optional side quest. They reset every Monday, and missing a week costs you nothing." Two rows on `QuestRowBg` (14 dp corners): "Weekly goal" / "Run on {goal} days this week" / "{done}/{goal}"; "Side quest (optional)" / quest text / "0/1" or "1/1". CheckDot left (filled when complete, dashed otherwise).
+2. WorldCard for the current chapter with a one-sentence narrative and "{days} of {target} runs · any distance counts".
+3. "The whole journey": four world cards, helper "Every day you run moves the story on, whatever the distance."
+4. "Week by week": rows with 36 dp number square, theme title, "Side quest: {text}", status right. Past: number square `Lime`, status "{n}/2 done". Current: row `InfoBg` with 2 dp Navy border, square Navy with `Ground` number, status "Now · {n}/2". Future: square `SegmentBg`, status "Coming up". Collapsed list shows weeks 1 to current+2, then SecondaryButton "See all 52 weeks" expands. After week 52 the numbering continues (53, 54) with rotated themes.
 
 ### 4.6 Badges (`Badges.dc.html`)
 1. Header: "Badges" + "{earned} of 141" right, Orange progress bar, horizontally scrolling filter chips: All, Run days, Distance, Weekly, Story, Adventure, Seasons, Secret (selected Navy fill). Extend the list to all categories if wanted; keep it one row.
@@ -138,13 +137,15 @@ Top bar: "Missions" (`ScreenTitle`).
 
 ### 4.8 Settings (`Settings.dc.html`)
 No bottom nav. Top bar: back arrow ("Back to Home") + "Settings" with subtitle "Best changed with a grown-up".
-1. Section "YOUR PLAN" card: Nickname field; "Outings each week" SegmentedPicker with helper "Changing this can change past weekly-goal badges. Story progress stays."; row "Longest suggested mission" / "Missions never go above this" with value button "3,000 m" (opens number dialog, 100 to 50,000 m); row "Story pace" / "Set at the start, can't be changed" / "Normal" or "Gentle" (1 per week); SecondaryButton "Reset next mission to {startingTarget}".
+1. Section "YOUR PLAN" card: Nickname field; "Weekly goal" SegmentedPicker with helper "How many days to run each week. Changing this can change past weekly-goal badges. Story progress stays."; row "Longest suggested mission" / "Missions never go above this" with value button "3,000 m" (opens number dialog, 100 to 50,000 m); row "Story pace" / "Set at the start, can't be changed" / "Normal" or "Gentle" (1 per week); SecondaryButton "Reset next mission to {startingTarget}".
 2. Section "YOUR DATA" card with three 64 dp rows: "Export progress" / "Save a backup file. Keep it somewhere safe."; "Import progress" / "Replaces everything on this phone. You'll see a preview first."; "Delete all progress" (text and icon `Destructive`) / "Asks twice before anything is removed".
-3. "About and privacy" panel (`InfoBg`): "ruuun! works fully offline. No account, no internet, no location, no ads. Everything you log stays on this phone unless you export it." and "Version {versionName}".
+3. "About and privacy" panel (`InfoBg`): "ruuun! has no account, no location and no ads. Everything you log stays on this phone unless you export it. The app only goes online to check GitHub for a new version of itself." Below it, "Version {versionName}" with a low-emphasis "Check for updates" button (revised in 1.1).
+
+**Update banner (1.1):** on the four tabbed screens only, a full-width `Navy` strip above the screen header when a newer release exists: title "ruuun {version} is ready" (`BodyStrong`, `Ground`), "Your runs and badges stay just as they are.", PrimaryCta "Update" and on-navy SecondaryButton "Later". While downloading, a `Lime` progress bar replaces the buttons; when done, "Install"; on failure, "Try again".
 
 ## 5. Navigation map
 
-Setup → Home (first launch only). Home "Log a run" → Log a run → Run saved → Done: Home; View badges: Badges. Home gear → Settings → back: Home. Bottom nav switches Home / Missions / Badges / History, single back stack per tab is not needed. History row → Run detail → Edit (reuses Log a run screen, title "Edit run", button "Save changes").
+Setup → Home (first launch only). Home "Log a run" → Log a run → Run saved → Done: Home; View badges: Badges. Home gear → Settings → back: Home. Bottom nav switches Home / Journey / Badges / History, single back stack per tab is not needed. History row → Run detail → Edit (reuses Log a run screen, title "Edit run", button "Save changes").
 
 ## 6. Accessibility checklist
 

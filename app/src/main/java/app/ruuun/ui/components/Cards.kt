@@ -245,7 +245,7 @@ fun RunRow(log: RunLog, modifier: Modifier = Modifier, onClick: () -> Unit) {
     }
 }
 
-/** Quest row with its check dot, used on Missions and Run saved. */
+/** Quest row with its check dot, used on Journey and Run saved. */
 @Composable
 fun QuestRow(
     label: String,

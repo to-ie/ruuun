@@ -64,43 +64,43 @@ class InvariantSweepTest {
                 val why = "seed $seed step $step: ran ${log.distanceM} ${log.effort} " +
                     "on a $was mission (cap ${settings.maxTargetM}) -> $next"
 
-                assertTrue("$why — below the floor", next >= RunnerSettings.MIN_TARGET_M)
-                assertTrue("$why — above the cap", next <= settings.maxTargetM)
-                assertEquals("$why — not a round 25 m", 0, next % 25)
+                assertTrue("$why: below the floor", next >= RunnerSettings.MIN_TARGET_M)
+                assertTrue("$why: above the cap", next <= settings.maxTargetM)
+                assertEquals("$why: not a round 25 m", 0, next % 25)
                 if (next < settings.maxTargetM && log.distanceM > was) {
-                    assertTrue("$why — beat the mission but it did not move past", next > log.distanceM)
+                    assertTrue("$why: beat the mission but it did not move past", next > log.distanceM)
                 }
                 if (log.effort == Effort.HARD && log.distanceM < was) {
-                    assertTrue("$why — hard and short yet it rose", next <= was)
+                    assertTrue("$why: hard and short yet it rose", next <= was)
                 }
                 if (log.distanceM <= was && log.effort != Effort.EASY) {
-                    assertTrue("$why — rose without beating it or feeling easy", next <= was)
+                    assertTrue("$why: rose without beating it or feeling easy", next <= was)
                 }
                 settings = settings.copy(currentTargetM = next)
 
                 val s = StatsCalculator.snapshot(logs, settings)
-                assertEquals("seed $seed — xp", 50 * s.runDays, s.xp)
-                assertEquals("seed $seed — level", 1 + s.runDays / 5, s.level)
-                assertTrue("seed $seed — chapters", s.completedChapters in 0..12)
-                assertTrue("seed $seed — runs to next level", s.runsToNextLevel in 1..5)
-                assertTrue("seed $seed — level progress", s.levelProgress in 0f..1f)
+                assertEquals("seed $seed: xp", 50 * s.runDays, s.xp)
+                assertEquals("seed $seed: level", 1 + s.runDays / 5, s.level)
+                assertTrue("seed $seed: chapters", s.completedChapters in 0..12)
+                assertTrue("seed $seed: runs to next level", s.runsToNextLevel in 1..5)
+                assertTrue("seed $seed: level progress", s.levelProgress in 0f..1f)
                 Achievements.ALL.forEach { badge ->
                     val f = BadgeEvaluator.progressFraction(badge, s)
-                    assertTrue("seed $seed — ${badge.id} fraction $f", !f.isNaN() && f in 0f..1f)
+                    assertTrue("seed $seed: ${badge.id} fraction $f", !f.isNaN() && f in 0f..1f)
                 }
                 val week = JourneyView.thisWeek(logs, settings, date)
-                assertTrue("seed $seed — week tasks", week.tasksDone in 0..2)
+                assertTrue("seed $seed: week tasks", week.tasksDone in 0..2)
                 val chapter = JourneyView.chapterProgress(s, settings)
-                assertTrue("seed $seed — chapter fraction", chapter.fraction in 0f..1f)
+                assertTrue("seed $seed: chapter fraction", chapter.fraction in 0f..1f)
             }
 
             // Whatever the app exports, it must be able to import back to the same state.
             val text = BackupFile.write(settings, logs, "2026-11-01T00:00:00Z")
             val parsed = BackupFile.parse(text, LocalDate.of(2099, 1, 1))
-            assertTrue("seed $seed — own export was rejected", parsed is BackupFile.ParseResult.Ok)
+            assertTrue("seed $seed: own export was rejected", parsed is BackupFile.ParseResult.Ok)
             val payload = (parsed as BackupFile.ParseResult.Ok).payload
             assertEquals(
-                "seed $seed — round trip changed the computed state",
+                "seed $seed: round trip changed the computed state",
                 StatsCalculator.snapshot(logs, settings),
                 StatsCalculator.snapshot(payload.logs, payload.settings),
             )

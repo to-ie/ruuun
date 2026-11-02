@@ -82,6 +82,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val pendingImport by viewModel.pendingImport.collectAsStateWithLifecycle()
+    val checkingForUpdate by viewModel.checkingForUpdate.collectAsStateWithLifecycle()
 
     var nickname by remember(settings.nickname) { mutableStateOf(settings.nickname) }
 
@@ -143,7 +144,7 @@ fun SettingsScreen(
                 )
 
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Text("Runs each week", style = RuuunText.BodyStrong, color = Navy)
+                Text("Weekly goal", style = RuuunText.BodyStrong, color = Navy)
                 Spacer(Modifier.height(8.dp))
                 SegmentedPicker(
                     options = listOf(1, 2, 3),
@@ -154,7 +155,8 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Changing this can change past weekly-goal badges. Story progress stays.",
+                    "How many days to run each week. Changing this can change past weekly-goal " +
+                        "badges. Story progress stays.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                 )
@@ -223,15 +225,25 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(Dimens.SectionGap))
             InfoPanel(
-                "ruuun! works fully offline. No account, no internet, no location, no ads. " +
-                    "Everything you log stays on this phone unless you export it.",
+                "ruuun! has no account, no location and no ads. Everything you log stays " +
+                    "on this phone unless you export it. The app only goes online to check " +
+                    "GitHub for a new version of itself.",
             )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                "Version ${BuildConfig.VERSION_NAME}",
-                style = RuuunText.Secondary,
-                color = TextMuted,
-            )
+            Spacer(Modifier.height(Dimens.ItemGap))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Version ${BuildConfig.VERSION_NAME}",
+                    style = RuuunText.Secondary,
+                    color = TextMuted,
+                    modifier = Modifier.weight(1f),
+                )
+                SecondaryButton(
+                    text = if (checkingForUpdate) "Checking" else "Check for updates",
+                    onClick = viewModel::checkForUpdates,
+                    enabled = !checkingForUpdate,
+                    lowEmphasis = true,
+                )
+            }
             Spacer(Modifier.height(Dimens.ScreenPadding))
         }
     }

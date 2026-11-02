@@ -244,7 +244,7 @@ fun LogRunScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 "Your mission was ${Formatters.distance(settings.currentTargetM)}. " +
-                    "Put in what you actually did \u2014 more or less, both count.",
+                    "Put in what you actually did. More or less, both count.",
                 style = RuuunText.Secondary,
                 color = TextMuted,
             )

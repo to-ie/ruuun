@@ -82,4 +82,13 @@ class JourneyMapTest {
             }
         }
     }
+
+    @Test
+    fun `chapter progress says that any distance counts, until the finale`() {
+        val settings = TestData.settings()
+        val early = JourneyView.chapterProgress(StatsCalculator.snapshot(TestData.run(1), settings), settings)
+        assertEquals("1 of 4 runs · any distance counts", early.progressLabel)
+        val done = JourneyView.chapterProgress(StatsCalculator.snapshot(TestData.run(100), settings), settings)
+        assertEquals("Every chapter complete", done.progressLabel)
+    }
 }

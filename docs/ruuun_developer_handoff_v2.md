@@ -12,6 +12,7 @@
 
 - **Single child, single device.** No account, authentication, registration, social features or multi-user support.
 - **100% offline.** No backend, Firebase, API calls, sync, internet permission, analytics, ads or in-app purchases.
+  *Revised in 1.1:* one exception, the update check. The app reads `version.json` from this project's newest GitHub release and can download and install a newer signed APK. It sends nothing about the runner, and everything else stays offline.
 - **Manual logs only.** No GPS, activity recognition, pedometer, smart watches, stopwatch, route maps or location/weather access.
 - **No virtual currency.** No coins, points to spend, wallet, shop, purchase ledger, virtual goods, collectible cosmetics, outfits, pets, equipment, inventory, customisable avatar or loot rewards.
 - **Keep the actual motivations.** Runs, adaptive next target, friendly levels/XP, milestones, achievement badges, weekly quests, 12 story chapters and 52 weekly themes.
@@ -38,7 +39,7 @@ The approved **ruuun!** logo in this chat is a blue running shoe with orange acc
 - **Style:** energetic but not babyish, friendly large cards, simple icons, excellent readability on a phone.
 - **Tone:** celebrate trying, returning, walking and consistency. Avoid the words "failed", "behind", "lazy", "bad run", "burn calories" and "lose weight".
 - **UI illustrations:** one background/header illustration per world is optional, not required. A world can be a plain coloured banner with a title and emoji/vector icon.
-- **Bottom navigation:** `Home` / `Missions` / `Badges` / `History`. Settings accessible via a gear in the Home header. `Log Run` is the main CTA on Home, not an extra tab.
+- **Bottom navigation:** `Home` / `Journey` / `Badges` / `History`. Settings accessible via a gear in the Home header. `Log Run` is the main CTA on Home, not an extra tab.
 
 ## 3. Screens, in enough detail to build
 
@@ -66,13 +67,18 @@ Distance input displays suggested mission distance as a **hint only**; never sil
 
 **Definition of an outing day:** Multiple valid sessions on the same local calendar date are allowed. All distances contribute to lifetime total, but that date counts as **one** run day for XP, weekly outing goal, run-count badges and chapter milestones. No same-day grinding. A 1-metre real effort may be logged without punishment; warn (do not prevent) implausible extreme manual entries.
 
-### 3.4 Missions
+### 3.4 Journey
 
-- **Next target** at top with distance and an optional `Repeat / Easier` action; no mission-failed state.
-- **This week's two quests:** one main quest (`Complete your personal weekly outing goal`) and one optional side quest derived from the 52-week calendar below. Checkmarks are computed from logs; no claim, reward button or currency.
-- **Chapter card:** current world/chapter name, short narrative, progress toward next chapter.
+*Revised after 1.0 beta (was "Missions"): the tab name and the distance target shared a word, so the tab is now Journey and the next mission lives on Home only.*
+
+**Naming, used the same way on every screen:** *mission* means only the suggested distance for the next run; *weekly goal* means the run-days-per-week target (the "main quest" in section 6); *side quest* means the optional weekly task. "Quest" on its own is not used for the weekly goal in the UI.
+
+Ordered by time span:
+- **This week:** the weekly goal (`Run on {goal} days this week`) and one optional side quest derived from the 52-week calendar below. Checkmarks are computed from logs; no claim, reward button or currency.
+- **Chapter card:** current world/chapter name, short narrative, progress toward next chapter, saying that any distance counts.
+- **Whole journey:** four worlds, twelve chapters, what is done, current and ahead.
 - **52-week map/list:** current week highlighted, older weeks browsable and future titles visible. This is a simple vertical list, not a graphical game map.
-- Only a handful of badge-hints are shown; no endlessly scrolling mission board or branching campaign state.
+- No next-mission card (Home has it) and no badge hints (Home and Badges have them); no endlessly scrolling mission board or branching campaign state.
 
 ### 3.5 Badges
 
@@ -237,7 +243,7 @@ The Appendix A seed list is the canonical **141-badge** catalog. Give each defin
 15. JSON export/import roundtrip restores settings and logs exactly with no network; malformed file fails without deleting current progress.
 16. 100-run and 150-run simulations work without slow scrolling, missing badge resources or broken content.
 17. TalkBack labels, large fonts, touch targets at least 48 dp and reduce-motion system preference are respected.
-18. No internet/location/activity permissions, Firebase config, coin/cosmetic/shop models or runtime network fetches in the final APK.
+18. No location/activity permissions (internet only for the 1.1 update check), Firebase config, coin/cosmetic/shop models or runtime network fetches in the final APK.
 
 ## 11. Practical build order and deliverables
 
@@ -245,7 +251,7 @@ The Appendix A seed list is the canonical **141-badge** catalog. Give each defin
 
 **Step 2 - motivation:** target suggestion, computed XP/level, weekly goal, simple save confirmation. Write unit tests for the progression rules.
 
-**Step 3 - year of content:** bundle the 52-week calendar, 12 chapters and 141 achievement definitions; render Missions and Badges. Do not draw 141 original illustrations.
+**Step 3 - year of content:** bundle the 52-week calendar, 12 chapters and 141 achievement definitions; render Journey and Badges. Do not draw 141 original illustrations.
 
 **Step 4 - durability:** settings and JSON export/import; add automated tests for data corrections, leap/ISO boundaries and import validation.
 
