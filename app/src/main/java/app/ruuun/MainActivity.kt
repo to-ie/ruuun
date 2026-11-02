@@ -16,6 +16,11 @@ import app.ruuun.ui.RuuunApp
 import app.ruuun.ui.RuuunViewModel
 import app.ruuun.ui.theme.Ground
 import app.ruuun.ui.theme.RuuunTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import app.ruuun.ui.LocalMotion
+import app.ruuun.ui.motionAllowed
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +44,12 @@ private fun RuuunRoot(viewModel: RuuunViewModel) {
             color = Ground,
             modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            RuuunApp(viewModel)
+            // Read once per launch: "Remove animations" turns all movement off.
+            val context = LocalContext.current
+            val motion = remember { context.motionAllowed() }
+            CompositionLocalProvider(LocalMotion provides motion) {
+                RuuunApp(viewModel)
+            }
         }
     }
 }

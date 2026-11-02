@@ -65,6 +65,31 @@ import app.ruuun.ui.theme.Sky
 import app.ruuun.ui.theme.SkyTint
 import app.ruuun.ui.theme.SunTint
 import app.ruuun.ui.theme.TextMuted
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalView
+import app.ruuun.ui.LocalMotion
+import app.ruuun.ui.PopIn
+import app.ruuun.ui.Unfold
+import app.ruuun.ui.buzz
+import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.sin
+import kotlin.random.Random
+import androidx.compose.ui.graphics.graphicsLayer
+import app.ruuun.ui.PopSpring
+import kotlinx.coroutines.launch
 
 /** The celebration. Everything shown is a diff between two computed snapshots. */
 @Composable
@@ -86,152 +111,179 @@ fun RunSavedScreen(
     var showAllBadges by remember { mutableStateOf(false) }
     var selectedBadge by remember { mutableStateOf<app.ruuun.content.BadgeDef?>(null) }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        CelebrationPanel(saved = saved, nickname = settings.nickname)
+    // The celebration plays once: rotating the phone shows the finished screen instead.
+    // Decided once when the screen opens, so marking it played does not cut it short.
+    var played by rememberSaveable { mutableStateOf(false) }
+    val allowed = LocalMotion.current
+    val motion = remember { allowed && !played }
+    val view = LocalView.current
+    LaunchedEffect(Unit) {
+        if (played) return@LaunchedEffect
+        played = true
+        view.buzz()
+        if (motion && saved.newBadges.isNotEmpty()) {
+            delay(BADGES_AT_MS.toLong())
+            view.buzz()
+        }
+    }
 
-        Column(Modifier.padding(Dimens.ScreenPadding)) {
-            if (saved.newBadges.isNotEmpty()) {
-                val all = saved.newBadges
-                val shown = if (showAllBadges) all else all.take(SaveOutcome.MAX_BADGES_SHOWN)
-                Text(
-                    if (all.size == 1) "1 new badge" else "${all.size} new badges",
-                    style = RuuunText.SectionTitle,
-                    color = Navy,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "Tap one to see what it is for.",
-                    style = RuuunText.Secondary,
-                    color = TextMuted,
-                )
-                Spacer(Modifier.height(10.dp))
-                shown.chunked(SaveOutcome.MAX_BADGES_SHOWN).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
-                        row.forEach { badge ->
-                            BadgeCell(
-                                badge = badge,
-                                earned = true,
-                                progressText = null,
-                                onClick = { selectedBadge = badge },
-                                modifier = Modifier.weight(1f),
+    CompositionLocalProvider(LocalMotion provides motion) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            CelebrationPanel(saved = saved, nickname = settings.nickname)
+
+            Column(Modifier.padding(Dimens.ScreenPadding)) {
+                if (saved.newBadges.isNotEmpty()) {
+                    val all = saved.newBadges
+                    val shown = if (showAllBadges) all else all.take(SaveOutcome.MAX_BADGES_SHOWN)
+                    Text(
+                        if (all.size == 1) "1 new badge" else "${all.size} new badges",
+                        style = RuuunText.SectionTitle,
+                        color = Navy,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "Tap one to see what it is for.",
+                        style = RuuunText.Secondary,
+                        color = TextMuted,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    shown.chunked(SaveOutcome.MAX_BADGES_SHOWN).forEachIndexed { rowIndex, row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
+                            row.forEachIndexed { column, badge ->
+                                val order = rowIndex * SaveOutcome.MAX_BADGES_SHOWN + column
+                                PopIn(
+                                    delayMillis = BADGES_AT_MS + order * 160,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    BadgeCell(
+                                        badge = badge,
+                                        earned = true,
+                                        progressText = null,
+                                        onClick = { selectedBadge = badge },
+                                    )
+                                }
+                            }
+                            repeat(SaveOutcome.MAX_BADGES_SHOWN - row.size) {
+                                Spacer(Modifier.weight(1f))
+                            }
+                        }
+                        Spacer(Modifier.height(Dimens.ItemGap))
+                    }
+                    if (all.size > SaveOutcome.MAX_BADGES_SHOWN) {
+                        SecondaryButton(
+                            text = if (showAllBadges) {
+                                "Show fewer"
+                            } else {
+                                "Show all ${all.size} badges"
+                            },
+                            onClick = { showAllBadges = !showAllBadges },
+                            lowEmphasis = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    Spacer(Modifier.height(Dimens.SectionGap))
+                }
+
+                val completed = saved.completedChapter
+                if (completed != null) {
+                    Unfold(delayMillis = CHAPTER_AT_MS) {
+                        WorldCard(
+                            bannerColor = SunTint,
+                            bannerIcon = completed.world.icon(),
+                            worldName = "Chapter complete",
+                            title = completed.title,
+                            teaser = completed.revealText,
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    val next = Chapters.ALL.getOrNull(completed.number)
+                    val progress = JourneyView.chapterProgress(after, settings)
+                    if (next != null) {
+                        Unfold(delayMillis = CHAPTER_AT_MS + 300) {
+                            WorldCard(
+                                bannerColor = next.world.bannerColor(),
+                                bannerIcon = next.world.icon(),
+                                worldName = "Next: ${next.world.title}",
+                                title = "Chapter ${next.number} · ${next.title}",
+                                teaser = next.teaser,
+                                progressFraction = progress.fraction,
+                                progressLabel = progress.progressLabel,
                             )
                         }
-                        repeat(SaveOutcome.MAX_BADGES_SHOWN - row.size) {
-                            Spacer(Modifier.weight(1f))
-                        }
                     }
-                    Spacer(Modifier.height(Dimens.ItemGap))
-                }
-                if (all.size > SaveOutcome.MAX_BADGES_SHOWN) {
-                    SecondaryButton(
-                        text = if (showAllBadges) {
-                            "Show fewer"
-                        } else {
-                            "Show all ${all.size} badges"
-                        },
-                        onClick = { showAllBadges = !showAllBadges },
-                        lowEmphasis = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                Spacer(Modifier.height(Dimens.SectionGap))
-            }
-
-            val completed = saved.completedChapter
-            if (completed != null) {
-                WorldCard(
-                    bannerColor = SunTint,
-                    bannerIcon = completed.world.icon(),
-                    worldName = "Chapter complete",
-                    title = completed.title,
-                    teaser = completed.revealText,
-                )
-                Spacer(Modifier.height(10.dp))
-                val next = Chapters.ALL.getOrNull(completed.number)
-                val progress = JourneyView.chapterProgress(after, settings)
-                if (next != null) {
+                } else {
+                    val progress = JourneyView.chapterProgress(after, settings)
                     WorldCard(
-                        bannerColor = next.world.bannerColor(),
-                        bannerIcon = next.world.icon(),
-                        worldName = "Next: ${next.world.title}",
-                        title = "Chapter ${next.number} · ${next.title}",
-                        teaser = next.teaser,
+                        bannerColor = progress.chapter?.world?.bannerColor() ?: Lime,
+                        bannerIcon = progress.chapter?.world?.icon() ?: Icons.Outlined.Check,
+                        worldName = progress.worldTitle,
+                        title = if (progress.isFinale) {
+                            progress.title
+                        } else {
+                            "Chapter ${progress.chapter?.number} · ${progress.title}"
+                        },
+                        teaser = progress.teaser,
                         progressFraction = progress.fraction,
                         progressLabel = progress.progressLabel,
                     )
                 }
-            } else {
-                val progress = JourneyView.chapterProgress(after, settings)
-                WorldCard(
-                    bannerColor = progress.chapter?.world?.bannerColor() ?: Lime,
-                    bannerIcon = progress.chapter?.world?.icon() ?: Icons.Outlined.Check,
-                    worldName = progress.worldTitle,
-                    title = if (progress.isFinale) {
-                        progress.title
-                    } else {
-                        "Chapter ${progress.chapter?.number} · ${progress.title}"
-                    },
-                    teaser = progress.teaser,
-                    progressFraction = progress.fraction,
-                    progressLabel = progress.progressLabel,
+
+                Spacer(Modifier.height(Dimens.SectionGap))
+                QuestRow(
+                    label = "Weekly goal",
+                    description = "Run on ${week.weeklyGoal} days this week",
+                    progressText = "${week.runDays}/${week.weeklyGoal}",
+                    done = week.mainQuestMet,
                 )
-            }
+                Spacer(Modifier.height(Dimens.ItemGap))
+                QuestRow(
+                    label = "Side quest (optional)",
+                    description = week.theme.sideQuest.description,
+                    progressText = if (week.sideQuestMet) "1/1" else "0/1",
+                    done = week.sideQuestMet,
+                )
 
-            Spacer(Modifier.height(Dimens.SectionGap))
-            QuestRow(
-                label = "Weekly goal",
-                description = "Run on ${week.weeklyGoal} days this week",
-                progressText = "${week.runDays}/${week.weeklyGoal}",
-                done = week.mainQuestMet,
-            )
-            Spacer(Modifier.height(Dimens.ItemGap))
-            QuestRow(
-                label = "Side quest (optional)",
-                description = week.theme.sideQuest.description,
-                progressText = if (week.sideQuestMet) "1/1" else "0/1",
-                done = week.sideQuestMet,
-            )
-
-            Spacer(Modifier.height(Dimens.SectionGap))
-            Surface(shape = Shapes.Card, color = InfoBg, modifier = Modifier.fillMaxWidth()) {
-                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column {
-                        Overline("Next mission", color = InfoLabel)
-                        Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(Dimens.SectionGap))
+                Surface(shape = Shapes.Card, color = InfoBg, modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column {
+                            Overline("Next mission", color = InfoLabel)
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                Formatters.distance(saved.nextTargetM),
+                                style = RuuunText.CardTitle,
+                                color = Navy,
+                            )
+                        }
+                        Spacer(Modifier.width(14.dp))
                         Text(
-                            Formatters.distance(saved.nextTargetM),
-                            style = RuuunText.CardTitle,
-                            color = Navy,
+                            JourneyView.nextMissionNote(saved, settings),
+                            style = RuuunText.Secondary,
+                            color = InfoText,
+                            modifier = Modifier.weight(1f),
                         )
                     }
-                    Spacer(Modifier.width(14.dp))
-                    Text(
-                        JourneyView.nextMissionNote(saved, settings),
-                        style = RuuunText.Secondary,
-                        color = InfoText,
+                }
+
+                Spacer(Modifier.height(Dimens.SectionGap))
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
+                    SecondaryButton(
+                        text = "View badges",
+                        onClick = onViewBadges,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PrimaryCta(
+                        text = "Done",
+                        onClick = onDone,
                         modifier = Modifier.weight(1f),
                     )
                 }
+                Spacer(Modifier.height(Dimens.ScreenPadding))
             }
-
-            Spacer(Modifier.height(Dimens.SectionGap))
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
-                SecondaryButton(
-                    text = "View badges",
-                    onClick = onViewBadges,
-                    modifier = Modifier.weight(1f),
-                )
-                PrimaryCta(
-                    text = "Done",
-                    onClick = onDone,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Spacer(Modifier.height(Dimens.ScreenPadding))
         }
     }
 
@@ -240,9 +292,39 @@ fun RunSavedScreen(
     }
 }
 
+/** When each part of the celebration arrives, in milliseconds after the screen opens. */
+private const val XP_AT_MS = 450
+private const val BAR_AT_MS = 650
+private const val BADGES_AT_MS = 1_100
+private const val CHAPTER_AT_MS = 1_500
+
 @Composable
 private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
     val after = saved.after
+    val before = saved.before
+    val motion = LocalMotion.current
+    val view = LocalView.current
+
+    // The level bar fills from where it was. A level-up fills it, says so, then starts
+    // the new level from empty.
+    val bar = remember { Animatable(if (motion) before.levelProgress else after.levelProgress) }
+    var shownLevel by remember { mutableIntStateOf(if (motion) before.level else after.level) }
+    // "Level up!" has its space from the start, so nothing below jumps when it pops.
+    val levelPop = remember { Animatable(if (motion) 0f else 1f) }
+    LaunchedEffect(Unit) {
+        if (!motion) return@LaunchedEffect
+        delay(BAR_AT_MS.toLong())
+        if (saved.leveledUp) {
+            bar.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
+            shownLevel = after.level
+            launch { levelPop.animateTo(1f, PopSpring) }
+            view.buzz(strong = true)
+            bar.snapTo(0f)
+            delay(250)
+        }
+        bar.animateTo(after.levelProgress, tween(700, easing = FastOutSlowInEasing))
+    }
+
     Surface(color = Navy, modifier = Modifier.fillMaxWidth()) {
         Box {
             Confetti()
@@ -250,19 +332,21 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                 Modifier.padding(start = 24.dp, end = 24.dp, top = 36.dp, bottom = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(
-                    Modifier
-                        .size(84.dp)
-                        .clip(Shapes.Pill)
-                        .background(Lime),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.Check,
-                        contentDescription = null,
-                        tint = Navy,
-                        modifier = Modifier.size(46.dp),
-                    )
+                PopIn {
+                    Box(
+                        Modifier
+                            .size(84.dp)
+                            .clip(Shapes.Pill)
+                            .background(Lime),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Outlined.Check,
+                            contentDescription = null,
+                            tint = Navy,
+                            modifier = Modifier.size(46.dp),
+                        )
+                    }
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
@@ -280,38 +364,55 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(14.dp))
-                if (saved.isNewRunDay) {
-                    Pill("+50 XP", Orange)
-                } else {
-                    Pill("Distance added", SkyTint)
+                PopIn(delayMillis = XP_AT_MS) {
+                    if (saved.isNewRunDay) {
+                        Pill("+50 XP", Orange)
+                    } else {
+                        Pill("Distance added", SkyTint)
+                    }
                 }
                 Spacer(Modifier.height(20.dp))
+                if (saved.leveledUp) {
+                    Pill(
+                        "Level up!",
+                        Lime,
+                        Modifier.graphicsLayer {
+                            scaleX = levelPop.value
+                            scaleY = levelPop.value
+                            alpha = levelPop.value.coerceIn(0f, 1f)
+                        },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
                 Text(
-                    "Level ${after.level} · ${StatsCalculator.levelName(after.level)}",
+                    "Level $shownLevel · ${StatsCalculator.levelName(shownLevel)}",
                     style = RuuunText.BodyStrong,
                     color = Ground,
                 )
                 Spacer(Modifier.height(8.dp))
                 RuuunProgressBar(
-                    fraction = after.levelProgress,
+                    fraction = bar.value,
                     color = Sky,
                     height = Dimens.XpBarHeight,
                     trackColor = HeroTrack,
                     description = "${after.runsToNextLevel} more runs to level ${after.level + 1}",
                 )
                 Spacer(Modifier.height(6.dp))
+                // Follows the level on show, so it never runs ahead of the bar.
+                val toNext = if (shownLevel == after.level) after.runsToNextLevel else before.runsToNextLevel
                 Text(
-                    if (after.runsToNextLevel == 1) "1 more run to Level ${after.level + 1}"
-                    else "${after.runsToNextLevel} more runs to Level ${after.level + 1}",
+                    if (toNext == 1) "1 more run to Level ${shownLevel + 1}"
+                    else "$toNext more runs to Level ${shownLevel + 1}",
                     style = RuuunText.Secondary,
                     color = Ground,
                 )
             }
+            if (motion) FallingConfetti(Modifier.matchParentSize())
         }
     }
 }
 
-/** Static decorative shapes: no animation required, nothing announced. */
+/** Static decorative shapes: they stay put, and are all there is without motion. */
 @Composable
 private fun Confetti() {
     val pieces = listOf(
@@ -330,5 +431,68 @@ private fun Confetti() {
                 .background(color.copy(alpha = 0.7f))
                 .decorative(),
         )
+    }
+}
+
+/** One piece of falling confetti. Positions are fractions of the panel. */
+private class ConfettiPiece(
+    val x: Float,
+    val start: Float,
+    val fall: Float,
+    val sway: Float,
+    val spin: Float,
+    val width: Float,
+    val height: Float,
+    val round: Boolean,
+    val color: Color,
+)
+
+private val CONFETTI: List<ConfettiPiece> = Random(7).let { r ->
+    val colours = listOf(Sky, Orange, Lime, Ground)
+    List(36) {
+        val round = r.nextFloat() < 0.35f
+        val size = 6f + r.nextFloat() * 5f
+        ConfettiPiece(
+            x = r.nextFloat(),
+            start = r.nextFloat() * 0.4f,
+            fall = 0.45f + r.nextFloat() * 0.2f,
+            sway = 6f + r.nextFloat() * 16f,
+            spin = (r.nextFloat() - 0.5f) * 4f,
+            width = size,
+            height = if (round) size else size * (1.6f + r.nextFloat()),
+            round = round,
+            color = colours[it % colours.size],
+        )
+    }
+}
+
+/** A single shower of confetti across the panel when the screen opens. Decoration only. */
+@Composable
+private fun FallingConfetti(modifier: Modifier = Modifier) {
+    val time = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { time.animateTo(1f, tween(3_000, easing = LinearEasing)) }
+    Canvas(modifier) {
+        val t = time.value
+        if (t >= 1f) return@Canvas
+        CONFETTI.forEach { p ->
+            val local = (t - p.start) / p.fall
+            if (local <= 0f || local >= 1f) return@forEach
+            val px = p.x * size.width + sin(local * 2f * PI.toFloat() * 1.5f) * p.sway * density
+            val py = -20f * density + local * (size.height + 40f * density)
+            val alpha = if (local > 0.8f) (1f - local) / 0.2f else 1f
+            val w = p.width * density
+            val h = p.height * density
+            rotate(degrees = local * 360f * p.spin, pivot = Offset(px, py)) {
+                if (p.round) {
+                    drawCircle(p.color.copy(alpha = 0.9f * alpha), radius = w / 2f, center = Offset(px, py))
+                } else {
+                    drawRect(
+                        p.color.copy(alpha = 0.9f * alpha),
+                        topLeft = Offset(px - w / 2f, py - h / 2f),
+                        size = Size(w, h),
+                    )
+                }
+            }
+        }
     }
 }

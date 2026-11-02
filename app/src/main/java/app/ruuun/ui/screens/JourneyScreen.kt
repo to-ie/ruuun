@@ -133,6 +133,7 @@ fun JourneyScreen(
                     teaser = chapter.teaser,
                     progressFraction = chapter.fraction,
                     progressLabel = chapter.progressLabel,
+                    animateProgress = true,
                 )
 
                 Spacer(Modifier.height(Dimens.SectionGap))
@@ -140,7 +141,7 @@ fun JourneyScreen(
                 Spacer(Modifier.height(2.dp))
                 Text(
                     "Four worlds, twelve chapters. Every day you run moves the story on, " +
-                        "whatever the distance.",
+                        "whatever the distance. Finished worlds fold up: tap one to look back.",
                     style = RuuunText.Secondary,
                     color = TextMuted,
                 )

@@ -40,6 +40,7 @@ import app.ruuun.logic.Formatters
 import app.ruuun.ui.icon
 import app.ruuun.ui.label
 import app.ruuun.ui.earnedColor
+import app.ruuun.ui.earnedIcon
 import app.ruuun.ui.tint
 import app.ruuun.ui.theme.Border
 import app.ruuun.ui.theme.Dimens
@@ -54,6 +55,13 @@ import app.ruuun.ui.theme.Shapes
 import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Track
 import app.ruuun.ui.theme.Surface as SurfaceColor
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.graphicsLayer
+import app.ruuun.ui.LocalMotion
+import kotlinx.coroutines.launch
 
 /** Card with a coloured world banner across the top. */
 @Composable
@@ -67,6 +75,7 @@ fun WorldCard(
     progressFraction: Float? = null,
     progressLabel: String? = null,
     progressColor: Color = Navy,
+    animateProgress: Boolean = false,
 ) {
     Surface(
         shape = Shapes.Card,
@@ -96,6 +105,7 @@ fun WorldCard(
                         fraction = progressFraction,
                         color = progressColor,
                         description = progressLabel,
+                        animate = animateProgress,
                     )
                     if (progressLabel != null) {
                         Spacer(Modifier.height(6.dp))
@@ -137,6 +147,9 @@ fun InfoPanel(
     }
 }
 
+/** Degrees the badge icon swings through when an earned badge is tapped. */
+private val WIGGLE = listOf(-14f, 12f, -9f, 6f, -3f, 0f)
+
 /** One badge in the three-column grid. */
 @Composable
 fun BadgeCell(
@@ -148,8 +161,24 @@ fun BadgeCell(
 ) {
     val hidden = badge.secret && !earned
     val title = if (hidden) "???" else badge.title
+    // An earned badge gives a little wiggle, then opens. Locked ones open straight away.
+    val motion = LocalMotion.current
+    val scope = rememberCoroutineScope()
+    val wiggle = remember { Animatable(0f) }
+    val open: () -> Unit = {
+        if (onClick != null && !wiggle.isRunning) {
+            if (earned && motion) {
+                scope.launch {
+                    for (angle in WIGGLE) wiggle.animateTo(angle, tween(65))
+                    onClick()
+                }
+            } else {
+                onClick()
+            }
+        }
+    }
     Surface(
-        onClick = onClick ?: {},
+        onClick = open,
         enabled = onClick != null,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         color = if (earned) SurfaceColor else LockedCard,
@@ -163,12 +192,18 @@ fun BadgeCell(
             Box(
                 modifier = Modifier
                     .size(Dimens.BadgeIcon)
+                    .graphicsLayer {
+                        rotationZ = wiggle.value
+                        val grow = 1f + kotlin.math.abs(wiggle.value) / 120f
+                        scaleX = grow
+                        scaleY = grow
+                    }
                     .clip(Shapes.Pill)
                     .background(if (earned) badge.category.earnedColor() else Border),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = if (earned) badge.category.icon() else Icons.Outlined.Lock,
+                    imageVector = if (earned) badge.earnedIcon() else Icons.Outlined.Lock,
                     contentDescription = null,
                     tint = if (earned) Navy else TextMuted,
                     modifier = Modifier.size(26.dp),

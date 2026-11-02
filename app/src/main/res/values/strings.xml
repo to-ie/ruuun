@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ruuun!</string>
+    <!--
+        The launcher name is written straight into AndroidManifest.xml, not taken from here:
+        Android 14's installer can only read a plain-text name on its "App installed" screen
+        and otherwise shows the package name, app.ruuun.
+    -->
     <string name="logo_description">ruuun!</string>
 </resources>

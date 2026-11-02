@@ -162,6 +162,7 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
                     onMakeEasier = viewModel::makeEasier,
                     onMakeHarder = viewModel::makeHarder,
                     onSettings = { navController.navigate(Routes.SETTINGS) },
+                    newlyFilledDots = viewModel::newlyFilledDots,
                 )
             }
             composable(Routes.JOURNEY) {

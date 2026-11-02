@@ -26,6 +26,7 @@
 No runner-avatar builder, item art packs, coin economy, inventory, shop screen, reward transactions, avatar equipment state, daily login rewards, push notifications, audio coach, animation engine, location tags captured automatically, reminders, parental PIN, parent account, custom trophy marketplace, remote content download, AI features or separate service layer. Do not add these later unless explicitly requested.
 
 One or two very small built-in confetti/checkmark animations are fine, but the app must also work without animation and sounds. Do not spend development time on a sophisticated game engine.
+*Revised after 1.1:* more motion was added for excitement (celebration after a run, rolling mission number, bouncing weekly dots, sliding worlds, badge wiggle, haptic buzzes), all built from plain Compose animation with no engine, and all switched off by the phone's "Remove animations" setting.
 
 ### 1.2 Acceptance definition of the experience
 

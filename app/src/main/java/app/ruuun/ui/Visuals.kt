@@ -47,7 +47,10 @@ fun World.icon(): ImageVector = when (this) {
     World.PLANET_ZOOM -> Icons.Outlined.Public
 }
 
-/** One icon and colour per badge category; never one asset per badge. */
+/**
+ * One colour and one fallback icon per badge category. Each earned badge also has its
+ * own icon, in BadgeIcons.kt.
+ */
 fun BadgeCategory.earnedColor(): Color = when (this) {
     BadgeCategory.FIRST_STEPS, BadgeCategory.RUN_DAYS -> Sky
     BadgeCategory.BEST_OUTING, BadgeCategory.TOTAL_DISTANCE -> Orange

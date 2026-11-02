@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import app.ruuun.logic.FilledDots
 
 /** Everything the UI reads, recomputed whenever the two tables change. */
 data class AppState(
@@ -86,6 +87,12 @@ class RuuunViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun today(): LocalDate = LocalDate.now()
+
+    private val filledDots = FilledDots()
+
+    /** Weekly goal dots filled since Home last showed them, so they can bounce in. */
+    fun newlyFilledDots(weekStart: LocalDate, runDays: Int): IntRange =
+        filledDots.newlyFilled(weekStart, runDays)
 
     fun completeSetup(nickname: String, startingTargetM: Int, weeklyGoal: Int) {
         viewModelScope.launch {

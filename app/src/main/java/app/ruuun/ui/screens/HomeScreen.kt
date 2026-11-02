@@ -56,6 +56,26 @@ import app.ruuun.ui.theme.Sky
 import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Surface as SurfaceColor
 import java.time.LocalDate
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalView
+import app.ruuun.ui.LocalMotion
+import app.ruuun.ui.PopSpring
+import app.ruuun.ui.buzz
+import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
@@ -65,6 +85,7 @@ fun HomeScreen(
     onMakeEasier: () -> Unit,
     onMakeHarder: () -> Unit,
     onSettings: () -> Unit,
+    newlyFilledDots: (weekStart: LocalDate, runDays: Int) -> IntRange = { _, _ -> IntRange.EMPTY },
 ) {
     val settings = state.settings ?: return
     val stats = state.stats
@@ -150,9 +171,20 @@ fun HomeScreen(
                         color = Navy,
                         modifier = Modifier.weight(1f),
                     )
+                    // Dots filled since Home last showed them bounce in, one after another.
+                    val fresh = remember(week.weekStart, week.runDays) {
+                        newlyFilledDots(week.weekStart, week.runDays)
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         repeat(week.weeklyGoal) { index ->
-                            CheckDot(done = index < week.runDays)
+                            if (index in fresh) {
+                                FillingCheckDot(
+                                    delayMillis = 350 + (index - fresh.first) * 250,
+                                    completesGoal = index == week.weeklyGoal - 1,
+                                )
+                            } else {
+                                CheckDot(done = index < week.runDays)
+                            }
                         }
                     }
                 }
@@ -248,11 +280,29 @@ private fun NextMissionHero(
             Column(Modifier.padding(Dimens.HeroPadding)) {
                 Overline("Next mission", color = Sky)
                 Spacer(Modifier.height(6.dp))
-                Text(
-                    Formatters.distance(targetM),
-                    style = RuuunText.HeroNumber,
-                    color = Ground,
-                )
+                // Easier rolls the number down, Harder rolls it up.
+                val motion = LocalMotion.current
+                AnimatedContent(
+                    targetState = targetM,
+                    transitionSpec = {
+                        when {
+                            !motion -> EnterTransition.None togetherWith ExitTransition.None
+                            targetState > initialState ->
+                                (slideInVertically { it } + fadeIn()) togetherWith
+                                    (slideOutVertically { -it } + fadeOut())
+                            else ->
+                                (slideInVertically { -it } + fadeIn()) togetherWith
+                                    (slideOutVertically { it } + fadeOut())
+                        }
+                    },
+                    label = "mission",
+                ) { metres ->
+                    Text(
+                        Formatters.distance(metres),
+                        style = RuuunText.HeroNumber,
+                        color = Ground,
+                    )
+                }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     if (welcomeBack) {
@@ -283,4 +333,31 @@ private fun NextMissionHero(
             }
         }
     }
+}
+
+/**
+ * A weekly goal dot that was empty last time Home was shown: it starts empty, then
+ * fills with a bounce. Filling the last one also gives a small buzz.
+ */
+@Composable
+private fun FillingCheckDot(delayMillis: Int, completesGoal: Boolean) {
+    val motion = LocalMotion.current
+    val view = LocalView.current
+    var filled by remember { mutableStateOf(!motion) }
+    val scale = remember { Animatable(1f) }
+    LaunchedEffect(Unit) {
+        if (!motion) return@LaunchedEffect
+        delay(delayMillis.toLong())
+        filled = true
+        if (completesGoal) view.buzz()
+        scale.snapTo(0.5f)
+        scale.animateTo(1f, PopSpring)
+    }
+    CheckDot(
+        done = filled,
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale.value
+            scaleY = scale.value
+        },
+    )
 }

@@ -58,6 +58,12 @@ import app.ruuun.ui.theme.Sky
 import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Track
 import app.ruuun.ui.theme.Surface as SurfaceColor
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import app.ruuun.ui.LocalMotion
 
 /** Uppercase section label. Rendered uppercase, never relying on the source string. */
 @Composable
@@ -182,8 +188,15 @@ fun RuuunProgressBar(
     height: androidx.compose.ui.unit.Dp = Dimens.ProgressHeight,
     trackColor: Color = Track,
     description: String? = null,
+    animate: Boolean = false,
 ) {
     val safe = fraction.coerceIn(0f, 1f)
+    // When asked, fill from empty on first show and glide to any new value after that.
+    val moving = animate && LocalMotion.current
+    val shown = remember { Animatable(if (moving) 0f else safe) }
+    LaunchedEffect(safe, moving) {
+        if (moving) shown.animateTo(safe, tween(800, easing = FastOutSlowInEasing)) else shown.snapTo(safe)
+    }
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -197,7 +210,7 @@ fun RuuunProgressBar(
     ) {
         Box(
             Modifier
-                .fillMaxWidth(safe)
+                .fillMaxWidth(shown.value)
                 .fillMaxHeight()
                 .clip(Shapes.Pill)
                 .background(color),

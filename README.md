@@ -149,7 +149,7 @@ on a connected device or emulator: onboarding, saving, same-date runs, editing, 
 note persistence, atomic import, delete-everything, the mission controls against the cap, and 150
 runs.
 
-`./gradlew :app:testDebugUnitTest` runs 110 JVM tests with no emulator required:
+`./gradlew :app:testDebugUnitTest` runs 121 JVM tests with no emulator required:
 
 | File | Covers |
 |---|---|
@@ -202,8 +202,8 @@ reports zero errors.
   in place and large font scales were considered, but no TalkBack pass has been run.
 - **Stat tiles stay in a row at very large font scales.** The spec allows them to stack into one
   column above 150%; text shrinks to fit instead.
-- **No animations at all.** The check and confetti are static, which satisfies "must work without
-  animation"; the one or two small motion touches the spec permits were not added.
+- **Motion is checked by eye only.** The animations were recorded and reviewed frame by frame on an
+  emulator, with and without "Remove animations"; there are no automated UI tests for them.
 
 ## Not built, deliberately
 
@@ -226,8 +226,22 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-The Android `versionCode` counts up independently of the name (currently 7) because it must never
+The Android `versionCode` counts up independently of the name (currently 8) because it must never
 decrease.
+
+- **1.2**: the installer's "App installed" screen shows ruuun! instead of app.ruuun (the name is
+  now plain text in the manifest, which Android 14's installer can read). On the Journey map, a finished world folds down to its banner so the current
+  one stays near the top. Tap the banner to look back at its chapters. Every badge now has its own
+  icon, revealed when it is earned (147 Material icons, no two the same, in
+  [`BadgeIcons.kt`](app/src/main/java/app/ruuun/ui/BadgeIcons.kt)); locked badges still show a
+  padlock. Movement, all of it switched off by the phone's "Remove animations" setting
+  ([`Motion.kt`](app/src/main/java/app/ruuun/ui/Motion.kt)): after a run, confetti falls, the tick
+  and "+50 XP" pop in, the level bar fills from where it was (with a "Level up!" moment), new
+  badges pop in one by one and a finished chapter unfolds, with a buzz on save, on new badges and
+  on levelling up. On Home the mission number rolls when Easier or Harder is tapped and newly
+  filled weekly goal dots bounce in; on Journey the chapter bars fill as the tab opens and
+  finished worlds slide open and shut; an earned badge wiggles before its sheet opens. The
+  celebration plays once and does not replay on rotation. 121 unit tests.
 
 - **1.1**: the app can update itself. When a newer release is on GitHub, a banner at the top of
   the tabs offers to download and install it, and Settings has **Check for updates**. Releases are

@@ -118,13 +118,14 @@ No bottom nav. Shown after save.
 Top bar: "Journey" (`ScreenTitle`). No next-mission card and no badge hints here; see handoff §3.4.
 1. Week card: overline "WEEK {n} · {flavour}", title = week theme, helper "Your weekly goal, plus an optional side quest. They reset every Monday, and missing a week costs you nothing." Two rows on `QuestRowBg` (14 dp corners): "Weekly goal" / "Run on {goal} days this week" / "{done}/{goal}"; "Side quest (optional)" / quest text / "0/1" or "1/1". CheckDot left (filled when complete, dashed otherwise).
 2. WorldCard for the current chapter with a one-sentence narrative and "{days} of {target} runs · any distance counts".
-3. "The whole journey": four world cards, helper "Every day you run moves the story on, whatever the distance."
+3. "The whole journey": four world cards, helper "Every day you run moves the story on, whatever the distance. Finished worlds fold up: tap one to look back." A world with all three chapters complete shows only its banner, with "Done · 3 of 3" and a chevron; tapping the banner opens or folds it.
 4. "Week by week": rows with 36 dp number square, theme title, "Side quest: {text}", status right. Past: number square `Lime`, status "{n}/2 done". Current: row `InfoBg` with 2 dp Navy border, square Navy with `Ground` number, status "Now · {n}/2". Future: square `SegmentBg`, status "Coming up". Collapsed list shows weeks 1 to current+2, then SecondaryButton "See all 52 weeks" expands. After week 52 the numbering continues (53, 54) with rotated themes.
 
 ### 4.6 Badges (`Badges.dc.html`)
 1. Header: "Badges" + "{earned} of 141" right, Orange progress bar, horizontally scrolling filter chips: All, Run days, Distance, Weekly, Story, Adventure, Seasons, Secret (selected Navy fill). Extend the list to all categories if wanted; keep it one row.
 2. One section per category: title + "{earned} of {total}" muted, BadgeCell grid. Order inside a section: earned first by threshold, then locked by threshold.
-3. Tapping a cell opens a bottom sheet: icon, name, rule hint, status, progress. Secret locked: "Keep exploring to find this one." with no rule text.
+3. Tapping a cell opens a bottom sheet: icon, name, rule hint, status, progress.
+   *Revised after 1.1:* an earned badge shows its own icon (one per badge, all different, chosen from Material's outlined set to suit the name); a locked badge shows a padlock. The category colour stays. Secret locked: "Keep exploring to find this one." with no rule text.
 4. BottomNav, Badges selected.
 
 ### 4.7 History (`History.dc.html`)
