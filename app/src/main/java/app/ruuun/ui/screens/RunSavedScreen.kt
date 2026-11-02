@@ -391,7 +391,7 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
         Box {
             Confetti()
             Column(
-                Modifier.padding(start = 24.dp, end = 24.dp, top = 36.dp, bottom = 28.dp),
+                Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 PopIn {
@@ -400,7 +400,7 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                         contentDescription = null,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
-                            .height(156.dp)
+                            .height(220.dp)
                             .aspectRatio(Mascot.RUU_ASPECT),
                     )
                 }

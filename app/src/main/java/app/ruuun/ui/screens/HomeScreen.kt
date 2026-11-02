@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,6 +43,7 @@ import app.ruuun.logic.TargetRecommender
 import app.ruuun.ui.AppState
 import app.ruuun.ui.bannerColor
 import app.ruuun.ui.components.CheckDot
+import app.ruuun.ui.components.RuuImage
 import app.ruuun.ui.components.Overline
 import app.ruuun.ui.components.PrimaryCta
 import app.ruuun.ui.components.RuuunCard
@@ -269,8 +271,11 @@ fun HomeScreen(
     }
 }
 
-private val RUU_HERO_HEIGHT = 108.dp
-private val RUU_HERO_MIN_HEIGHT = 64.dp
+/** Ruu's height in the hero when there is room, and how far Ruu stands above the card. */
+private val RUU_HERO_HEIGHT = 176.dp
+private val RUU_HERO_MIN_HEIGHT = 96.dp
+private val RUU_OVERHANG = 44.dp
+private val RUU_END_INSET = 4.dp
 private val RUU_GAP = 8.dp
 
 @Composable
@@ -285,19 +290,39 @@ private fun NextMissionHero(
     onMakeEasier: () -> Unit,
     onMakeHarder: () -> Unit,
 ) {
-    Surface(shape = Shapes.Hero, color = Navy, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(Dimens.HeroPadding)) {
-            // Ruu stands beside the distance when both fit on one line. On a narrow phone
-            // or with large text Ruu gets smaller, and steps aside rather than wrap the number.
-            val measurer = rememberTextMeasurer()
-            val density = LocalDensity.current
-            BoxWithConstraints {
-                val numberWidth = with(density) {
-                    measurer.measure(Formatters.distance(targetM), RuuunText.HeroNumber).size.width.toDp()
-                }
-                val room = maxWidth - numberWidth - RUU_GAP
-                val ruuHeight = (room / Mascot.RUU_ASPECT).coerceAtMost(RUU_HERO_HEIGHT)
-                Row(verticalAlignment = Alignment.Bottom) {
+    val pose = if (welcomeBack) Mascot.WELCOME_BACK else Mascot.READY
+    // How far Ruu's body reaches in from the right edge of the picture: arms wide
+    // takes more room than standing with folded paws.
+    val bodyReach = if (welcomeBack) 0.91f else 0.81f
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+
+    // Ruu stands on the right of the card, big, with the head above its top edge. The
+    // distance keeps the room it needs: on a narrow phone or with large text Ruu gets
+    // smaller, and steps out altogether rather than wrap the number.
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val numberWidth = with(density) {
+            measurer.measure(Formatters.distance(targetM), RuuunText.HeroNumber).size.width.toDp()
+        }
+        val roomForRuu = maxWidth - Dimens.HeroPadding - RUU_END_INSET - RUU_GAP - numberWidth
+        val ruuHeight = (roomForRuu / (bodyReach * Mascot.RUU_ASPECT)).coerceAtMost(RUU_HERO_HEIGHT)
+        val showRuu = ruuHeight >= RUU_HERO_MIN_HEIGHT
+        val overhang = if (showRuu) RUU_OVERHANG else 0.dp
+        val ruuReach = ruuHeight * Mascot.RUU_ASPECT * bodyReach
+
+        Surface(
+            shape = Shapes.Hero,
+            color = Navy,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = overhang),
+        ) {
+            Column(Modifier.padding(Dimens.HeroPadding)) {
+                Row(
+                    Modifier.heightIn(
+                        min = if (showRuu) ruuHeight - overhang - Dimens.HeroPadding else 0.dp,
+                    ),
+                ) {
                     Column(Modifier.weight(1f)) {
                         Overline("Next mission", color = Sky)
                         Spacer(Modifier.height(6.dp))
@@ -322,59 +347,63 @@ private fun NextMissionHero(
                                 Formatters.distance(metres),
                                 style = RuuunText.HeroNumber,
                                 color = Ground,
+                                maxLines = 1,
+                                softWrap = false,
                             )
                         }
                     }
-                    if (ruuHeight >= RUU_HERO_MIN_HEIGHT) {
-                        Spacer(Modifier.width(RUU_GAP))
-                        Image(
-                            painter = painterResource(if (welcomeBack) Mascot.WELCOME_BACK else Mascot.READY),
-                            contentDescription = null,
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier
-                                .height(ruuHeight)
-                                .aspectRatio(Mascot.RUU_ASPECT),
-                        )
+                    if (showRuu) {
+                        Spacer(Modifier.width(RUU_END_INSET + ruuReach + RUU_GAP - Dimens.HeroPadding))
                     }
                 }
-            }
-            if (stopGoal != null) {
-                Spacer(Modifier.height(2.dp))
+                if (stopGoal != null) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "Stop goal: ${StopGoal.goalLabel(stopGoal).lowercase()}" +
+                            (lastStops?.takeIf { it > stopGoal }?.let { " · from $it" } ?: ""),
+                        style = RuuunText.BodyStrong,
+                        color = Lime,
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
                 Text(
-                    "Stop goal: ${StopGoal.goalLabel(stopGoal).lowercase()}" +
-                        (lastStops?.takeIf { it > stopGoal }?.let { " · from $it" } ?: ""),
-                    style = RuuunText.BodyStrong,
-                    color = Lime,
+                    when {
+                        welcomeBack -> "Welcome back. Repeat this one, or make it easier."
+                        atCap -> "Breaks are fine. This is your longest mission setting."
+                        else -> "Breaks are fine. It gets longer after a run with " +
+                            "${JourneyView.stopsOrFewer(lowStopsLimit)}."
+                    },
+                    style = RuuunText.BodyLarge,
+                    color = Ground,
                 )
+                Spacer(Modifier.height(18.dp))
+                PrimaryCta("Log a run", onLogRun, icon = Icons.Outlined.Add)
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SecondaryButton(
+                        text = "Easier",
+                        onClick = onMakeEasier,
+                        onNavy = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                    SecondaryButton(
+                        text = "Harder",
+                        onClick = onMakeHarder,
+                        onNavy = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
-            Spacer(Modifier.height(4.dp))
-            Text(
-                when {
-                    welcomeBack -> "Welcome back. Repeat this one, or make it easier."
-                    atCap -> "Breaks are fine. This is your longest mission setting."
-                    else -> "Breaks are fine. It gets longer after a run with " +
-                        "${JourneyView.stopsOrFewer(lowStopsLimit)}."
-                },
-                style = RuuunText.BodyLarge,
-                color = Ground,
+        }
+        if (showRuu) {
+            RuuImage(
+                pose = pose,
+                height = ruuHeight,
+                breathe = true,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = RUU_END_INSET),
             )
-            Spacer(Modifier.height(18.dp))
-            PrimaryCta("Log a run", onLogRun, icon = Icons.Outlined.Add)
-            Spacer(Modifier.height(10.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                SecondaryButton(
-                    text = "Easier",
-                    onClick = onMakeEasier,
-                    onNavy = true,
-                    modifier = Modifier.weight(1f),
-                )
-                SecondaryButton(
-                    text = "Harder",
-                    onClick = onMakeHarder,
-                    onNavy = true,
-                    modifier = Modifier.weight(1f),
-                )
-            }
         }
     }
 }

@@ -1,5 +1,8 @@
 package app.ruuun.ui.screens
 
+import app.ruuun.ui.Mascot
+import app.ruuun.ui.components.RuuImage
+import app.ruuun.ui.components.SpeechBubble
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -190,6 +193,17 @@ fun LogRunScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.ScreenPadding),
         ) {
+            if (editing == null) {
+                // Ruu takes notes. The bubble says the same as the form, so Ruu stays decorative.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RuuImage(pose = Mascot.NOTEBOOK, height = 100.dp)
+                    SpeechBubble(
+                        "How did it go? Walking and breaks all count.",
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Spacer(Modifier.height(Dimens.SectionGap))
+            }
             Text("When", style = RuuunText.BodyStrong, color = Navy)
             Spacer(Modifier.height(8.dp))
             Surface(

@@ -1,5 +1,9 @@
 package app.ruuun.ui.screens
 
+import app.ruuun.logic.JourneyView
+import app.ruuun.ui.Mascot
+import app.ruuun.ui.components.RuuImage
+import app.ruuun.ui.components.SpeechBubble
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,7 +77,23 @@ fun BadgesScreen(state: AppState) {
                     color = Orange,
                     description = "${stats.earnedBadgeIds.size} of ${Achievements.ALL.size} badges earned",
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(10.dp))
+                // Ruu shows off a medal and names the closest badge. Decorative: the same
+                // facts are in the grid below.
+                val earned = stats.earnedBadgeIds.size
+                val next = JourneyView.upcomingBadge(stats)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RuuImage(pose = Mascot.BADGE_PROUD, height = 104.dp)
+                    SpeechBubble(
+                        when {
+                            earned == 0 -> "Your first badge is one run away."
+                            next != null -> "$earned so far! Closest next: ${next.title}."
+                            else -> "$earned so far. What a collection!"
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
                 Row(
                     Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

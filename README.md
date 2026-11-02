@@ -249,8 +249,14 @@ Everything that is not build input lives in [`docs/`](docs/):
 
 ## Version history
 
-The Android `versionCode` counts up independently of the name (currently 12) because it must never
+The Android `versionCode` counts up independently of the name (currently 13) because it must never
 decrease.
+
+- **1.4.1**: more Ruu. On Home, Ruu is much bigger (176 dp, from 108) and stands on the mission card
+  with its head above the top edge, breathing gently (still when animations are off). Run saved
+  shows Ruu at 220 dp, the world pictures are taller with a bigger Ruu, and Ruu now also appears on
+  Log a run (taking notes, with a speech bubble) and on Badges (holding up a medal and naming the
+  closest badge). On a narrow phone or with large text Ruu still shrinks before the distance wraps.
 
 - **1.4**: Ruu the fox joins. Ruu is the new logo (with the ruuun! name) and the app icon, stands
   beside the next mission on Home (arms wide after a long break), cheers on Run saved for anything

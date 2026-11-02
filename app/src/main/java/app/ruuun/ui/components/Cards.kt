@@ -120,7 +120,7 @@ fun WorldCard(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(end = 10.dp)
-                                .fillMaxHeight(0.92f)
+                                .fillMaxHeight(0.97f)
                                 .aspectRatio(Mascot.RUU_ASPECT),
                         )
                     }
@@ -181,10 +181,10 @@ fun WorldCard(
 }
 
 /** How much of the banner's width the world chip may use when Ruu stands on the right. */
-private const val CHIP_SHARE_WITH_RUU = 0.62f
+private const val CHIP_SHARE_WITH_RUU = 0.56f
 
 /** A short wide strip cut from the middle of a world scene. */
-const val WIDE_BANNER_ASPECT = 2.4f
+const val WIDE_BANNER_ASPECT = 2f
 
 /** Light blue information panel. */
 @Composable

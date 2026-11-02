@@ -24,6 +24,7 @@ object Mascot {
     @DrawableRes val TIRED_PROUD = R.drawable.ruu_tired_proud
     @DrawableRes val WELCOME_BACK = R.drawable.ruu_welcome_back
     @DrawableRes val NOTEBOOK = R.drawable.ruu_notebook
+    @DrawableRes val BADGE_PROUD = R.drawable.ruu_badge_proud
 
     /** Width over height of every Ruu picture. */
     const val RUU_ASPECT = 425f / 480f
