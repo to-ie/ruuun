@@ -55,6 +55,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -337,11 +339,11 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
     // One stop for TalkBack: "Let's do 1.3 km".
     SpeechCard(
         Modifier.semantics(mergeDescendants = true) {},
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 8.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 18.dp, end = 18.dp, top = 9.dp, bottom = 13.dp),
     ) {
         if (welcomeBack) {
-            Text("Welcome back!", style = RuuunText.SpeechWords, color = Navy)
-            Spacer(Modifier.height(4.dp))
+            Text("Welcome back!", style = RuuunText.SpeechWords, color = Navy, modifier = Modifier.cropToBaseline())
+            Spacer(Modifier.height(10.dp))
         }
         // Bottom-aligned with a fixed nudge, not by baseline: while the number rolls there
         // are two of them, and a baseline would make the card jump.
@@ -354,8 +356,7 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
                 // The distance keeps its width; the words give way first.
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .padding(bottom = 3.dp)
-                    .cropFontSpace(),
+                    .cropToBaseline(),
             )
             AnimatedContent(
                 targetState = targetM,
@@ -376,7 +377,7 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
                     color = OrangeShade,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.cropFontSpace(),
+                    modifier = Modifier.cropToBaseline(),
                 )
             }
         }
@@ -393,6 +394,21 @@ private fun Modifier.cropFontSpace(top: Float = 0.2f, bottom: Float = 0.16f): Mo
         val cutTop = (placeable.height * top).toInt()
         val cutBottom = (placeable.height * bottom).toInt()
         layout(placeable.width, placeable.height - cutTop - cutBottom) {
+            placeable.place(0, -cutTop)
+        }
+    }
+
+/**
+ * Ends the text's box exactly on its baseline (and trims the font's space above), so
+ * two sizes of text in a bottom-aligned row sit on the same line, even while one of
+ * them is rolling to a new number.
+ */
+private fun Modifier.cropToBaseline(top: Float = 0.2f): Modifier =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+        val baseline = placeable[FirstBaseline].takeIf { it != AlignmentLine.Unspecified } ?: placeable.height
+        val cutTop = (placeable.height * top).toInt()
+        layout(placeable.width, baseline - cutTop) {
             placeable.place(0, -cutTop)
         }
     }
