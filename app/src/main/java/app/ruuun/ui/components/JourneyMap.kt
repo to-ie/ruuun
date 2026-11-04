@@ -96,9 +96,9 @@ private val PATH_OFFSETS = listOf(24.dp, 120.dp, 52.dp)
 
 /**
  * One world on the Journey map. The current world shows its chapters as a zig-zag path
- * with "You are here"; finished worlds fold to a card that opens to the same path, so
- * their chapter pictures stay one tap away; worlds ahead show what is in them and how
- * many runs they need. A whole season that has not opened yet is drawn dashed.
+ * with "You are here". Every other world folds to a card that opens to the same path:
+ * a finished one to its chapter pictures, one ahead to its locked chapters and the runs
+ * each needs. A whole season that has not opened yet is drawn dashed.
  */
 @Composable
 fun WorldJourneyCard(status: WorldStatus, seasonOpen: Boolean, modifier: Modifier = Modifier) {
@@ -137,7 +137,8 @@ fun WorldJourneyCard(status: WorldStatus, seasonOpen: Boolean, modifier: Modifie
     }
 
     var expanded by rememberSaveable(status.world.name) { mutableStateOf(false) }
-    val foldable = status.isComplete
+    // Every world but the current one folds: a finished one opens to its pictures, one
+    // ahead opens to its three chapters and the runs each one needs.
     val motion = LocalMotion.current
     val chevron by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -160,7 +161,7 @@ fun WorldJourneyCard(status: WorldStatus, seasonOpen: Boolean, modifier: Modifie
             border = if (dashed) null else Border,
             shape = RoundedCornerShape(18.dp),
             depth = if (dashed) 0.dp else 5.dp,
-            onClick = if (foldable) ({ expanded = !expanded }) else null,
+            onClick = { expanded = !expanded },
             onClickLabel = if (expanded) "Hide chapters" else "Show chapters",
             modifier = Modifier
                 .fillMaxWidth()
@@ -168,13 +169,11 @@ fun WorldJourneyCard(status: WorldStatus, seasonOpen: Boolean, modifier: Modifie
                 // Set, not cleared, on the card itself, so the tap to open stays for TalkBack.
                 .semantics {
                     contentDescription = description
-                    if (foldable) {
-                        stateDescription = if (expanded) "Open" else "Folded"
-                        role = Role.Button
-                        onClick(label = if (expanded) "Hide chapters" else "Show chapters") {
-                            expanded = !expanded
-                            true
-                        }
+                    stateDescription = if (expanded) "Open" else "Folded"
+                    role = Role.Button
+                    onClick(label = if (expanded) "Hide chapters" else "Show chapters") {
+                        expanded = !expanded
+                        true
                     }
                 },
         ) {
@@ -203,7 +202,7 @@ fun WorldJourneyCard(status: WorldStatus, seasonOpen: Boolean, modifier: Modifie
                     )
                 }
                 Spacer(Modifier.width(8.dp))
-                if (foldable) {
+                if (status.isComplete) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             Modifier
@@ -225,14 +224,24 @@ fun WorldJourneyCard(status: WorldStatus, seasonOpen: Boolean, modifier: Modifie
                     }
                 } else {
                     Column(horizontalAlignment = Alignment.End) {
-                        Icon(Icons.Rounded.Lock, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.Lock, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Rounded.ExpandMore,
+                                contentDescription = null,
+                                tint = Navy,
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .graphicsLayer { rotationZ = chevron },
+                            )
+                        }
                         Text("$first to $last runs", style = RuuunText.Tiny, color = TextMuted)
                     }
                 }
             }
         }
         AnimatedVisibility(
-            visible = foldable && expanded,
+            visible = expanded,
             enter = if (motion) expandVertically(expandFrom = Alignment.Top) + fadeIn() else EnterTransition.None,
             exit = if (motion) shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut() else ExitTransition.None,
         ) {
