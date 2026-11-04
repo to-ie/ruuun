@@ -25,7 +25,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Upload
-import androidx.compose.material3.AlertDialog
+import app.ruuun.ui.components.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -208,7 +208,7 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.height(Dimens.SectionGap))
                 SecondaryButton(
-                    text = "Reset next mission to ${Formatters.distance(settings.startingTargetM)}",
+                    text = "Reset next mission to ${Formatters.mission(settings.startingTargetM)}",
                     onClick = viewModel::resetTargetToStart,
                     modifier = Modifier.fillMaxWidth(),
                 )

@@ -264,7 +264,9 @@ decrease.
   coloured medals, six per category with "Show N more". History has big stat tiles and a dot per stop.
   The handoff's white text on blue and orange was too faint (2.1:1 and 2.4:1), so text there is
   navy. A new animated splash: Ruu bobbing in two halo rings on navy, the ruuun! name and three
-  hopping dots. The bottom bar is icons only. Nothing about runs, missions, badges or the story
+  hopping dots. The bottom bar is icons only. Mission distances show exactly (1.325 km), so every
+  25 m Easier or Harder step reads differently, and tabs always come back to Home, also after
+  View badges. Nothing about runs, missions, badges or the story
   changed. 173 unit tests and 31 device tests.
 
 - **1.4.1**: more Ruu. On Home, Ruu is much bigger (176 dp, from 108) and stands on the mission card

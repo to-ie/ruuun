@@ -1,5 +1,7 @@
 package app.ruuun.ui
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -49,7 +51,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -222,11 +223,11 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
                     viewModel = viewModel,
                     onDone = {
                         viewModel.clearLastSave()
-                        navController.navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true } }
+                        navController.openTab(Routes.HOME)
                     },
                     onViewBadges = {
                         viewModel.clearLastSave()
-                        navController.navigate(Routes.BADGES) { popUpTo(Routes.HOME) }
+                        navController.openTab(Routes.BADGES)
                     },
                 )
             }
@@ -259,6 +260,27 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
     }
 }
 
+/**
+ * Opens a tab the same way wherever it is asked for (the bottom bar, Run saved), so the
+ * back stack is always Home with at most one other tab on top. Home is reached by going
+ * back to it, never by restoring a saved stack, which could bring another tab back.
+ */
+private fun NavHostController.openTab(route: String) {
+    if (route == Routes.HOME) {
+        if (!popBackStack(Routes.HOME, inclusive = false, saveState = true)) {
+            navigate(Routes.HOME) { popUpTo(0) { inclusive = true } }
+        }
+        return
+    }
+    navigate(route) {
+        // Home, by route: after first-run setup the graph's start is Setup, which is no
+        // longer on the stack.
+        popUpTo(Routes.HOME) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
 @Composable
 private fun BottomNav(navController: NavHostController, currentRoute: String?) {
     Column(Modifier.fillMaxWidth().background(SurfaceColor)) {
@@ -271,31 +293,32 @@ private fun BottomNav(navController: NavHostController, currentRoute: String?) {
         ) {
             NAV_ITEMS.forEach { item ->
                 val selected = currentRoute == item.route
+                // No grey ripple over the whole slot: the rounded tab shape lights up instead.
+                val interaction = remember { MutableInteractionSource() }
+                val pressed by interaction.collectIsPressedAsState()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .weight(1f)
                         .selectable(
                             selected = selected,
+                            interactionSource = interaction,
+                            indication = null,
                             role = Role.Tab,
-                            onClick = {
-                                if (!selected) {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            },
+                            onClick = { if (!selected) navController.openTab(item.route) },
                         ),
                 ) {
                     Box(
                         modifier = Modifier
                             .size(width = 64.dp, height = 48.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(if (selected) SkyTint else Color.Transparent)
+                            .background(
+                                when {
+                                    selected -> SkyTint
+                                    pressed -> app.ruuun.ui.theme.Divider
+                                    else -> Color.Transparent
+                                },
+                            )
                             .then(
                                 if (selected) Modifier.border(2.dp, Sky, RoundedCornerShape(14.dp)) else Modifier,
                             ),

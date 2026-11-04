@@ -52,7 +52,7 @@ import app.ruuun.ui.theme.TextMuted
 import app.ruuun.ui.theme.Surface as SurfaceColor
 
 private data class StartingPlan(val label: String, val metres: Int) {
-    val caption: String get() = "Your first mission: ${Formatters.distance(metres)}"
+    val caption: String get() = "Your first mission: ${Formatters.mission(metres)}"
 }
 
 private val PLANS = listOf(

@@ -1,5 +1,7 @@
 package app.ruuun.ui.screens
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.statusBarsPadding
 import app.ruuun.ui.components.Chunky
 import app.ruuun.ui.components.SheetTop
@@ -290,52 +292,20 @@ fun RunSavedScreen(
                 val stops = saved.log.stops
                 if (stopNote != null && stops != null) {
                     Spacer(Modifier.height(Dimens.SectionGap))
-                    Chunky(shape = Shapes.Card, color = InfoBg, shade = Sky, border = null, depth = 4.dp, modifier = Modifier.fillMaxWidth()) {
-                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column {
-                                Overline("Stops", color = InfoLabel)
-                                Spacer(Modifier.height(2.dp))
-                                Text("$stops", style = RuuunText.CardTitle, color = Navy)
-                            }
-                            Spacer(Modifier.width(14.dp))
-                            Text(
-                                stopNote,
-                                style = RuuunText.Secondary,
-                                color = InfoText,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
+                    ResultPanel(
+                        label = "Stops",
+                        value = "$stops",
+                        note = stopNote,
+                    )
                 }
 
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Chunky(shape = Shapes.Card, color = InfoBg, shade = Sky, border = null, depth = 4.dp, modifier = Modifier.fillMaxWidth()) {
-                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column {
-                            Overline("Next mission", color = InfoLabel)
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                Formatters.distance(saved.nextTargetM),
-                                style = RuuunText.CardTitle,
-                                color = Navy,
-                            )
-                            saved.nextStopGoal?.let { goal ->
-                                Text(
-                                    StopGoal.goalLabel(goal),
-                                    style = RuuunText.Secondary,
-                                    color = Navy,
-                                )
-                            }
-                        }
-                        Spacer(Modifier.width(14.dp))
-                        Text(
-                            JourneyView.nextMissionNote(saved, settings),
-                            style = RuuunText.Secondary,
-                            color = InfoText,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                }
+                ResultPanel(
+                    label = "Next mission",
+                    value = Formatters.mission(saved.nextTargetM),
+                    detail = saved.nextStopGoal?.let { StopGoal.goalLabel(it) },
+                    note = JourneyView.nextMissionNote(saved, settings),
+                )
 
                 Spacer(Modifier.height(Dimens.SectionGap))
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap)) {
@@ -357,6 +327,39 @@ fun RunSavedScreen(
 
     selectedBadge?.let { badge ->
         BadgeDetailSheet(badge = badge, stats = after, onDismiss = { selectedBadge = null })
+    }
+}
+
+/**
+ * A light blue result card: the label across the top, then the value (with an optional
+ * line under it) on the left and what it means beside it, lined up on the value.
+ */
+@Composable
+private fun ResultPanel(label: String, value: String, note: String, detail: String? = null) {
+    Chunky(
+        shape = Shapes.Card,
+        color = InfoBg,
+        shade = Sky,
+        border = null,
+        depth = 4.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {},
+    ) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
+            Overline(label, color = InfoLabel)
+            Spacer(Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.widthIn(min = 72.dp)) {
+                    Text(value, style = RuuunText.CardTitle, color = Navy)
+                    if (detail != null) {
+                        Text(detail, style = RuuunText.Label, color = Navy)
+                    }
+                }
+                Spacer(Modifier.width(14.dp))
+                Text(note, style = RuuunText.Secondary, color = InfoText, modifier = Modifier.weight(1f))
+            }
+        }
     }
 }
 

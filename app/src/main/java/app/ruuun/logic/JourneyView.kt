@@ -200,7 +200,7 @@ object JourneyView {
     fun nextMissionNote(outcome: SaveOutcome, settings: RunnerSettings): String {
         val log = outcome.log
         val limit = settings.lowStopsLimit
-        val was = Formatters.distance(outcome.previousTargetM)
+        val was = Formatters.mission(outcome.previousTargetM)
         val beat = log.distanceM > outcome.previousTargetM
         val matched = !beat && log.distanceM >= log.targetMAtLog && log.effort != Effort.HARD
         val went = outcome.nextTargetM.compareTo(outcome.previousTargetM)
@@ -210,7 +210,7 @@ object JourneyView {
             outcome.backdated -> "Runs on earlier days don't change the mission."
             // Caught up to the distance run, without stretching further.
             went > 0 && beat && !TargetRecommender.lowStops(log, limit) -> {
-                val now = Formatters.distance(outcome.nextTargetM)
+                val now = Formatters.mission(outcome.nextTargetM)
                 "You beat $was, so the new mission is $now. " + when (val stops = log.stops) {
                     null -> "Count your stops: it gets longer after a run with ${stopsOrFewer(limit)}."
                     else -> "Now try it with fewer stops: ${fewerToGo(stops - limit)} and it gets longer."

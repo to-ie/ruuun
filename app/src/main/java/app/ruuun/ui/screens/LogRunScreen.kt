@@ -228,7 +228,7 @@ fun LogRunScreen(
                         Text(
                             when (unit) {
                                 DistanceUnit.METRES -> "${settings.currentTargetM}"
-                                DistanceUnit.KILOMETRES -> Formatters.km(settings.currentTargetM)
+                                DistanceUnit.KILOMETRES -> Formatters.exactKm(settings.currentTargetM)
                             },
                             style = RuuunText.DistanceInput,
                             color = TextMuted,
@@ -261,7 +261,7 @@ fun LogRunScreen(
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "Your mission was ${Formatters.distance(settings.currentTargetM)}. " +
+                "Your mission was ${Formatters.mission(settings.currentTargetM)}. " +
                     "Put in what you actually did. More or less, both count.",
                 style = RuuunText.Secondary,
                 color = TextMuted,

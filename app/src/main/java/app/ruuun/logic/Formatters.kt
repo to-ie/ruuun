@@ -12,6 +12,21 @@ object Formatters {
     fun distance(metres: Int): String =
         if (metres < 1_000) "$metres m" else "${km(metres)} km"
 
+    /**
+     * A mission distance, exact: missions move in 25 m steps, so `1.325 km` and `1.35 km`
+     * must not both read `1.3 km`, or Easier and Harder look as if nothing happened.
+     */
+    fun mission(metres: Int): String {
+        return if (metres < 1_000) "$metres m" else "${exactKm(metres)} km"
+    }
+
+    /** Exact kilometres with no unit, for the km hint in the distance box: `1.325`, `0.3`. */
+    fun exactKm(metres: Int): String {
+        val whole = metres / 1_000
+        val rest = (metres % 1_000).toString().padStart(3, '0').trimEnd('0')
+        return if (rest.isEmpty()) "$whole" else "$whole.$rest"
+    }
+
     /** Kilometres to one decimal, with a trailing `.0` trimmed. */
     fun km(metres: Int): String = km(metres.toLong())
 

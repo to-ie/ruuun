@@ -370,7 +370,7 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
                 label = "mission",
             ) { metres ->
                 Text(
-                    Formatters.distance(metres),
+                    Formatters.mission(metres),
                     style = RuuunText.SpeechNumber,
                     color = OrangeShade,
                     maxLines = 1,

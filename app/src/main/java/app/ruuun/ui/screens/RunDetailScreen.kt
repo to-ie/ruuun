@@ -18,7 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.AlertDialog
+import app.ruuun.ui.components.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -93,7 +93,7 @@ fun RunDetailScreen(
                     EffortPill(log.effort)
                 }
                 Spacer(Modifier.height(12.dp))
-                DetailLine("Mission at the time", Formatters.distance(log.targetMAtLog))
+                DetailLine("Mission at the time", Formatters.mission(log.targetMAtLog))
                 log.stops?.let {
                     DetailLine("Stops", if (it == 0) "Non-stop" else "$it")
                 }

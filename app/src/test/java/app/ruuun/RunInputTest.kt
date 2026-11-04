@@ -13,6 +13,19 @@ class RunInputTest {
 
     /** QA 14: malformed input cannot produce a saved run. */
     @Test
+    fun `mission distances are exact, so every 25 m step reads differently`() {
+        assertEquals("975 m", Formatters.mission(975))
+        assertEquals("1 km", Formatters.mission(1_000))
+        assertEquals("1.3 km", Formatters.mission(1_300))
+        assertEquals("1.325 km", Formatters.mission(1_325))
+        assertEquals("1.35 km", Formatters.mission(1_350))
+        assertEquals("2.05 km", Formatters.mission(2_050))
+        assertEquals("0.3", Formatters.exactKm(300))
+        val steps = (1_000..1_500 step 25).map { Formatters.mission(it) }
+        assertEquals(steps.size, steps.toSet().size)
+    }
+
+    @Test
     fun `bad distance text never parses`() {
         listOf("", "   ", "abc", "0", "-5", "0.0", "1e9", "50001", ".", "1.2.3").forEach {
             assertNull(it, RunInput.parseDistanceM(it, DistanceUnit.METRES))
