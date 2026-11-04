@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#101C2E</color>
+    <color name="ic_launcher_background">#111A2E</color>
+    <!-- The splash icon circle: the inner halo ring of the app's own splash. -->
+    <color name="splash_ring">#223052</color>
 </resources>

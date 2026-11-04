@@ -1,5 +1,6 @@
 package app.ruuun.ui.screens
 
+import app.ruuun.ui.components.SubScreenHeader
 import android.content.Context
 import java.io.ByteArrayOutputStream
 import android.net.Uri
@@ -20,10 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Upload
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -123,7 +124,12 @@ fun SettingsScreen(
     }
 
     Column(Modifier.fillMaxSize()) {
-        SettingsHeader(onBack)
+        SubScreenHeader(
+            title = "Settings",
+            onBack = onBack,
+            backDescription = "Back to Home",
+            subtitle = "Best changed with a grown-up",
+        )
 
         Column(
             Modifier
@@ -215,7 +221,7 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "Export progress",
                     subtitle = "Save a backup file. Keep it somewhere safe.",
-                    leading = Icons.Outlined.Upload,
+                    leading = Icons.Rounded.Upload,
                     onClick = {
                         exportLauncher.launch(BackupFile.suggestedFileName(viewModel.today()))
                     },
@@ -224,14 +230,14 @@ fun SettingsScreen(
                 SettingsRow(
                     title = "Import progress",
                     subtitle = "Replaces everything on this phone. You'll see a preview first.",
-                    leading = Icons.Outlined.Download,
+                    leading = Icons.Rounded.Download,
                     onClick = { importLauncher.launch(arrayOf("application/json", "text/*", "*/*")) },
                 )
                 HorizontalDivider(color = Border)
                 SettingsRow(
                     title = "Delete all progress",
                     subtitle = "Asks twice before anything is removed",
-                    leading = Icons.Outlined.DeleteOutline,
+                    leading = Icons.Rounded.DeleteOutline,
                     tint = Destructive,
                     onClick = { deleteStage = 1 },
                 )
@@ -361,42 +367,6 @@ fun SettingsScreen(
     }
 }
 
-@Composable
-private fun SettingsHeader(onBack: () -> Unit) {
-    Surface(color = SurfaceColor, modifier = Modifier.fillMaxWidth()) {
-        Column {
-            Row(
-                Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Surface(
-                    onClick = onBack,
-                    shape = Shapes.Input,
-                    color = SurfaceColor,
-                    modifier = Modifier.size(48.dp),
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back to Home",
-                            tint = Navy,
-                        )
-                    }
-                }
-                Spacer(Modifier.width(4.dp))
-                Column {
-                    Text("Settings", style = RuuunText.SubTitle, color = Navy)
-                    Text(
-                        "Best changed with a grown-up",
-                        style = RuuunText.Secondary,
-                        color = TextMuted,
-                    )
-                }
-            }
-            Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
-        }
-    }
-}
 
 @Composable
 private fun LowStopsDialog(current: Int, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {

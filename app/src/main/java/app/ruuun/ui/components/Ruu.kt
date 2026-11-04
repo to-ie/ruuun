@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,7 +41,13 @@ import app.ruuun.ui.theme.Surface as SurfaceColor
  * With [breathe], Ruu rises and settles a little, slowly, unless animations are off.
  */
 @Composable
-fun RuuImage(@DrawableRes pose: Int, height: Dp, modifier: Modifier = Modifier, breathe: Boolean = false) {
+fun RuuImage(
+    @DrawableRes pose: Int,
+    height: Dp,
+    modifier: Modifier = Modifier,
+    breathe: Boolean = false,
+    zoom: Float = 1f,
+) {
     val motion = LocalMotion.current
     val scale = if (breathe && motion) {
         val transition = rememberInfiniteTransition(label = "ruu")
@@ -64,10 +69,11 @@ fun RuuImage(@DrawableRes pose: Int, height: Dp, modifier: Modifier = Modifier, 
             .height(height)
             .aspectRatio(Mascot.RUU_ASPECT)
             .graphicsLayer {
-                // Grows from the feet, so Ruu stays standing on the same spot.
-                transformOrigin = TransformOrigin(0.5f, 0.92f)
-                scaleX = scale
-                scaleY = scale
+                // Breathing grows from the feet, so Ruu stays standing on the same spot.
+                // A zoom (for round frames) grows from the head instead, to show the face.
+                transformOrigin = if (zoom > 1f) TransformOrigin(0.5f, 0.12f) else TransformOrigin(0.5f, 0.92f)
+                scaleX = scale * zoom
+                scaleY = scale * zoom
             },
     )
 }
@@ -89,13 +95,9 @@ fun SpeechBubble(text: String, modifier: Modifier = Modifier) {
                 lineTo(0f, size.height / 2f)
                 lineTo(size.width, size.height)
             }
-            drawPath(edge, Border, style = Stroke(width = 1.dp.toPx()))
+            drawPath(edge, Border, style = Stroke(width = 2.dp.toPx()))
         }
-        Surface(
-            shape = Shapes.Card,
-            color = SurfaceColor,
-            border = androidx.compose.foundation.BorderStroke(1.dp, Border),
-        ) {
+        Chunky(shape = Shapes.Card, depth = 4.dp) {
             Box(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
                 Text(text, style = RuuunText.BodyStrong, color = Navy)
             }

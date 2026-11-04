@@ -1,5 +1,7 @@
 package app.ruuun.ui.screens
 
+import androidx.compose.foundation.layout.statusBarsPadding
+import app.ruuun.ui.components.SubScreenHeader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -62,7 +64,7 @@ fun RunDetailScreen(
     var confirmDelete by remember { mutableStateOf(false) }
 
     if (log == null) {
-        Column(Modifier.fillMaxSize().padding(Dimens.ScreenPadding)) {
+        Column(Modifier.fillMaxSize().statusBarsPadding().padding(Dimens.ScreenPadding)) {
             Text("That run is no longer here.", style = RuuunText.BodyLarge, color = Navy)
             Spacer(Modifier.height(16.dp))
             PrimaryCta("Back", onBack)
@@ -71,32 +73,7 @@ fun RunDetailScreen(
     }
 
     Column(Modifier.fillMaxSize()) {
-        Surface(color = SurfaceColor, modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Row(
-                    Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Surface(
-                        onClick = onBack,
-                        shape = Shapes.Input,
-                        color = SurfaceColor,
-                        modifier = Modifier.size(48.dp),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Navy,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.width(4.dp))
-                    Text("Your run", style = RuuunText.SubTitle, color = Navy)
-                }
-                Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
-            }
-        }
+        SubScreenHeader(title = "Your run", onBack = onBack)
 
         Column(
             Modifier

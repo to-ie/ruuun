@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ruuun! for Android</title>
 <meta name="description" content="A running adventure for beginners. Log a run, aim for your next mission and run through eight worlds with Ruu the fox. Free, no account, no ads.">
-<meta name="theme-color" content="#101C2E">
+<meta name="theme-color" content="#3DBDF5">
 <meta property="og:title" content="ruuun! for Android">
 <meta property="og:description" content="A running adventure for beginners. Free, no account, no ads.">
 <meta property="og:image" content="https://ruuun.t-o.ie/assets/share.jpg">
@@ -23,20 +23,24 @@
 
 :root {
   color-scheme: light;
-  --navy: #101C2E;
+  --navy: #111A2E;
   --navy-2: #1B2A42;
-  --sky: #49C6FF;
-  --orange: #FF8C24;
-  --lime: #C9F54A;
-  --ground: #F7F9FC;
+  --sky: #3DBDF5;
+  --sky-shade: #1597D6;
+  --sky-deep: #0B3A55;
+  --orange: #FF8A1F;
+  --orange-shade: #D66A00;
+  --lime: #C6F03C;
+  --lime-shade: #9CC417;
+  --ground: #F6F8FB;
   --surface: #FFFFFF;
-  --border: #DDE4EE;
-  --muted: #4B5872;
-  --info-bg: #E6F7FF;
-  --sun-tint: #FFE9A8;
-  --lime-tint: #E8FBC2;
-  --orange-tint: #FFE4CC;
-  --sky-tint: #E1F5FF;
+  --border: #E3E8EF;
+  --muted: #4A5468;
+  --info-bg: #E4F6FF;
+  --sun-tint: #FFD98A;
+  --lime-tint: #F1FBD4;
+  --orange-tint: #FFE2C7;
+  --sky-tint: #E4F6FF;
   --display: "Baloo 2", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
   --body: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -45,7 +49,7 @@ html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--ground); color: var(--navy); font: 400 1.0625rem/1.6 var(--body); }
 img { max-width: 100%; display: block; }
 a { color: #0B5E9C; text-underline-offset: 3px; }
-a:focus-visible, .button:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+a:focus-visible, .button:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
 .wrap { max-width: 1080px; margin: 0 auto; padding-inline: max(20px, env(safe-area-inset-left)); }
 h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
 h2 { font-size: clamp(1.8rem, 1.3rem + 2vw, 2.4rem); }
@@ -53,51 +57,52 @@ h3 { font-size: 1.3rem; }
 .overline { font: 800 0.8rem/1 var(--body); letter-spacing: 0.12em; text-transform: uppercase; }
 
 /* Hero */
-.hero { background: var(--navy); color: var(--ground); padding-block: max(28px, env(safe-area-inset-top)) 0; overflow: hidden; position: relative; }
+/* Text on the sky blue is navy or deep blue: white on it is too faint to read. */
+.hero { background: var(--sky); color: var(--navy); padding-block: max(28px, env(safe-area-inset-top)) 0; overflow: hidden; position: relative; }
 .hero::before, .hero::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
-.hero::before { width: 420px; height: 420px; right: -120px; top: -140px; background: rgba(255, 140, 36, 0.16); }
-.hero::after { width: 260px; height: 260px; right: 220px; bottom: -60px; background: rgba(73, 198, 255, 0.14); }
+.hero::before { width: 420px; height: 420px; right: -120px; top: -140px; background: rgba(255, 255, 255, 0.18); }
+.hero::after { width: 260px; height: 260px; right: 220px; bottom: -60px; background: rgba(21, 151, 214, 0.25); }
 .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: end; position: relative; z-index: 1; }
 .hero-text { padding-bottom: 64px; }
 .logo { width: min(230px, 62vw); height: auto; margin-bottom: 24px; }
 .hero h1 { font-size: clamp(2.4rem, 1.6rem + 3.6vw, 3.9rem); }
-.hero h1 em { font-style: normal; color: var(--lime); }
-.lede { font-size: 1.2rem; margin: 18px 0 30px; max-width: 34ch; color: #E3EAF4; }
-.button { display: inline-flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 30px; border-radius: 999px; background: var(--orange); color: var(--navy); font: 800 1.15rem/1 var(--body); text-decoration: none; box-shadow: 0 6px 0 #C9650C; transition: transform 0.08s, box-shadow 0.08s; }
+.hero h1 em { font-style: normal; background: linear-gradient(transparent 58%, var(--lime) 58%, var(--lime) 92%, transparent 92%); padding-inline: 4px; }
+.lede { font-size: 1.2rem; margin: 18px 0 30px; max-width: 34ch; color: var(--sky-deep); font-weight: 700; }
+.button { display: inline-flex; align-items: center; gap: 12px; min-height: 62px; padding: 0 30px; border-radius: 18px; background: var(--orange); color: var(--navy); font: 800 1.3rem/1 var(--display); letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; box-shadow: 0 6px 0 var(--orange-shade); transition: transform 0.08s, box-shadow 0.08s; }
 .button:hover { background: #FF9A3D; }
-.button:active { transform: translateY(4px); box-shadow: 0 2px 0 #C9650C; }
+.button:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--orange-shade); }
 .button svg { width: 24px; height: 24px; flex: none; }
-.meta { margin: 18px 0 0; font-size: 0.95rem; color: #B9C5D6; }
-.desktop-note { margin: 14px 0 0; padding: 12px 16px; border-radius: 14px; background: var(--navy-2); color: #E3EAF4; font-size: 0.95rem; max-width: 46ch; }
+.meta { margin: 18px 0 0; font-size: 0.95rem; color: var(--sky-deep); font-weight: 700; }
+.desktop-note { margin: 14px 0 0; padding: 12px 16px; border-radius: 16px; background: var(--surface); color: var(--navy); font-size: 0.95rem; max-width: 46ch; box-shadow: 0 5px 0 var(--sky-shade); }
 .hero-phone { justify-self: center; width: min(320px, 78vw); height: 470px; overflow: hidden; }
 .hero-phone .phone { border-bottom: 0; border-radius: 34px 34px 0 0; }
-.phone { border: 9px solid #0A1220; border-radius: 34px; overflow: hidden; background: #0A1220; box-shadow: 0 30px 60px rgba(4, 10, 20, 0.45); }
+.phone { border: 9px solid #0A1220; border-radius: 34px; overflow: hidden; background: #0A1220; box-shadow: 0 10px 0 rgba(11, 58, 85, 0.35); }
 .phone img { width: 100%; height: auto; }
 
 /* Sections */
 section { padding-block: 72px; }
-.after-hero { padding-top: 72px; }
+.after-hero { padding-top: 64px; margin-top: -28px; position: relative; background: var(--ground); border-radius: 28px 28px 0 0; }
 .section-head { max-width: 60ch; margin-bottom: 32px; }
 .section-head p { color: var(--muted); margin: 10px 0 0; font-size: 1.1rem; }
 .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+.card { background: var(--surface); border: 2px solid var(--border); border-bottom-width: 7px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
 .card .band { padding: 13px 18px; }
 .card .body { padding: 16px 18px 20px; }
 .card p { margin: 8px 0 0; color: var(--muted); }
-.band.mission { background: var(--info-bg); color: #0B4A7A; }
-.band.week { background: var(--lime-tint); }
+.band.mission { background: var(--sky); color: var(--navy); }
+.band.week { background: var(--lime); }
 .band.story { background: var(--sun-tint); }
-.band.badges { background: var(--orange-tint); }
+.band.badges { background: var(--orange); }
 
 .screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
 .screens figure { margin: 0; }
-.screens .phone { border-width: 7px; border-radius: 28px; box-shadow: 0 18px 40px rgba(16, 28, 46, 0.18); }
+.screens .phone { border-width: 7px; border-radius: 28px; box-shadow: 0 8px 0 rgba(17, 26, 46, 0.14); }
 .screens figcaption { margin-top: 14px; color: var(--muted); }
 .screens figcaption strong { color: var(--navy); }
 
 /* Worlds */
 .worlds { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.worlds figure { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+.worlds figure { margin: 0; background: var(--surface); border: 2px solid var(--border); border-bottom-width: 6px; border-radius: 18px; overflow: hidden; }
 .worlds img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
 .worlds figcaption { padding: 10px 14px 12px; font-weight: 800; }
 .worlds figcaption span { display: block; font-weight: 400; font-size: 0.95rem; color: var(--muted); }
@@ -105,11 +110,11 @@ section { padding-block: 72px; }
 .season:first-of-type { margin-top: 0; }
 
 .install { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 26px; }
-.panel.info { background: var(--info-bg); border-color: transparent; }
+.panel { background: var(--surface); border: 2px solid var(--border); border-bottom-width: 7px; border-radius: 22px; padding: 26px; }
+.panel.info { background: var(--info-bg); border-color: var(--info-bg); border-bottom-color: var(--sky); }
 .steps { list-style: none; counter-reset: step; padding: 0; margin: 18px 0 0; display: grid; gap: 14px; }
 .steps li { counter-increment: step; display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
-.steps li::before { content: counter(step); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--navy); color: var(--ground); font: 800 1rem/1 var(--body); }
+.steps li::before { content: counter(step); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--sky); color: var(--navy); font: 800 1rem/1 var(--body); box-shadow: 0 4px 0 var(--sky-shade); }
 .panel p { margin: 12px 0 0; }
 .panel .small { font-size: 0.95rem; color: var(--muted); }
 
@@ -137,7 +142,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
 }
 @media (max-width: 480px) {
   .cards { grid-template-columns: 1fr; }
-  .button { width: 100%; justify-content: center; }
+  .button { width: 100%; justify-content: center; font-size: 1.1rem; letter-spacing: 0.02em; padding: 0 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
 </style>
@@ -158,7 +163,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
       <p class="desktop-note" id="desktop-note" hidden>On a computer? Open <strong>ruuun.t-o.ie</strong> on the Android phone you want to install it on, and tap the button there.</p>
     </div>
     <div class="hero-phone">
-      <div class="phone"><img src="assets/home.webp" width="540" height="1200" alt="The ruuun! home screen: Ruu the fox beside a 1.3 km next mission with a stop goal of 2 stops or fewer, and a Log a run button."></div>
+      <div class="phone"><img src="assets/home.webp" width="540" height="1200" alt="The ruuun! home screen: Ruu the fox in sunglasses in a round frame, saying Let's do 1.3 km, a stop goal of 2 stops or fewer, the days of this week, and a big Log a run button."></div>
     </div>
   </div>
 </header>
@@ -230,16 +235,16 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
     <div class="wrap">
       <div class="screens">
         <figure>
-          <div class="phone"><img src="assets/journey.webp" width="540" height="1200" loading="lazy" alt="Journey screen: a Stops chart going down from 8 stops to 2, and the Desert Dash chapter card with Ruu in sunglasses."></div>
-          <figcaption><strong>Journey.</strong> Your stops going down, and where Ruu is in the story.</figcaption>
+          <div class="phone"><img src="assets/journey.webp" width="540" height="1200" loading="lazy" alt="Journey screen: this week's goal and side quest, a stops card going from 8 stops to 2, and the start of the journey map."></div>
+          <figcaption><strong>Journey.</strong> Your stops going down, and a path through every world.</figcaption>
         </figure>
         <figure>
-          <div class="phone"><img src="assets/saved.webp" width="540" height="1200" loading="lazy" alt="After saving a run: Ruu jumping for joy, 50 XP, a new longest run of 1.2 km and five new badges."></div>
+          <div class="phone"><img src="assets/saved.webp" width="540" height="1200" loading="lazy" alt="After saving a run: Ruu jumping for joy on blue, 50 XP, a new longest run of 1.2 km and five new badges as coloured medals."></div>
           <figcaption><strong>After a run.</strong> Ruu cheers you on, with XP, personal bests, new badges and the story moving on.</figcaption>
         </figure>
         <figure>
-          <div class="phone"><img src="assets/badges.webp" width="540" height="1200" loading="lazy" alt="Badges screen showing 63 of 193 earned, with Ruu holding up a medal and naming the closest badge, each earned badge with its own icon: a rocket, crossed arrows, a smiley face and more."></div>
-          <figcaption><strong>Badges.</strong> Each one has its own icon. Tap one to see what it is for.</figcaption>
+          <div class="phone"><img src="assets/badges.webp" width="540" height="1200" loading="lazy" alt="Badges screen: 63 of 193 earned, Ruu holding a medal and naming the closest badge, and coloured medals with ticks."></div>
+          <figcaption><strong>Badges.</strong> A coloured medal for each one. Tap one to see what it is for.</figcaption>
         </figure>
       </div>
     </div>

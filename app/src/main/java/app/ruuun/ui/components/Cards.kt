@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,8 +47,16 @@ import app.ruuun.logic.Formatters
 import app.ruuun.ui.icon
 import app.ruuun.ui.label
 import app.ruuun.ui.earnedColor
+import app.ruuun.ui.earnedShade
+import app.ruuun.ui.medalInk
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.QuestionMark
+import androidx.compose.ui.draw.drawBehind
 import app.ruuun.ui.earnedIcon
 import app.ruuun.ui.tint
+import app.ruuun.ui.pillColor
+import androidx.compose.material.icons.automirrored.rounded.Chat
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import app.ruuun.ui.theme.Border
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.InfoBg
@@ -86,19 +94,22 @@ fun WorldCard(
     modifier: Modifier = Modifier,
     progressFraction: Float? = null,
     progressLabel: String? = null,
-    progressColor: Color = Navy,
+    progressColor: Color = app.ruuun.ui.theme.Orange,
     animateProgress: Boolean = false,
     @DrawableRes picture: Int? = null,
     pictureAspect: Float = WIDE_BANNER_ASPECT,
     @DrawableRes ruu: Int? = null,
+    onBlue: Boolean = false,
 ) {
-    Surface(
-        shape = Shapes.Card,
+    Chunky(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
         color = SurfaceColor,
-        border = BorderStroke(1.dp, Border),
+        shade = if (onBlue) app.ruuun.ui.theme.SkyShade else Border,
+        border = if (onBlue) null else Border,
+        depth = if (onBlue) 7.dp else 5.dp,
         modifier = modifier.fillMaxWidth(),
     ) {
-        Column {
+        Column(Modifier.fillMaxWidth()) {
             if (picture != null) {
                 Box(
                     Modifier
@@ -167,6 +178,7 @@ fun WorldCard(
                     RuuunProgressBar(
                         fraction = progressFraction,
                         color = progressColor,
+                        height = 14.dp,
                         description = progressLabel,
                         animate = animateProgress,
                     )
@@ -194,11 +206,18 @@ fun InfoPanel(
     showIcon: Boolean = true,
     content: @Composable (() -> Unit)? = null,
 ) {
-    Surface(shape = Shapes.Card, color = InfoBg, modifier = modifier.fillMaxWidth()) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
+    Chunky(
+        shape = Shapes.Card,
+        color = InfoBg,
+        shade = app.ruuun.ui.theme.Sky,
+        border = null,
+        depth = 4.dp,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.Top) {
             if (showIcon) {
                 Icon(
-                    Icons.Outlined.Info,
+                    Icons.Rounded.Info,
                     contentDescription = null,
                     tint = InfoText,
                     modifier = Modifier.size(22.dp),
@@ -219,13 +238,14 @@ fun InfoPanel(
 /** Degrees the badge icon swings through when an earned badge is tapped. */
 private val WIGGLE = listOf(-14f, 12f, -9f, 6f, -3f, 0f)
 
-/** One badge in the three-column grid. */
+/** One badge in the three-column grid: a coloured medal when earned, a dashed one when not. */
 @Composable
 fun BadgeCell(
     badge: BadgeDef,
     earned: Boolean,
     progressText: String?,
     modifier: Modifier = Modifier,
+    progressFraction: Float? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val hidden = badge.secret && !earned
@@ -246,114 +266,221 @@ fun BadgeCell(
             }
         }
     }
-    Surface(
-        onClick = open,
-        enabled = onClick != null,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+    Chunky(
+        onClick = if (onClick != null) open else null,
         color = if (earned) SurfaceColor else LockedCard,
-        border = BorderStroke(if (earned) 2.dp else 1.dp, if (earned) Navy else Border),
+        shade = if (earned) Border else app.ruuun.ui.theme.InputBorder,
+        border = if (earned) Border else null,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        depth = if (earned) 5.dp else 3.dp,
         modifier = modifier,
     ) {
-        Column(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 14.dp, bottom = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(
+        Box(Modifier.fillMaxWidth()) {
+            Column(
                 modifier = Modifier
-                    .size(Dimens.BadgeIcon)
-                    .graphicsLayer {
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Medal(
+                    badge = badge,
+                    earned = earned,
+                    modifier = Modifier.graphicsLayer {
                         rotationZ = wiggle.value
                         val grow = 1f + kotlin.math.abs(wiggle.value) / 120f
                         scaleX = grow
                         scaleY = grow
-                    }
-                    .clip(Shapes.Pill)
-                    .background(if (earned) badge.category.earnedColor() else Border),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = if (earned) badge.earnedIcon() else Icons.Outlined.Lock,
-                    contentDescription = null,
-                    tint = if (earned) Navy else TextMuted,
-                    modifier = Modifier.size(26.dp),
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = title,
-                style = RuuunText.Label,
-                color = Navy,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (progressText != null) {
-                Spacer(Modifier.height(8.dp))
-                Pill(
-                    text = progressText,
-                    background = when {
-                        earned -> Lime
-                        hidden -> Track
-                        else -> OrangeTint
                     },
                 )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = title,
+                    style = RuuunText.Medal,
+                    color = Navy,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (!earned && progressText != null) {
+                    Spacer(Modifier.height(6.dp))
+                    if (progressFraction != null && !hidden) {
+                        RuuunProgressBar(
+                            fraction = progressFraction,
+                            color = app.ruuun.ui.theme.Orange,
+                            height = 7.dp,
+                            trackColor = SurfaceColor,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                    }
+                    Text(progressText, style = RuuunText.Tiny, color = TextMuted, maxLines = 1)
+                }
+            }
+            if (earned) {
+                // The lime check, top right.
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(22.dp)
+                        .clip(Shapes.Pill)
+                        .background(app.ruuun.ui.theme.Lime),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.Check, contentDescription = null, tint = Navy, modifier = Modifier.size(15.dp))
+                }
             }
         }
     }
 }
 
-/** A row in History. */
+/** A badge's medal: its category colour with a solid edge, or a dashed outline when locked. */
+@Composable
+fun Medal(badge: BadgeDef, earned: Boolean, modifier: Modifier = Modifier, size: androidx.compose.ui.unit.Dp = 58.dp) {
+    val hidden = badge.secret && !earned
+    if (earned) {
+        Chunky(
+            color = badge.category.earnedColor(),
+            shade = badge.category.earnedShade(),
+            border = null,
+            shape = androidx.compose.foundation.shape.CircleShape,
+            depth = 5.dp,
+            // The edge adds to the height, so the face itself stays a circle.
+            modifier = modifier.size(width = size, height = size + 5.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                badge.earnedIcon(),
+                contentDescription = null,
+                tint = badge.category.medalInk(),
+                modifier = Modifier.size(size * 0.48f),
+            )
+        }
+    } else {
+        Box(
+            modifier
+                .size(width = size, height = size + 5.dp)
+                .padding(bottom = 5.dp)
+                .drawBehind {
+                    drawCircle(
+                        color = app.ruuun.ui.theme.InputBorder,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(
+                            width = 2.dp.toPx(),
+                            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+                                floatArrayOf(6.dp.toPx(), 4.dp.toPx()),
+                            ),
+                        ),
+                    )
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (hidden) Icons.Rounded.QuestionMark else Icons.Rounded.Lock,
+                contentDescription = null,
+                tint = app.ruuun.ui.theme.IconMuted,
+                modifier = Modifier.size(size * 0.4f),
+            )
+        }
+    }
+}
+
+/** Most stop dots drawn on a run card; more show as "+N". */
+private const val MAX_STOP_DOTS = 12
+
+/** A run in History: a date block, the distance, how it felt, a dot per stop, the note. */
 @Composable
 fun RunRow(log: RunLog, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Surface(
+    Chunky(
         onClick = onClick,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        color = SurfaceColor,
-        border = BorderStroke(1.dp, Border),
-        modifier = modifier.fillMaxWidth().heightIn(min = 64.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
-            Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                modifier = Modifier.width(46.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(Formatters.weekday(log.date), style = RuuunText.Pill, color = TextMuted)
-                Text("${log.date.dayOfMonth}", style = RuuunText.CardTitle, color = Navy)
-            }
+            DateBlock(log.date)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        Formatters.distance(log.distanceM),
-                        style = RuuunText.BodyStrong,
-                        color = Navy,
-                    )
+                    Text(Formatters.distance(log.distanceM), style = RuuunText.CardTitle, color = Navy)
                     Spacer(Modifier.width(8.dp))
-                    Pill(log.effort.label(), log.effort.tint())
-                    log.stops?.let { stops ->
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            if (stops == 0) "non-stop" else app.ruuun.logic.StopGoal.stopsLabel(stops),
-                            style = RuuunText.Secondary,
-                            color = TextMuted,
-                        )
-                    }
+                    EffortPill(log.effort)
+                }
+                log.stops?.let { stops ->
+                    Spacer(Modifier.height(4.dp))
+                    StopDots(stops)
                 }
                 if (!log.note.isNullOrBlank()) {
-                    Spacer(Modifier.height(2.dp))
-                    OneLine(log.note, RuuunText.Secondary, TextMuted)
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.Chat,
+                            contentDescription = null,
+                            tint = TextMuted,
+                            modifier = Modifier.size(15.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        OneLine(log.note, RuuunText.Label, TextMuted)
+                    }
                 }
             }
             Icon(
-                Icons.Outlined.ChevronRight,
+                Icons.Rounded.ChevronRight,
                 contentDescription = null,
                 tint = TextMuted,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(26.dp),
             )
         }
+    }
+}
+
+/** The day of a run as a small chunky calendar block. */
+@Composable
+fun DateBlock(date: java.time.LocalDate, modifier: Modifier = Modifier) {
+    Chunky(
+        color = app.ruuun.ui.theme.SkyTint,
+        shade = app.ruuun.ui.theme.Sky,
+        border = null,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+        depth = 4.dp,
+        modifier = modifier.size(width = 54.dp, height = 60.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(Formatters.weekday(date), style = RuuunText.Tiny, color = app.ruuun.ui.theme.SkyDeep)
+            Text("${date.dayOfMonth}", style = RuuunText.CardTitle, color = Navy)
+        }
+    }
+}
+
+/** A dot for each stop (up to twelve, then "+N"), and the count in words. */
+@Composable
+fun StopDots(stops: Int, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        if (stops > 0) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                modifier = Modifier.clearAndSetSemantics { },
+            ) {
+                repeat(minOf(stops, MAX_STOP_DOTS)) {
+                    Box(
+                        Modifier
+                            .size(9.dp)
+                            .clip(Shapes.Pill)
+                            .background(app.ruuun.ui.theme.Orange),
+                    )
+                }
+            }
+            Spacer(Modifier.width(6.dp))
+        }
+        val extra = if (stops > MAX_STOP_DOTS) "+${stops - MAX_STOP_DOTS} · " else ""
+        Text(
+            extra + if (stops == 0) "Non-stop" else app.ruuun.logic.StopGoal.stopsLabel(stops),
+            style = RuuunText.Label,
+            color = TextMuted,
+        )
     }
 }
 
@@ -367,13 +494,16 @@ fun QuestRow(
     modifier: Modifier = Modifier,
     background: Color = app.ruuun.ui.theme.QuestRowBg,
 ) {
-    Surface(
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-        color = background,
-        modifier = modifier.fillMaxWidth(),
+    Chunky(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        color = SurfaceColor,
+        depth = 4.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {},
     ) {
         Row(
-            Modifier.padding(14.dp),
+            Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -387,10 +517,20 @@ fun QuestRow(
     }
 }
 
-/** Effort tint helper used by the pill above. */
+/** How a run felt, as a coloured pill with its face. */
 @Composable
 fun EffortPill(effort: Effort, modifier: Modifier = Modifier) {
-    Pill(effort.label(), effort.tint(), modifier)
+    Row(
+        modifier
+            .clip(Shapes.Pill)
+            .background(effort.pillColor())
+            .padding(start = 6.dp, end = 10.dp, top = 3.dp, bottom = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(effort.icon(), contentDescription = null, tint = Navy, modifier = Modifier.size(15.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(effort.label(), style = RuuunText.Pill, color = Navy, maxLines = 1)
+    }
 }
 
 /** Large three-up effort selector. */
@@ -401,17 +541,21 @@ fun EffortButton(
     onSelect: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    Chunky(
         onClick = onSelect,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        color = if (selected) effort.tint() else SurfaceColor,
-        border = BorderStroke(if (selected) 3.dp else 2.dp, if (selected) Navy else Border),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        color = if (selected) effort.pillColor() else SurfaceColor,
+        shade = if (selected) Navy else Border,
+        border = if (selected) Navy else Border,
+        borderWidth = if (selected) 3.dp else 2.dp,
+        depth = 5.dp,
+        role = Role.RadioButton,
         modifier = modifier
-            .heightIn(min = 92.dp)
+            .heightIn(min = 96.dp)
             .semanticsSelected(selected),
     ) {
         Column(
-            Modifier.padding(12.dp),
+            Modifier.fillMaxWidth().padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -428,24 +572,3 @@ private fun Modifier.semanticsSelected(isSelected: Boolean): Modifier =
         role = Role.RadioButton
     }
 
-/** Empty-ish helper used by Home and the celebration: a label above a big value. */
-@Composable
-fun LabelledValue(
-    overline: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    overlineColor: Color = TextMuted,
-    valueColor: Color = Navy,
-) {
-    Column(modifier) {
-        Overline(overline, color = overlineColor)
-        Spacer(Modifier.height(2.dp))
-        Text(value, style = RuuunText.CardTitle, color = valueColor)
-    }
-}
-
-/** Ground-coloured spacer used between stacked cards. */
-@Composable
-fun SectionSpacer() {
-    Spacer(Modifier.height(Dimens.SectionGap))
-}

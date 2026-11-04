@@ -1,5 +1,10 @@
 package app.ruuun.ui.screens
 
+import androidx.compose.foundation.layout.statusBarsPadding
+import app.ruuun.ui.components.Chunky
+import app.ruuun.ui.components.SheetTop
+import app.ruuun.ui.theme.SkyShade
+import app.ruuun.ui.theme.Surface as SurfaceColor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,7 +65,6 @@ import app.ruuun.ui.ruu
 import app.ruuun.ui.scene
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.Ground
-import app.ruuun.ui.theme.HeroTrack
 import app.ruuun.ui.theme.InfoBg
 import app.ruuun.ui.theme.InfoLabel
 import app.ruuun.ui.theme.InfoText
@@ -111,7 +115,7 @@ fun RunSavedScreen(
     val outcome by viewModel.lastSave.collectAsStateWithLifecycle()
     val saved = outcome ?: run {
         // Nothing to celebrate (e.g. after a process restart): go straight back.
-        PrimaryCta("Back to Home", onDone, Modifier.padding(Dimens.ScreenPadding))
+        PrimaryCta("Back to Home", onDone, Modifier.statusBarsPadding().padding(Dimens.ScreenPadding))
         return
     }
     val after = saved.after
@@ -147,12 +151,14 @@ fun RunSavedScreen(
                 val records = JourneyView.records(saved)
                 if (records.isNotEmpty()) {
                     PopIn(delayMillis = XP_AT_MS) {
-                        Surface(
+                        Chunky(
                             shape = Shapes.Card,
                             color = app.ruuun.ui.theme.LimeTint,
+                            shade = app.ruuun.ui.theme.LimeShade,
+                            border = null,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Column(Modifier.padding(16.dp)) {
+                            Column(Modifier.fillMaxWidth().padding(16.dp)) {
                                 Overline("Personal best", color = Navy)
                                 records.forEach { record ->
                                     Spacer(Modifier.height(4.dp))
@@ -250,7 +256,7 @@ fun RunSavedScreen(
                     val progress = JourneyView.chapterProgress(after, settings)
                     WorldCard(
                         bannerColor = progress.chapter?.world?.bannerColor() ?: Lime,
-                        bannerIcon = progress.chapter?.world?.icon() ?: Icons.Outlined.Check,
+                        bannerIcon = progress.chapter?.world?.icon() ?: Icons.Rounded.Check,
                         worldName = progress.worldTitle,
                         title = if (progress.isFinale) {
                             progress.title
@@ -284,8 +290,8 @@ fun RunSavedScreen(
                 val stops = saved.log.stops
                 if (stopNote != null && stops != null) {
                     Spacer(Modifier.height(Dimens.SectionGap))
-                    Surface(shape = Shapes.Card, color = InfoBg, modifier = Modifier.fillMaxWidth()) {
-                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Chunky(shape = Shapes.Card, color = InfoBg, shade = Sky, border = null, depth = 4.dp, modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column {
                                 Overline("Stops", color = InfoLabel)
                                 Spacer(Modifier.height(2.dp))
@@ -303,8 +309,8 @@ fun RunSavedScreen(
                 }
 
                 Spacer(Modifier.height(Dimens.SectionGap))
-                Surface(shape = Shapes.Card, color = InfoBg, modifier = Modifier.fillMaxWidth()) {
-                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Chunky(shape = Shapes.Card, color = InfoBg, shade = Sky, border = null, depth = 4.dp, modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Overline("Next mission", color = InfoLabel)
                             Spacer(Modifier.height(2.dp))
@@ -387,11 +393,16 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
         bar.animateTo(after.levelProgress, tween(700, easing = FastOutSlowInEasing))
     }
 
-    Surface(color = Navy, modifier = Modifier.fillMaxWidth()) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Sky)
+            .statusBarsPadding(),
+    ) {
         Box {
             Confetti()
             Column(
-                Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 28.dp),
+                Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 PopIn {
@@ -408,7 +419,7 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                 Text(
                     JourneyView.savedHeadline(nickname),
                     style = RuuunText.Greeting,
-                    color = Ground,
+                    color = Navy,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(6.dp))
@@ -416,7 +427,7 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                     "${Formatters.distance(saved.log.distanceM)} saved for " +
                         Formatters.dayMonth(saved.log.date),
                     style = RuuunText.BodyLarge,
-                    color = Ground,
+                    color = Navy,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(14.dp))
@@ -424,7 +435,7 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                     if (saved.isNewRunDay) {
                         Pill("+50 XP", Orange)
                     } else {
-                        Pill("Distance added", SkyTint)
+                        Pill("Distance added", SurfaceColor)
                     }
                 }
                 Spacer(Modifier.height(20.dp))
@@ -443,14 +454,14 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                 Text(
                     "Level $shownLevel · ${StatsCalculator.levelName(shownLevel)}",
                     style = RuuunText.BodyStrong,
-                    color = Ground,
+                    color = Navy,
                 )
                 Spacer(Modifier.height(8.dp))
                 RuuunProgressBar(
                     fraction = bar.value,
-                    color = Sky,
+                    color = SurfaceColor,
                     height = Dimens.XpBarHeight,
-                    trackColor = HeroTrack,
+                    trackColor = SkyShade,
                     description = "${after.runsToNextLevel} more runs to level ${after.level + 1}",
                 )
                 Spacer(Modifier.height(6.dp))
@@ -460,11 +471,12 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
                     if (toNext == 1) "1 more run to Level ${shownLevel + 1}"
                     else "$toNext more runs to Level ${shownLevel + 1}",
                     style = RuuunText.Secondary,
-                    color = Ground,
+                    color = Navy,
                 )
             }
             if (motion) FallingConfetti(Modifier.matchParentSize())
         }
+        SheetTop()
     }
 }
 
@@ -472,10 +484,10 @@ private fun CelebrationPanel(saved: SaveOutcome, nickname: String) {
 @Composable
 private fun Confetti() {
     val pieces = listOf(
-        Triple(30.dp, 24.dp, Sky),
+        Triple(30.dp, 24.dp, Navy),
         Triple(90.dp, 54.dp, Orange),
         Triple(250.dp, 30.dp, Lime),
-        Triple(310.dp, 70.dp, Sky),
+        Triple(310.dp, 70.dp, Navy),
         Triple(170.dp, 18.dp, Orange),
     )
     pieces.forEach { (x, y, color) ->
@@ -504,7 +516,7 @@ private class ConfettiPiece(
 )
 
 private val CONFETTI: List<ConfettiPiece> = Random(7).let { r ->
-    val colours = listOf(Sky, Orange, Lime, Ground)
+    val colours = listOf(Navy, Orange, Lime, Ground)
     List(36) {
         val round = r.nextFloat() < 0.35f
         val size = 6f + r.nextFloat() * 5f

@@ -20,6 +20,12 @@ val Nunito = FontFamily(
     Font(R.font.nunito_extrabold, FontWeight.ExtraBold),
 )
 
+private val tight = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+private val trimmed = androidx.compose.ui.text.style.LineHeightStyle(
+    alignment = androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center,
+    trim = androidx.compose.ui.text.style.LineHeightStyle.Trim.Both,
+)
+
 private fun display(size: Int, line: Int) =
     TextStyle(fontFamily = Baloo2, fontWeight = FontWeight.ExtraBold, fontSize = size.sp, lineHeight = line.sp)
 
@@ -30,19 +36,25 @@ object RuuunText {
     val HeroNumber = display(60, 60)      // Home "425 m"
     val BigNumber = display(44, 46)       // large figures
     val Greeting = display(30, 34)        // "Hello, Runner", stat tile values
-    val ScreenTitle = display(28, 34)     // Journey, Badges, History
+    val ScreenTitle = display(30, 34)     // Journey, Badges, History, on the blue header
     val SubTitle = display(24, 28)        // Log a run, Settings headers
     val CardTitle = display(22, 27)       // chapter and week titles
     val SectionTitle = display(20, 26)
-    val StatValue = display(28, 31)
+    val StatValue = display(30, 32)
+    // The distance in Ruu's speech card and the words before it, trimmed of the font's
+    // extra line space so the card hugs them.
+    val SpeechNumber = display(40, 40).copy(platformStyle = tight, lineHeightStyle = trimmed)
+    val SpeechWords = display(22, 24).copy(platformStyle = tight, lineHeightStyle = trimmed)
+    val Medal = body(13, FontWeight.ExtraBold)
+    val Tiny = body(11, FontWeight.ExtraBold)
 
-    val Cta = body(19, FontWeight.ExtraBold)
+    val Cta = display(21, 24).copy(letterSpacing = 0.04.em) // rendered uppercase
     val BodyLarge = body(17, FontWeight.SemiBold)
     val BodyStrong = body(16, FontWeight.ExtraBold)
     val Body = body(15, FontWeight.SemiBold)
     val Secondary = body(14, FontWeight.Normal)
     val Label = body(13, FontWeight.Bold)
-    val Overline = body(13, FontWeight.ExtraBold).copy(letterSpacing = 0.08.em) // render uppercase
+    val Overline = body(12, FontWeight.ExtraBold).copy(letterSpacing = 0.12.em) // render uppercase
     val Pill = body(12, FontWeight.ExtraBold).copy(letterSpacing = 0.04.em)
     val DistanceInput = display(30, 34)
 }

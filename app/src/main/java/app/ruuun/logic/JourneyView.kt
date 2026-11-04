@@ -91,6 +91,45 @@ object JourneyView {
         monday = WeekCalculator.weekStart(today),
     )
 
+    /** One day in the Monday to Sunday row on Home. */
+    data class WeekDay(val date: LocalDate, val ran: Boolean, val isToday: Boolean)
+
+    /** The seven days of the week starting [weekStart], with the days that had a run. */
+    fun weekDays(logs: List<RunLog>, weekStart: LocalDate, today: LocalDate): List<WeekDay> {
+        val ranOn = logs.map { it.date }.toSet()
+        return (0L..6L).map { offset ->
+            val date = weekStart.plusDays(offset)
+            WeekDay(date = date, ran = date in ranOn, isToday = date == today)
+        }
+    }
+
+    /** "Ran on Monday and Wednesday", or "No runs yet" for TalkBack. */
+    fun weekDaysDescription(days: List<WeekDay>): String {
+        val names = days.filter { it.ran }.map {
+            it.date.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.UK)
+        }
+        return when (names.size) {
+            0 -> "No runs yet this week"
+            1 -> "Ran on ${names[0]}"
+            else -> "Ran on ${names.dropLast(1).joinToString(", ")} and ${names.last()}"
+        }
+    }
+
+    /**
+     * The navy pill under Ruu on Home: the stop goal if there is one, and that breaks
+     * are fine. Short, because it sits on one line under the fox.
+     */
+    fun homePill(stopGoal: Int?, lastStops: Int?, lowStopsLimit: Int, atCap: Boolean, welcomeBack: Boolean): String {
+        if (welcomeBack) return "Repeat this one, or make it easier"
+        if (stopGoal == null) {
+            return if (atCap) "Breaks are fine · your longest mission setting"
+            else "Breaks are fine · longer after ${stopsOrFewer(lowStopsLimit)}"
+        }
+        val goal = StopGoal.goalLabel(stopGoal)
+        val from = lastStops?.takeIf { it > stopGoal }?.let { " · from $it" } ?: ""
+        return "$goal$from · breaks are fine"
+    }
+
     /** Journey weeks 1..[upToJourneyWeek], including weeks with no logs. */
     fun journeyWeeks(
         logs: List<RunLog>,

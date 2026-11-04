@@ -1,5 +1,15 @@
 package app.ruuun.ui
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import app.ruuun.ui.theme.IconMuted
+import app.ruuun.ui.theme.SkyDeep
+import app.ruuun.ui.theme.SkyTint
+import app.ruuun.ui.theme.SkyShade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,11 +25,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Map
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.MilitaryTech
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.MilitaryTech
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -85,10 +94,10 @@ object Routes {
 private data class NavItem(val route: String, val label: String, val icon: ImageVector)
 
 private val NAV_ITEMS = listOf(
-    NavItem(Routes.HOME, "Home", Icons.Outlined.Home),
-    NavItem(Routes.JOURNEY, "Journey", Icons.Outlined.Map),
-    NavItem(Routes.BADGES, "Badges", Icons.Outlined.MilitaryTech),
-    NavItem(Routes.HISTORY, "History", Icons.Outlined.Schedule),
+    NavItem(Routes.HOME, "Home", Icons.Rounded.Home),
+    NavItem(Routes.JOURNEY, "Journey", Icons.Rounded.Map),
+    NavItem(Routes.BADGES, "Badges", Icons.Rounded.MilitaryTech),
+    NavItem(Routes.HISTORY, "History", Icons.Rounded.History),
 )
 
 @Composable
@@ -106,12 +115,8 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
         viewModel.clearMessage()
     }
 
-    if (state.loading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = Sky)
-        }
-        return
-    }
+    // The splash covers the screen while the data loads (see MainActivity).
+    if (state.loading) return
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -124,8 +129,11 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
     }
     val showNav = currentRoute in NAV_ITEMS.map { it.route }
 
+    Box(Modifier.fillMaxSize()) {
     Scaffold(
         containerColor = Ground,
+        // Screens pad for the status bar themselves, inside their own header colour.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             // Settings too: that is where "Check for updates" lives, so its answer shows there.
@@ -143,7 +151,10 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
         NavHost(
             navController = navController,
             startDestination = if (state.needsSetup) Routes.SETUP else Routes.HOME,
-            modifier = Modifier.padding(padding),
+            // The update banner already covers the status bar when it shows.
+            modifier = Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding),
         ) {
             composable(Routes.SETUP) {
                 SetupScreen(
@@ -237,15 +248,25 @@ fun RuuunApp(viewModel: RuuunViewModel = viewModel()) {
             }
         }
     }
+    // Every screen starts in header blue, so the status bar stays blue while content
+    // scrolls underneath it.
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .windowInsetsTopHeight(WindowInsets.statusBars)
+            .background(Sky),
+    )
+    }
 }
 
 @Composable
 private fun BottomNav(navController: NavHostController, currentRoute: String?) {
-    Surface(color = SurfaceColor, border = BorderStroke(1.dp, Border)) {
+    Column(Modifier.fillMaxWidth().background(SurfaceColor)) {
+        Box(Modifier.fillMaxWidth().height(2.dp).background(Border))
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 14.dp),
+                .padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             NAV_ITEMS.forEach { item ->
@@ -268,30 +289,26 @@ private fun BottomNav(navController: NavHostController, currentRoute: String?) {
                                     }
                                 }
                             },
-                        )
-                        .padding(vertical = 4.dp),
+                        ),
                 ) {
                     Box(
                         modifier = Modifier
-                            .height(Dimens.NavIndicatorHeight)
-                            .width(Dimens.NavIndicatorWidth)
-                            .clip(Shapes.Pill)
-                            .background(if (selected) Sky else Color.Transparent),
+                            .size(width = 64.dp, height = 48.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (selected) SkyTint else Color.Transparent)
+                            .then(
+                                if (selected) Modifier.border(2.dp, Sky, RoundedCornerShape(14.dp)) else Modifier,
+                            ),
                         contentAlignment = Alignment.Center,
                     ) {
+                        // Icons only on screen; TalkBack still hears the tab's name.
                         Icon(
                             item.icon,
-                            contentDescription = null,
-                            tint = if (selected) Navy else TextMuted,
-                            modifier = Modifier.size(22.dp),
+                            contentDescription = item.label,
+                            tint = if (selected) SkyShade else IconMuted,
+                            modifier = Modifier.size(30.dp),
                         )
                     }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        item.label,
-                        style = if (selected) RuuunText.Label else RuuunText.Label,
-                        color = if (selected) Navy else TextMuted,
-                    )
                 }
             }
         }

@@ -52,12 +52,7 @@ fun BadgeDetailSheet(
                 .padding(start = 24.dp, end = 24.dp, bottom = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            BadgeCell(
-                badge = badge,
-                earned = earned,
-                progressText = null,
-                modifier = Modifier.width(150.dp),
-            )
+            Medal(badge = badge, earned = earned, size = 104.dp)
             Spacer(Modifier.height(16.dp))
             Text(
                 if (hidden) "Secret badge" else badge.title,

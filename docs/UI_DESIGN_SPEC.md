@@ -12,6 +12,37 @@
 4. Icons: use `androidx.compose.material:material-icons-extended` (bundled, offline). Mapping in section 3.
 5. All numbers in the mockups are **sample data for one example child**. In the app every value is derived from Room as the handoff defines. Copy strings are final unless marked `[sample]`.
 
+## 0.5 Design system since 1.5 ("chunky")
+
+1.5 restyled every screen to a playful, game-like look. **Where this section and sections 1, 2 or 4 disagree, this section wins.** Content, data and behaviour did not change.
+
+**Tokens** (`ui/theme/Color.kt`): Navy `#111A2E` ink · Sky `#3DBDF5` / shade `#1597D6` / deep text `#0B3A55` / tint `#E4F6FF` · Orange `#FF8A1F` / shade `#D66A00` / tint `#FFE2C7` · Lime `#C6F03C` / shade `#9CC417` / text `#5C7A00` / tint `#F1FBD4` · Ground `#F6F8FB` · Border `#E3E8EF` · Divider and locked fill `#EEF1F5` · dashed `#C9D1DC` · secondary text `#4A5468`. Type: Baloo 2 800 for titles (30), section titles (20 to 22), big numbers (30 to 40) and the button text (21, capitals, 0.04 em); Nunito 700 to 800 for the rest; overlines 12 sp, 0.12 em, capitals. Icons: Material Rounded (filled).
+
+**Contrast rules (a change from the design handoff, on purpose).** The handoff put white text on Sky and on Orange. Those measure 2.1:1 and 2.4:1, below the 3:1 minimum even for large text, so the app uses Navy (or SkyDeep on Sky) instead. Orange text on white uses OrangeShade, large sizes only. Medal icons are Navy, except Secret (lime on black). Inactive nav icons are `#7D8799` (3.6:1).
+
+**`Chunky`** (`ui/components/Chunky.kt`) is the base of every card, chip, tile and button: a solid face over a darker shade that shows as a thick bottom edge (no blur shadows anywhere). Pressing moves the face down to a 2 dp edge in 80 ms; the outer size never changes. White faces get a 2 dp `Border` outline and a `Border` edge; coloured faces get their shade (`shadeOf`). Depths: buttons 6, cards 5, chips 4, small tiles 3 to 4.
+
+**Screen structure.** Tabs and sub-screens start with a **blue header** (`BlueHeader`, Sky, reaching up behind the status bar) holding the title and chips, then a **rounded sheet** (`SheetTop`, Ground, 28 dp corners) for the content. A Sky strip stays behind the status bar while content scrolls. Things sitting on blue (chips, the speech card, the fox circle, the closest-badge card) are white with a `SkyShade` edge. Sub-screens (Log a run, Settings, a run, Setup) use `SubScreenHeader`: a white back or close chip and the title on the same blue.
+
+**Bottom nav:** white, 2 dp top border; 64 × 48 slots; active slot `SkyTint` with a 2 dp Sky outline and a SkyShade icon; 30 dp Rounded icons, inactive `IconMuted`. Icons only on screen; each tab still has its name for TalkBack.
+
+**Splash ("night navy"):** Android's own splash shows Ruu's head on Navy with the icon circle in the inner ring colour, then the app's splash carries on while the data loads (at least 0.9 s): two halo rings (300 dp `#1A2540`, 240 dp `#223052`), Ruu's head in a 220 dp circle bobbing 8 dp and tilting 2 degrees each way over 2.4 s, the ruuun! wordmark 30 dp below, and three 14 dp dots (orange, lime, sky) 70 dp above the bottom, hopping 10 dp in turn. Both stop when animations are off; the splash fades out in 200 ms. Status bar icons are light while it shows.
+
+**Ticks** on the week row and quest checks are drawn (`ThickCheck`), heavier than the icon font's, with round ends.
+
+**Screens**
+- **Home:** the blue header fills whatever the sheet leaves (never less than its own content; short phones scroll). Level chip, XP chip and settings chip; a white XP bar on a SkyShade track; Ruu's speech card "Let's do 1.3 km" (distance in OrangeShade, rolls on Easier and Harder); Ruu in a 180 dp round frame on the current world's scene, dressed for it, breathing gently; a navy pill in lime ("2 stops or fewer · from 3 · breaks are fine", or what the rule is before stops are counted, or the welcome-back line). Sheet: Monday to Sunday circles (lime with a check on days run, dashed orange ring on today, grey otherwise, with the weekly goal on the right); Easier (south arrow) · LOG A RUN · Harder (north arrow); a card with the closest badge and the current chapter as progress lines. The run, distance and badge counters moved off Home (they are on History and Badges).
+- **Journey:** "Journey" and an "N of 24" chip; the current chapter card on blue (world scene, Ruu, lime world pill, 14 dp orange bar). Sheet: the week (goal and side quest as two tiles), stops as a navy card with one block per stop for the first counted run and the latest (12 shown, then "+N"; zero reads "Non-stop!"), the whole journey, week by week. The current world is a coloured banner then its three chapters as a zig-zag path (offsets 24 / 120 / 52 dp): finished chapters show their picture in a circle with a lime check and open it when tapped, the current one is an orange 76 dp circle with the run count, "You are here" and a slow pulse (none when animations are off), locked ones are grey with a lock and the runs needed. Finished worlds fold to a card that opens to the same path; worlds ahead show their chapters and run range; a season not yet open is drawn dashed.
+- **Badges:** "Badges" and an "N of 193" chip, a white progress bar, Ruu holding a medal with a speech card naming the closest badge, and that badge as a card with its bar and hint. Filter chips, then each category with a colour square, six badges and "See all N". Earned: a medal in the category colour with its darker edge and a lime check. Locked: grey tile, dashed medal with a lock (a question mark for secrets), a 7 dp orange bar and "a/b".
+- **History:** "History" and four stat tiles on blue (all-time distance on orange, the rest white). Each run: a date block, the distance, a feel pill with its face, a dot for each stop (12, then "+N") and the note.
+- **Not in the handoff, extrapolated in the same style:** Log a run (blue header with a close chip, Ruu taking notes, chunky effort buttons and stops stepper, LOG A RUN style save button), Run saved (the celebration on blue with Ruu cheering, then the sheet), Settings and a run's detail (blue header with a back chip, chunky cards), Setup (logo on blue).
+
+**Badge category colours** (face / edge): First steps `#3DBDF5` / `#1597D6` · Run days `#B9A4FF` / `#8A6FE8` · Best single run `#FF8A1F` / `#D66A00` · Total distance `#FFC83D` / `#D9A200` · Weekly `#C6F03C` / `#9CC417` · Adventure `#4FD08A` / `#2AA566` · Reflection `#FFA8CF` / `#E0709F` · Story `#F2B880` / `#C98A4B` · Quests `#FF9C8A` / `#E0604F` · Seasons `#7FE0D3` / `#3BB5A5` · Non-stop `#7FB2FF` / `#3D7BE0` · Secret `#111A2E` / black. The handoff gave seven; the other five were chosen to stay apart from those.
+
+**World colours and icons:** Rookie Woods `#C6F03C` forest · Desert Dash `#FFD98A` wb_sunny · Sky Kingdom `#A8E2FF` cloud · Planet Zoom `#D6C8FF` public · Coral Coast `#FFC2B5` beach_access · Jungle Run `#9FE6B6` park · Frosty Peaks `#CDEFFA` ac_unit · Comet Run `#FFE98A` auto_awesome.
+
+**Accessibility kept:** every button keeps a normal-case TalkBack label even though it shows capitals; the week row, quest lines and chapter nodes each read as one sentence; the pulse and the fox's breathing stop when animations are off; on a narrow button the icon gives way to the words.
+
 ## 1. Global layout
 
 - Phone portrait, designed at 360 to 412 dp wide. Content is a single column, `Dimens.ScreenPadding` (20 dp) on all sides, `SectionGap` (16 dp) between cards. Every screen scrolls vertically (`LazyColumn` or `verticalScroll`).

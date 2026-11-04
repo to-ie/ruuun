@@ -1,5 +1,7 @@
 package app.ruuun.ui.screens
 
+import androidx.compose.ui.semantics.disabled
+import app.ruuun.ui.components.SubScreenHeader
 import app.ruuun.ui.Mascot
 import app.ruuun.ui.components.RuuImage
 import app.ruuun.ui.components.SpeechBubble
@@ -20,11 +22,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -161,31 +163,12 @@ fun LogRunScreen(
     val canSave = distanceM != null && effort != null && durationValid && !saving
 
     Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(SurfaceColor)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Surface(
-                onClick = onClose,
-                shape = Shapes.Input,
-                color = SurfaceColor,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.Close, contentDescription = "Close", tint = Navy)
-                }
-            }
-            Spacer(Modifier.width(4.dp))
-            Text(
-                if (editing == null) "Log a run" else "Edit run",
-                style = RuuunText.SubTitle,
-                color = Navy,
-            )
-        }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
+        SubScreenHeader(
+            title = if (editing == null) "Log a run" else "Edit run",
+            onBack = onClose,
+            backIcon = Icons.Rounded.Close,
+            backDescription = "Close",
+        )
 
         Column(
             Modifier
@@ -218,7 +201,7 @@ fun LogRunScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.Outlined.CalendarMonth,
+                        Icons.Rounded.CalendarMonth,
                         contentDescription = null,
                         tint = Navy,
                         modifier = Modifier.size(22.dp),
@@ -357,7 +340,7 @@ fun LogRunScreen(
                         },
                         selectedFill = Lime,
                         selectedContent = Navy,
-                        icon = if (selected) Icons.Outlined.Check else Icons.Outlined.Add,
+                        icon = if (selected) Icons.Rounded.Check else Icons.Rounded.Add,
                     )
                 }
             }
@@ -483,7 +466,7 @@ fun LogRunScreen(
                                 )
                             }
                         },
-                        icon = Icons.Outlined.Check,
+                        icon = Icons.Rounded.Check,
                         enabled = canSave,
                     )
                 }
@@ -538,7 +521,7 @@ private const val NOT_COUNTED = -1
 private fun StopsStepper(stops: Int?, onChange: (Int?) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         StepButton(
-            icon = Icons.Outlined.Remove,
+            icon = Icons.Rounded.Remove,
             description = if (stops == null) "No stops, non-stop" else "One fewer stop",
             enabled = stops != 0,
             onClick = { onChange(if (stops == null) 0 else stops - 1) },
@@ -570,7 +553,7 @@ private fun StopsStepper(stops: Int?, onChange: (Int?) -> Unit) {
             }
         }
         StepButton(
-            icon = Icons.Outlined.Add,
+            icon = Icons.Rounded.Add,
             description = if (stops == null) "One stop" else "One more stop",
             enabled = (stops ?: 0) < RunLog.MAX_STOPS,
             onClick = { onChange(if (stops == null) 1 else stops + 1) },
@@ -590,17 +573,20 @@ private fun StepButton(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    Surface(
+    app.ruuun.ui.components.Chunky(
         onClick = onClick,
         enabled = enabled,
         shape = Shapes.Input,
         color = SurfaceColor,
-        border = androidx.compose.foundation.BorderStroke(2.dp, if (enabled) Navy else InputBorder),
-        modifier = Modifier.size(Dimens.InputHeight),
+        shade = if (enabled) Navy else InputBorder,
+        border = if (enabled) Navy else InputBorder,
+        depth = 4.dp,
+        modifier = Modifier
+            .size(Dimens.InputHeight + 4.dp)
+            .semantics { if (!enabled) disabled() },
+        contentAlignment = Alignment.Center,
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription = description, tint = if (enabled) Navy else TextMuted)
-        }
+        Icon(icon, contentDescription = description, tint = if (enabled) Navy else TextMuted, modifier = Modifier.size(26.dp))
     }
 }
 

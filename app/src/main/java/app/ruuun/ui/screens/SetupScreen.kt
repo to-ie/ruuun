@@ -1,5 +1,6 @@
 package app.ruuun.ui.screens
 
+import app.ruuun.ui.components.BlueHeader
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -72,9 +73,9 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        Surface(color = SurfaceColor, modifier = Modifier.fillMaxWidth()) {
+        BlueHeader(topPadding = 20.dp, bottomPadding = 10.dp) {
             Column(
-                Modifier.padding(horizontal = Dimens.ScreenPadding, vertical = 28.dp),
+                Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Image(
@@ -94,7 +95,7 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
                 Text(
                     "Takes a minute. Grab an adult if you want a hand.",
                     style = RuuunText.Body,
-                    color = TextMuted,
+                    color = app.ruuun.ui.theme.SkyDeep,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -126,20 +127,19 @@ fun SetupScreen(onFinish: (nickname: String, startingTargetM: Int, weeklyGoal: I
             Spacer(Modifier.height(10.dp))
             PLANS.forEachIndexed { index, plan ->
                 val isSelected = index == planIndex
-                Surface(
+                app.ruuun.ui.components.Chunky(
                     onClick = { planIndex = index },
                     shape = Shapes.Card,
                     color = if (isSelected) OrangeTintLight else SurfaceColor,
-                    border = BorderStroke(2.dp, if (isSelected) Navy else Border),
+                    shade = if (isSelected) Navy else Border,
+                    border = if (isSelected) Navy else Border,
+                    role = Role.RadioButton,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 10.dp)
-                        .semantics {
-                            selected = isSelected
-                            role = Role.RadioButton
-                        },
+                        .semantics { selected = isSelected },
                 ) {
-                    Column(Modifier.padding(16.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp)) {
                         Text(plan.label, style = RuuunText.BodyStrong, color = Navy)
                         Text(plan.caption, style = RuuunText.Body, color = TextMuted)
                     }

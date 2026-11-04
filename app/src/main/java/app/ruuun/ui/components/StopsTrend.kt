@@ -8,110 +8,113 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.ruuun.data.RunLog
 import app.ruuun.logic.StopGoal
-import app.ruuun.ui.theme.Border
+import app.ruuun.ui.theme.Ground
+import app.ruuun.ui.theme.Lime
 import app.ruuun.ui.theme.Navy
+import app.ruuun.ui.theme.Orange
 import app.ruuun.ui.theme.RuuunText
-import app.ruuun.ui.theme.TextMuted
+import app.ruuun.ui.theme.StopBlockIdle
 
-/** How many counted days the chart shows. */
-private const val RUNS_SHOWN = 10
-private val CHART_HEIGHT = 96.dp
-private val ZERO_MARK = 4.dp
+/** Most blocks drawn in a row; more show as "+N". */
+private const val MAX_BLOCKS = 12
 
 /**
- * Stops on the last few counted runs, as bars. Shorter is better, and the story is
- * the first count against the latest one. Nothing shows until stops have been counted.
+ * Stops as blocks, one per stop: the first counted run against the latest. Fewer blocks
+ * is the story. Nothing shows until stops have been counted.
  */
 @Composable
 fun StopsTrendCard(logs: List<RunLog>, stopGoal: Int?) {
     val counted = StopGoal.countedDays(logs)
     if (counted.isEmpty()) return
-    val shown = counted.takeLast(RUNS_SHOWN)
     val first = counted.first().stops ?: 0
     val latest = counted.last().stops ?: 0
+    val single = counted.size == 1
+    val goalText = stopGoal?.let { " Stop goal: ${StopGoal.goalLabel(it).lowercase()}." } ?: ""
+    val description = if (single) {
+        "Stops: ${StopGoal.stopsLabel(first)} on your first count.$goalText"
+    } else {
+        "Stops: $first on your first counted run, $latest on the latest.$goalText"
+    }
 
-    RuuunCard {
-        Overline("Stops")
-        Spacer(Modifier.height(4.dp))
-        Text(
-            if (counted.size == 1) {
-                "${StopGoal.stopsLabel(first)} on your first count"
-            } else {
-                "From $first to $latest"
-            },
-            style = RuuunText.CardTitle,
-            color = Navy,
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            when {
-                counted.size == 1 -> "Count them again next run to start your chart."
-                latest < first -> "${first - latest} fewer than your first count. Shorter bars mean fewer stops."
-                else -> "Shorter bars mean fewer stops. Breaks are fine; this is just to see the change."
-            } + (stopGoal?.let { " Stop goal: ${StopGoal.goalLabel(it).lowercase()}." } ?: "") +
-                // The chart only has room for the latest days, so say so when it starts later.
-                (if (counted.size > RUNS_SHOWN) " The chart shows the last $RUNS_SHOWN days you counted." else ""),
-            style = RuuunText.Secondary,
-            color = TextMuted,
-        )
-        Spacer(Modifier.height(14.dp))
-        StopsBars(shown)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(Navy)
+            .clearAndSetSemantics { contentDescription = description },
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (single) "Stops: $first" else "Stops: $first → $latest",
+                    style = RuuunText.CardTitle,
+                    color = Ground,
+                    modifier = Modifier.weight(1f),
+                )
+                val change = when {
+                    single -> null
+                    latest < first -> "${first - latest} fewer!"
+                    latest == first -> "Holding steady"
+                    else -> null
+                }
+                if (change != null) Text(change, style = RuuunText.BodyStrong, color = Lime)
+            }
+            Spacer(Modifier.height(12.dp))
+            BlockRow(if (single) "First count" else "First run", first, StopBlockIdle)
+            if (!single) {
+                Spacer(Modifier.height(8.dp))
+                BlockRow("Latest run", latest, Orange)
+            }
+            Spacer(Modifier.height(12.dp))
+            Text(
+                (if (single) "Count them again next run to compare." else "Fewer blocks mean fewer stops.") + goalText,
+                style = RuuunText.Label,
+                color = Ground,
+            )
+        }
     }
 }
 
 @Composable
-private fun StopsBars(runs: List<RunLog>) {
-    val values = runs.map { it.stops ?: 0 }
-    val max = (values.maxOrNull() ?: 0).coerceAtLeast(1)
-    val description = "Stops on your last ${values.size} counted days, oldest first: " +
-        values.joinToString(", ")
-
-    Column(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description }) {
-        Row(
-            Modifier.fillMaxWidth().height(CHART_HEIGHT + 22.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            values.forEachIndexed { index, stops ->
-                val labelled = index == 0 || index == values.lastIndex
-                Column(
-                    Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    if (labelled) {
-                        Text(
-                            "$stops",
-                            style = RuuunText.Pill,
-                            color = Navy,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                    }
-                    val height = if (stops == 0) ZERO_MARK else CHART_HEIGHT * (stops.toFloat() / max)
+private fun BlockRow(label: String, stops: Int, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = RuuunText.Tiny, color = Ground, modifier = Modifier.width(76.dp))
+        if (stops == 0) {
+            Text("Non-stop!", style = RuuunText.BodyStrong, color = Lime)
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f),
+            ) {
+                repeat(minOf(stops, MAX_BLOCKS)) {
                     Box(
                         Modifier
-                            .fillMaxWidth()
-                            .height(height)
-                            .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                            .background(if (stops == 0) TextMuted else Navy),
+                            .weight(1f, fill = false)
+                            .size(width = 18.dp, height = 12.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(color),
                     )
                 }
+                if (stops > MAX_BLOCKS) {
+                    Text("+${stops - MAX_BLOCKS}", style = RuuunText.Tiny, color = Ground)
+                }
             }
-            // Empty slots keep each bar the same width however few runs there are.
-            repeat(RUNS_SHOWN - values.size) { Spacer(Modifier.weight(1f)) }
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Border))
     }
 }

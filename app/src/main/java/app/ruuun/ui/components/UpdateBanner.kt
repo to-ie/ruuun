@@ -1,5 +1,9 @@
 package app.ruuun.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,10 +50,20 @@ fun UpdateBanner(
             "The update did not download" to "Check the internet and try again."
     }
 
-    Surface(color = Navy, modifier = Modifier.fillMaxWidth()) {
+    // A navy card on the header blue, which reaches up behind the status bar.
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(app.ruuun.ui.theme.Sky)
+            .statusBarsPadding()
+            .padding(start = Gutter, end = Gutter, top = 10.dp),
+    ) {
         Column(
             Modifier
-                .padding(horizontal = Dimens.ScreenPadding, vertical = 14.dp)
+                .fillMaxWidth()
+                .clip(app.ruuun.ui.theme.Shapes.Card)
+                .background(Navy)
+                .padding(16.dp)
                 .semantics { liveRegion = LiveRegionMode.Polite },
         ) {
             Text(title, style = RuuunText.BodyStrong, color = Ground)

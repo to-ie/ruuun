@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -42,15 +43,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.ruuun.ui.theme.Border
 import app.ruuun.ui.theme.Dimens
 import app.ruuun.ui.theme.Ground
-import app.ruuun.ui.theme.HeroOutline
 import app.ruuun.ui.theme.InputBorder
 import app.ruuun.ui.theme.Lime
 import app.ruuun.ui.theme.Navy
 import app.ruuun.ui.theme.Orange
-import app.ruuun.ui.theme.PipDashed
+import app.ruuun.ui.theme.OrangeShade
+import app.ruuun.ui.theme.LimeShade
+import app.ruuun.ui.theme.SkyShade
 import app.ruuun.ui.theme.RuuunText
 import app.ruuun.ui.theme.SegmentBg
 import app.ruuun.ui.theme.Shapes
@@ -81,7 +84,7 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     Text(text, style = RuuunText.SectionTitle, color = Navy, modifier = modifier)
 }
 
-/** Full-width orange call to action. Taps are debounced by the caller's enabled flag. */
+/** Full-width orange call to action, chunky, in capitals. Text is Navy: white on orange is too faint. */
 @Composable
 fun PrimaryCta(
     text: String,
@@ -89,33 +92,56 @@ fun PrimaryCta(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     enabled: Boolean = true,
+    compact: Boolean = false,
 ) {
-    Surface(
+    Chunky(
         onClick = onClick,
         enabled = enabled,
-        shape = Shapes.Button,
         color = if (enabled) Orange else Track,
-        contentColor = if (enabled) Navy else TextMuted,
-        modifier = modifier.fillMaxWidth(),
+        shade = if (enabled) OrangeShade else InputBorder,
+        shape = Shapes.Button,
+        depth = 6.dp,
+        border = null,
+        // Read in normal case: TalkBack can spell out words written in capitals.
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = text
+                if (!enabled) disabled()
+            },
     ) {
+        // On a narrow button (a small phone, large text) the icon gives way to the words.
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val showIcon = icon != null && maxWidth >= 210.dp
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = Dimens.CtaHeight)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .defaultMinSize(minHeight = if (compact) 52.dp else Dimens.CtaHeight)
+                .padding(horizontal = 12.dp, vertical = if (compact) 6.dp else 10.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (icon != null) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.width(10.dp))
+            val ink = if (enabled) Navy else TextMuted
+            if (showIcon && icon != null) {
+                Icon(icon, contentDescription = null, tint = ink, modifier = Modifier.size(if (compact) 26.dp else 24.dp))
+                Spacer(Modifier.width(6.dp))
             }
-            Text(text, style = RuuunText.Cta, textAlign = TextAlign.Center)
+            Text(
+                text.uppercase(),
+                style = if (compact) RuuunText.Cta.copy(fontSize = 19.sp) else RuuunText.Cta,
+                color = ink,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
+        }
         }
     }
 }
 
-/** Outlined button. [onNavy] switches to the hero/celebration treatment. */
+/**
+ * White chunky button. [onNavy] is for buttons sitting on a coloured header: the depth
+ * edge turns blue there, as the design asks for things on Sky.
+ */
 @Composable
 fun SecondaryButton(
     text: String,
@@ -126,19 +152,16 @@ fun SecondaryButton(
     lowEmphasis: Boolean = false,
     enabled: Boolean = true,
 ) {
-    val borderColor = when {
-        onNavy -> HeroOutline
-        lowEmphasis -> InputBorder
-        else -> Navy
-    }
-    Surface(
+    Chunky(
         onClick = onClick,
         enabled = enabled,
+        color = SurfaceColor,
+        shade = if (onNavy) SkyShade else if (lowEmphasis) Border else Navy,
+        border = if (onNavy) null else if (lowEmphasis) Border else Navy,
         shape = Shapes.Button,
-        color = if (onNavy) Color.Transparent else SurfaceColor,
-        contentColor = if (onNavy) Ground else Navy,
-        border = BorderStroke(2.dp, borderColor),
+        depth = 4.dp,
         modifier = modifier,
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             modifier = Modifier
@@ -147,16 +170,17 @@ fun SecondaryButton(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val ink = if (enabled) Navy else TextMuted
             if (icon != null) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(icon, contentDescription = null, tint = ink, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
             }
-            Text(text, style = RuuunText.BodyStrong, textAlign = TextAlign.Center)
+            Text(text, style = RuuunText.BodyStrong, color = ink, textAlign = TextAlign.Center)
         }
     }
 }
 
-/** The standard white card: 1 dp border, 20 dp corners, no shadow. */
+/** The standard white card: chunky, with a 2 dp border and a thicker bottom edge. */
 @Composable
 fun RuuunCard(
     modifier: Modifier = Modifier,
@@ -165,15 +189,18 @@ fun RuuunCard(
     border: Color? = Border,
     padding: androidx.compose.ui.unit.Dp = Dimens.CardPadding,
     onClick: (() -> Unit)? = null,
+    shade: Color = border ?: Border,
+    depth: androidx.compose.ui.unit.Dp = 5.dp,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
 ) {
-    val base = modifier.fillMaxWidth()
-    val clickable = if (onClick != null) base.clickable(onClick = onClick) else base
-    Surface(
-        shape = shape,
+    Chunky(
+        modifier = modifier.fillMaxWidth(),
         color = color,
-        border = border?.let { BorderStroke(1.dp, it) },
-        modifier = clickable,
+        shade = shade,
+        border = border,
+        shape = shape,
+        depth = depth,
+        onClick = onClick,
     ) {
         Column(Modifier.padding(padding), content = content)
     }
@@ -218,7 +245,7 @@ fun RuuunProgressBar(
     }
 }
 
-/** One of the three Home counters. */
+/** A chunky stat tile: an optional icon, a big value and its label. */
 @Composable
 fun StatTile(
     value: String,
@@ -226,52 +253,67 @@ fun StatTile(
     modifier: Modifier = Modifier,
     color: Color = SurfaceColor,
     contentColor: Color = Navy,
+    shade: Color = if (color == SurfaceColor) SkyShade else shadeOf(color),
+    icon: ImageVector? = null,
+    iconTint: Color = SkyShade,
 ) {
-    Surface(
-        shape = Shapes.Tile,
+    Chunky(
         color = color,
-        contentColor = contentColor,
-        border = if (color == SurfaceColor) BorderStroke(1.dp, Border) else null,
-        modifier = modifier,
+        shade = shade,
+        border = null,
+        shape = Shapes.Card,
+        depth = 6.dp,
+        modifier = modifier.semantics(mergeDescendants = true) {},
     ) {
-        Column(Modifier.padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp)) {
+            if (icon != null) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
+                Spacer(Modifier.height(4.dp))
+            }
             Text(value, style = RuuunText.StatValue, color = contentColor)
-            Text(
-                label,
-                style = RuuunText.Label,
-                color = if (contentColor == Navy) TextMuted else Ground,
-            )
+            Text(label, style = RuuunText.Label, color = contentColor)
         }
     }
 }
 
-/** Weekly goal pip. Filled lime when done, dashed outline when not. Never red. */
+/** Weekly goal pip: lime with a check when done, a plain grey circle when not. Never red. */
 @Composable
 fun CheckDot(done: Boolean, modifier: Modifier = Modifier, size: androidx.compose.ui.unit.Dp = 32.dp) {
     Box(
         modifier = modifier
             .size(size)
             .clip(Shapes.Pill)
-            .background(if (done) Lime else SurfaceColor)
-            .border(
-                width = 2.dp,
-                color = if (done) Navy else PipDashed,
-                shape = Shapes.Pill,
-            ),
+            .background(if (done) Lime else Track),
         contentAlignment = Alignment.Center,
     ) {
-        if (done) {
-            Icon(
-                Icons.Outlined.Check,
-                contentDescription = null,
-                tint = Navy,
-                modifier = Modifier.size(size * 0.6f),
-            )
-        }
+        if (done) ThickCheck(Modifier.size(size * 0.62f))
     }
 }
 
-/** Equal-width radio segments. */
+/** A bold, round-ended tick: heavier than the icon font's, so it reads at a glance. */
+@Composable
+fun ThickCheck(modifier: Modifier = Modifier, color: Color = Navy) {
+    androidx.compose.foundation.Canvas(modifier) {
+        val w = size.width
+        val h = size.height
+        val path = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.2f, h * 0.53f)
+            lineTo(w * 0.42f, h * 0.74f)
+            lineTo(w * 0.82f, h * 0.3f)
+        }
+        drawPath(
+            path,
+            color,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                width = w * 0.17f,
+                cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                join = androidx.compose.ui.graphics.StrokeJoin.Round,
+            ),
+        )
+    }
+}
+
+/** Equal-width radio segments; the chosen one is a small chunky tile. */
 @Composable
 fun <T> SegmentedPicker(
     options: List<T>,
@@ -284,39 +326,39 @@ fun <T> SegmentedPicker(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(SegmentBg)
-            .padding(6.dp),
+            .padding(5.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         options.forEach { option ->
             val isSelected = option == selected
-            Surface(
+            Chunky(
                 onClick = { onSelect(option) },
-                shape = Shapes.Segment,
                 color = if (isSelected) SurfaceColor else Color.Transparent,
-                contentColor = Navy,
-                shadowElevation = if (isSelected) 1.dp else 0.dp,
+                shade = if (isSelected) Border else Color.Transparent,
+                border = if (isSelected) Border else null,
+                shape = Shapes.Segment,
+                depth = 3.dp,
+                role = Role.RadioButton,
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .weight(1f)
-                    .semantics {
-                        role = Role.RadioButton
-                        this.selected = isSelected
-                    },
+                    .semantics { this.selected = isSelected },
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .defaultMinSize(minHeight = 44.dp)
+                        .defaultMinSize(minHeight = 46.dp)
                         .padding(horizontal = 4.dp, vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(label(option), style = RuuunText.BodyStrong, textAlign = TextAlign.Center)
+                    Text(label(option), style = RuuunText.BodyStrong, color = Navy, textAlign = TextAlign.Center)
                 }
             }
         }
     }
 }
 
-/** Pill toggle used for movement mode (single select) and tags (multi select). */
+/** Chunky pill toggle used for movement mode (single select), tags and filters. */
 @Composable
 fun ToggleChip(
     text: String,
@@ -324,30 +366,48 @@ fun ToggleChip(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
     selectedFill: Color = Navy,
-    selectedContent: Color = Ground,
+    selectedContent: Color = SurfaceColor,
     icon: ImageVector? = null,
 ) {
-    Surface(
+    Chunky(
         onClick = onToggle,
-        shape = Shapes.Pill,
         color = if (selected) selectedFill else SurfaceColor,
-        contentColor = if (selected) selectedContent else Navy,
-        border = BorderStroke(2.dp, if (selected) Navy else InputBorder),
+        shade = if (selected) shadeOf(selectedFill) else Border,
+        border = if (selected) null else Border,
+        shape = Shapes.Pill,
+        depth = 4.dp,
         modifier = modifier
-            .heightIn(min = 44.dp)
+            .heightIn(min = 48.dp)
             .semantics { this.selected = selected },
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val ink = if (selected) selectedContent else Navy
             if (icon != null) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(icon, contentDescription = null, tint = ink, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
             }
-            Text(text, style = RuuunText.Body)
+            Text(text, style = RuuunText.BodyStrong, color = ink, maxLines = 1)
         }
     }
+}
+
+/** The darker edge that goes under a coloured face. */
+fun shadeOf(color: Color): Color = when (color) {
+    Orange -> OrangeShade
+    Lime -> LimeShade
+    Sky -> SkyShade
+    Navy -> Color.Black
+    SurfaceColor -> Border
+    else -> Color(
+        red = color.red * 0.8f,
+        green = color.green * 0.8f,
+        blue = color.blue * 0.8f,
+        alpha = color.alpha,
+    )
 }
 
 /** Small status pill, e.g. `Earned`, `12/15`, effort labels. */

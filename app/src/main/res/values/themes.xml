@@ -13,6 +13,7 @@
     <style name="Theme.Ruuun.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_ring</item>
         <item name="postSplashScreenTheme">@style/Theme.Ruuun</item>
     </style>
 </resources>
