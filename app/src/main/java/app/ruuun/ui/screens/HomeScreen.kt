@@ -422,8 +422,8 @@ private fun WeekRow(days: List<JourneyView.WeekDay>, runDays: Int, weeklyGoal: I
                     day.date.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.UK),
                     style = RuuunText.Tiny,
                     color = when {
-                        day.ran -> Navy
                         day.isToday -> app.ruuun.ui.theme.OrangeText
+                        day.ran -> Navy
                         else -> TextMuted
                     },
                 )
@@ -458,23 +458,17 @@ private fun DayCircle(ran: Boolean, isToday: Boolean, animateIn: Boolean, delayM
         scale.snapTo(0.5f)
         scale.animateTo(1f, PopSpring)
     }
+    // Today always has the dashed orange ring; a day run is lime with a tick, inside the
+    // ring when that day is today.
     Box(
         Modifier
-            .size(32.dp)
+            .size(34.dp)
             .graphicsLayer {
                 scaleX = scale.value
                 scaleY = scale.value
             }
-            .clip(RoundedCornerShape(99.dp))
-            .background(
-                when {
-                    filled -> Lime
-                    isToday -> SurfaceColor
-                    else -> Track
-                },
-            )
             .then(
-                if (!filled && isToday) {
+                if (isToday) {
                     Modifier.drawBehind {
                         drawCircle(
                             color = Orange,
@@ -491,7 +485,21 @@ private fun DayCircle(ran: Boolean, isToday: Boolean, animateIn: Boolean, delayM
             ),
         contentAlignment = Alignment.Center,
     ) {
-        if (filled) ThickCheck(Modifier.size(20.dp))
+        Box(
+            Modifier
+                .size(if (isToday) 25.dp else 32.dp)
+                .clip(RoundedCornerShape(99.dp))
+                .background(
+                    when {
+                        filled -> Lime
+                        isToday -> SurfaceColor
+                        else -> Track
+                    },
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (filled) ThickCheck(Modifier.size(if (isToday) 17.dp else 20.dp))
+        }
     }
 }
 
