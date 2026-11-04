@@ -3,6 +3,8 @@ package app.ruuun.ui.screens
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -340,7 +342,9 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
             Text("Welcome back!", style = RuuunText.SpeechWords, color = Navy)
             Spacer(Modifier.height(4.dp))
         }
-        Row {
+        // Bottom-aligned with a fixed nudge, not by baseline: while the number rolls there
+        // are two of them, and a baseline would make the card jump.
+        Row(verticalAlignment = Alignment.Bottom) {
             Text(
                 "Let's do ",
                 style = RuuunText.SpeechWords,
@@ -349,7 +353,7 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
                 // The distance keeps its width; the words give way first.
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .alignByBaseline()
+                    .padding(bottom = 3.dp)
                     .cropFontSpace(),
             )
             AnimatedContent(
@@ -361,10 +365,9 @@ private fun MissionSpeech(targetM: Int, welcomeBack: Boolean) {
                             (slideInVertically { it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut())
                         else ->
                             (slideInVertically { -it } + fadeIn()) togetherWith (slideOutVertically { it } + fadeOut())
-                    }
+                    }.using(SizeTransform(clip = true) { _, _ -> tween(220) })
                 },
                 label = "mission",
-                modifier = Modifier.alignByBaseline(),
             ) { metres ->
                 Text(
                     Formatters.distance(metres),

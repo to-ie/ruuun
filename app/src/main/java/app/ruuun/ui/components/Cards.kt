@@ -343,9 +343,9 @@ fun Medal(badge: BadgeDef, earned: Boolean, modifier: Modifier = Modifier, size:
             shade = badge.category.earnedShade(),
             border = null,
             shape = androidx.compose.foundation.shape.CircleShape,
-            depth = 5.dp,
+            depth = 4.dp,
             // The edge adds to the height, so the face itself stays a circle.
-            modifier = modifier.size(width = size, height = size + 5.dp),
+            modifier = modifier.size(width = size, height = size + 4.dp),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -358,8 +358,8 @@ fun Medal(badge: BadgeDef, earned: Boolean, modifier: Modifier = Modifier, size:
     } else {
         Box(
             modifier
-                .size(width = size, height = size + 5.dp)
-                .padding(bottom = 5.dp)
+                .size(width = size, height = size + 4.dp)
+                .padding(bottom = 4.dp)
                 .drawBehind {
                     drawCircle(
                         color = app.ruuun.ui.theme.InputBorder,

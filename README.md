@@ -169,7 +169,7 @@ on a connected device or emulator: onboarding, saving, same-date runs, editing, 
 latest run moves the mission), tag and note persistence, atomic import, delete-everything, the
 mission controls against the cap, the database migrations, and 150 runs.
 
-`./gradlew :app:testDebugUnitTest` runs 172 JVM tests with no emulator required:
+`./gradlew :app:testDebugUnitTest` runs 173 JVM tests with no emulator required:
 
 | File | Covers |
 |---|---|
@@ -185,6 +185,7 @@ mission controls against the cap, the database migrations, and 150 runs.
 | `WorkedScenariosTest` | all ten Appendix D scenarios plus the UI spec's sample child |
 | `JourneyMapTest` | the four-world map: ordering, exactly one chapter current, world completion, gentle pacing |
 | `InvariantSweepTest` | 1,000 randomised journeys, every rule re-checked after each run |
+| `BadgeTabCountTest` | every badge sits in a category the Badges tab shows, 193 in all |
 | `HomeWeekTest` | the Monday to Sunday row on Home and the pill under Ruu |
 | `MascotTest` | which Ruu shows after a save (a cheer, Hard, ordinary, warm-ups and extra runs), one picture per chapter |
 | `EdgeCaseTest` | backups missing optional keys or carrying unknown ones, runs logged before onboarding, weekly-goal changes, a future onboarding date, a 1 m outing, a decade of logs |
@@ -260,11 +261,11 @@ decrease.
   world, with "Let's do 1.3 km" in a speech card, a Monday to Sunday row, square Easier and Harder
   buttons beside LOG A RUN, and the closest badge and chapter as progress lines. Journey shows the
   current world as a zig-zag path of chapters with "You are here", and stops as blocks. Badges are
-  coloured medals, six per category with "See all". History has big stat tiles and a dot per stop.
+  coloured medals, six per category with "Show N more". History has big stat tiles and a dot per stop.
   The handoff's white text on blue and orange was too faint (2.1:1 and 2.4:1), so text there is
   navy. A new animated splash: Ruu bobbing in two halo rings on navy, the ruuun! name and three
   hopping dots. The bottom bar is icons only. Nothing about runs, missions, badges or the story
-  changed. 172 unit tests and 31 device tests.
+  changed. 173 unit tests and 31 device tests.
 
 - **1.4.1**: more Ruu. On Home, Ruu is much bigger (176 dp, from 108) and stands on the mission card
   with its head above the top edge, breathing gently (still when animations are off). Run saved

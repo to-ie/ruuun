@@ -37,6 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -148,9 +156,14 @@ fun BadgesScreen(state: AppState) {
         }
 
         item {
+            val chipScroll = rememberScrollState()
             Row(
                 Modifier
-                    .horizontalScroll(rememberScrollState())
+                    .fadedEdges(
+                        start = chipScroll.value > 0,
+                        end = chipScroll.value < chipScroll.maxValue,
+                    )
+                    .horizontalScroll(chipScroll)
                     .padding(horizontal = Gutter),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -223,7 +236,7 @@ fun BadgesScreen(state: AppState) {
             if (badges.size > PREVIEW && filter != category) {
                 item(key = "more-$category") {
                     SeeAllLink(
-                        text = if (showAll) "Show fewer" else "See all ${badges.size}",
+                        text = if (showAll) "Show fewer" else "Show ${badges.size - PREVIEW} more",
                         onClick = {
                             opened = if (showAll) opened - category.name else opened + category.name
                         },
@@ -240,6 +253,36 @@ fun BadgesScreen(state: AppState) {
         BadgeDetailSheet(badge = sheetBadge, stats = stats, onDismiss = { selected = null })
     }
 }
+
+/**
+ * Fades a sideways-scrolling row out at whichever edge has more to see, so a chip cut by
+ * the screen edge reads as "scroll for more" rather than a broken chip.
+ */
+private fun Modifier.fadedEdges(start: Boolean, end: Boolean): Modifier =
+    graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val fade = 36.dp.toPx()
+            if (start) {
+                drawRect(
+                    brush = Brush.horizontalGradient(listOf(Color.Transparent, Color.Black), startX = 0f, endX = fade),
+                    size = Size(fade, size.height),
+                    blendMode = BlendMode.DstIn,
+                )
+            }
+            if (end) {
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        listOf(Color.Black, Color.Transparent),
+                        startX = size.width - fade,
+                        endX = size.width,
+                    ),
+                    topLeft = Offset(size.width - fade, 0f),
+                    size = Size(fade, size.height),
+                    blendMode = BlendMode.DstIn,
+                )
+            }
+        }
 
 /** The badge closest to being earned, on the header, with its progress. */
 @Composable

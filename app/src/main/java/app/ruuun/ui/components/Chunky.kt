@@ -78,11 +78,12 @@ fun Chunky(
     }
     // Min constraints pass through, so a fixed or full-width size reaches the face.
     Box(modifier.then(clickModifier), propagateMinConstraints = true) {
-        // The edge: the whole footprint in the shade colour, under the face.
+        // The edge: the face's own shape in the shade colour, dropped by the full depth, so
+        // only a crescent shows below. A circle stays a circle with a circle under it.
         Box(
             Modifier
                 .matchParentSize()
-                .padding(top = (depth - shown).coerceAtLeast(0.dp))
+                .padding(top = depth)
                 .clip(shape)
                 .background(shade),
         )
