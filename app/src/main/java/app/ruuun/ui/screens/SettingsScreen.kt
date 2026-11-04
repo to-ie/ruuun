@@ -188,7 +188,7 @@ fun SettingsScreen(
                     subtitle = "A run with this many stops or fewer",
                     trailing = {
                         SecondaryButton(
-                            text = JourneyView.stopsOrFewer(settings.lowStopsLimit),
+                            text = JourneyView.stopsOrFewer(settings.lowStopsLimit).replaceFirstChar { it.uppercase() },
                             onClick = { showStopsDialog = true },
                             lowEmphasis = true,
                         )
@@ -294,6 +294,7 @@ fun SettingsScreen(
     if (preview != null) {
         AlertDialog(
             onDismissRequest = viewModel::cancelImport,
+            danger = true,
             containerColor = SurfaceColor,
             title = { Text("Import this backup?", style = RuuunText.SubTitle, color = Navy) },
             text = {
@@ -321,6 +322,7 @@ fun SettingsScreen(
     if (deleteStage > 0) {
         AlertDialog(
             onDismissRequest = { deleteStage = 0 },
+            danger = true,
             containerColor = SurfaceColor,
             title = {
                 Text(
@@ -438,7 +440,7 @@ private fun MaxTargetDialog(current: Int, onDismiss: () -> Unit, onConfirm: (Int
         },
         confirmButton = {
             TextButton(enabled = valid, onClick = { onConfirm(parsed ?: current) }) {
-                Text("Save", color = Navy, style = RuuunText.BodyStrong)
+                Text("Save", color = if (valid) Navy else TextMuted, style = RuuunText.BodyStrong)
             }
         },
         dismissButton = {

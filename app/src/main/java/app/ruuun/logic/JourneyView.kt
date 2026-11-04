@@ -290,6 +290,9 @@ object JourneyView {
         }
     }
 
+    /** "Run on 2 days this week", "Run on 1 day this week". */
+    fun weeklyGoalText(goal: Int): String = if (goal == 1) "Run on 1 day this week" else "Run on $goal days this week"
+
     /** "2 stops or fewer", "non-stop" for a limit of zero. */
     fun stopsOrFewer(limit: Int): String =
         if (limit == 0) "no stops" else "${StopGoal.stopsLabel(limit)} or fewer"

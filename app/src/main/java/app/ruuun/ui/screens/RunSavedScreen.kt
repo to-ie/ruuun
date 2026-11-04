@@ -276,7 +276,7 @@ fun RunSavedScreen(
                 Spacer(Modifier.height(Dimens.SectionGap))
                 QuestRow(
                     label = "Weekly goal",
-                    description = "Run on ${week.weeklyGoal} days this week",
+                    description = JourneyView.weeklyGoalText(week.weeklyGoal),
                     progressText = "${week.runDays}/${week.weeklyGoal}",
                     done = week.mainQuestMet,
                 )
@@ -312,6 +312,7 @@ fun RunSavedScreen(
                     SecondaryButton(
                         text = "View badges",
                         onClick = onViewBadges,
+                        large = true,
                         modifier = Modifier.weight(1f),
                     )
                     PrimaryCta(

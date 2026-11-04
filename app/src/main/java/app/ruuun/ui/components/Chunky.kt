@@ -77,7 +77,9 @@ fun Chunky(
         Modifier
     }
     // Min constraints pass through, so a fixed or full-width size reaches the face.
-    Box(modifier.then(clickModifier), propagateMinConstraints = true) {
+    // The click comes first, so a label, state or "disabled" the caller sets lands on the
+    // same accessibility node as the tap, and TalkBack reads and activates one thing.
+    Box(clickModifier.then(modifier), propagateMinConstraints = true) {
         // The edge: the face's own shape in the shade colour, dropped by the full depth, so
         // only a crescent shows below. A circle stays a circle with a circle under it.
         Box(

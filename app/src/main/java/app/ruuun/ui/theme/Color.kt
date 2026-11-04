@@ -50,6 +50,7 @@ val StopBlockIdle = Color(0xFF7A869E) // first-run blocks on Navy (4.7:1)
 
 // Destructive text (Delete all progress only)
 val Destructive = Color(0xFFA12A12)
+val DangerFrame = Color(0xFFE5533D)  // the frame of a dialog that deletes or replaces data
 
 /*
  Contrast rules (checked against WCAG AA):

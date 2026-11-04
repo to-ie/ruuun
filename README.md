@@ -169,7 +169,7 @@ on a connected device or emulator: onboarding, saving, same-date runs, editing, 
 latest run moves the mission), tag and note persistence, atomic import, delete-everything, the
 mission controls against the cap, the database migrations, and 150 runs.
 
-`./gradlew :app:testDebugUnitTest` runs 173 JVM tests with no emulator required:
+`./gradlew :app:testDebugUnitTest` runs 175 JVM tests with no emulator required:
 
 | File | Covers |
 |---|---|
@@ -267,7 +267,7 @@ decrease.
   hopping dots. The bottom bar is icons only. Mission distances show exactly (1.325 km), so every
   25 m Easier or Harder step reads differently, and tabs always come back to Home, also after
   View badges. Nothing about runs, missions, badges or the story
-  changed. 173 unit tests and 31 device tests.
+  changed. 175 unit tests and 31 device tests.
 
 - **1.4.1**: more Ruu. On Home, Ruu is much bigger (176 dp, from 108) and stands on the mission card
   with its head above the top edge, breathing gently (still when animations are off). Run saved

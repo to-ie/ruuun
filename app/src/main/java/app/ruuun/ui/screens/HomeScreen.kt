@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -510,12 +511,13 @@ private fun StepButton(label: String, icon: ImageVector, tint: Color, onClick: (
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         depth = 5.dp,
-        modifier = Modifier.size(width = 56.dp, height = 57.dp),
+        // At least 56 dp square, wider when large text needs the room for the word.
+        modifier = Modifier.defaultMinSize(minWidth = 56.dp, minHeight = 57.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.padding(horizontal = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
-            Text(label, style = RuuunText.Tiny.copy(fontSize = 10.sp), color = Navy, maxLines = 1)
+            Text(label, style = RuuunText.Tiny.copy(fontSize = 10.sp), color = Navy, maxLines = 1, softWrap = false)
         }
     }
 }

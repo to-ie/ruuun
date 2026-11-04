@@ -158,7 +158,7 @@ fun JourneyScreen(
                 ) {
                     QuestTile(
                         label = "Weekly goal",
-                        description = "Run on ${thisWeek.weeklyGoal} days this week",
+                        description = JourneyView.weeklyGoalText(thisWeek.weeklyGoal),
                         progress = "${thisWeek.runDays.coerceAtMost(thisWeek.weeklyGoal)}/${thisWeek.weeklyGoal}",
                         done = thisWeek.mainQuestMet,
                         modifier = Modifier.weight(1f).fillMaxHeight(),

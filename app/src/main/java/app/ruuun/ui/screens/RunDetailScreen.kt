@@ -137,6 +137,7 @@ fun RunDetailScreen(
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
+            danger = true,
             containerColor = SurfaceColor,
             title = { Text("Delete this run?", style = RuuunText.SubTitle, color = Navy) },
             text = { Text(RECOMPUTE_WARNING, style = RuuunText.Body, color = Navy) },

@@ -92,6 +92,7 @@ fun UpdateBanner(
                         text = "Later",
                         onClick = onLater,
                         onNavy = true,
+                        large = true,
                         modifier = Modifier.weight(1f),
                     )
                 }

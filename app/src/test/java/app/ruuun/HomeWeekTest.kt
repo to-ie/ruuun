@@ -54,4 +54,10 @@ class HomeWeekTest {
             JourneyView.homePill(stopGoal = 2, lastStops = 3, lowStopsLimit = 2, atCap = false, welcomeBack = true),
         )
     }
+
+    @Test
+    fun `the weekly goal reads as one day, not one days`() {
+        assertEquals("Run on 1 day this week", JourneyView.weeklyGoalText(1))
+        assertEquals("Run on 3 days this week", JourneyView.weeklyGoalText(3))
+    }
 }

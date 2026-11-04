@@ -25,7 +25,7 @@ import app.ruuun.ui.theme.Surface as SurfaceColor
 
 /**
  * The app's dialog: a white chunky card with a solid blue edge and outline, so it stands
- * out from the dimmed screen behind it. Takes the same slots as Material's AlertDialog,
+ * out from the dimmed screen behind it (red when the choice removes something). Takes the same slots as Material's AlertDialog,
  * so swapping one for the other is a rename. [containerColor] is accepted and ignored.
  */
 @Composable
@@ -38,12 +38,14 @@ fun AlertDialog(
     text: (@Composable () -> Unit)? = null,
     @Suppress("UNUSED_PARAMETER") containerColor: Color = SurfaceColor,
     paneTitle: String = "Dialog",
+    /** For a choice that removes something: the frame turns red. */
+    danger: Boolean = false,
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Chunky(
             color = SurfaceColor,
-            shade = SkyShade,
-            border = app.ruuun.ui.theme.Sky,
+            shade = if (danger) app.ruuun.ui.theme.Destructive else SkyShade,
+            border = if (danger) app.ruuun.ui.theme.DangerFrame else app.ruuun.ui.theme.Sky,
             borderWidth = 3.dp,
             shape = RoundedCornerShape(26.dp),
             depth = 7.dp,

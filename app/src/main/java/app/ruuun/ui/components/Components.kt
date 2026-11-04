@@ -151,6 +151,8 @@ fun SecondaryButton(
     onNavy: Boolean = false,
     lowEmphasis: Boolean = false,
     enabled: Boolean = true,
+    /** Matches [PrimaryCta] in height, depth and lettering, for a pair side by side. */
+    large: Boolean = false,
 ) {
     Chunky(
         onClick = onClick,
@@ -159,13 +161,16 @@ fun SecondaryButton(
         shade = if (onNavy) SkyShade else if (lowEmphasis) Border else Navy,
         border = if (onNavy) null else if (lowEmphasis) Border else Navy,
         shape = Shapes.Button,
-        depth = 4.dp,
-        modifier = modifier,
+        depth = if (large) 6.dp else 4.dp,
+        modifier = modifier.semantics {
+            contentDescription = text
+            if (!enabled) disabled()
+        },
         contentAlignment = Alignment.Center,
     ) {
         Row(
             modifier = Modifier
-                .defaultMinSize(minHeight = Dimens.SecondaryButtonHeight)
+                .defaultMinSize(minHeight = if (large) Dimens.CtaHeight else Dimens.SecondaryButtonHeight)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -175,7 +180,13 @@ fun SecondaryButton(
                 Icon(icon, contentDescription = null, tint = ink, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
             }
-            Text(text, style = RuuunText.BodyStrong, color = ink, textAlign = TextAlign.Center)
+            Text(
+                if (large) text.uppercase() else text,
+                style = if (large) RuuunText.Cta.copy(fontSize = 19.sp) else RuuunText.BodyStrong,
+                color = ink,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.clearAndSetSemantics { },
+            )
         }
     }
 }

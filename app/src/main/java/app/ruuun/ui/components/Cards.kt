@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -445,10 +446,14 @@ fun DateBlock(date: java.time.LocalDate, modifier: Modifier = Modifier) {
         border = null,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
         depth = 4.dp,
-        modifier = modifier.size(width = 54.dp, height = 60.dp),
+        // Grows with large text instead of cutting the date off.
+        modifier = modifier.defaultMinSize(minWidth = 54.dp, minHeight = 60.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Text(Formatters.weekday(date), style = RuuunText.Tiny, color = app.ruuun.ui.theme.SkyDeep)
             Text("${date.dayOfMonth}", style = RuuunText.CardTitle, color = Navy)
         }
@@ -475,9 +480,9 @@ fun StopDots(stops: Int, modifier: Modifier = Modifier) {
             }
             Spacer(Modifier.width(6.dp))
         }
-        val extra = if (stops > MAX_STOP_DOTS) "+${stops - MAX_STOP_DOTS} · " else ""
+        // Up to twelve dots; the words always give the full count.
         Text(
-            extra + if (stops == 0) "Non-stop" else app.ruuun.logic.StopGoal.stopsLabel(stops),
+            if (stops == 0) "Non-stop" else app.ruuun.logic.StopGoal.stopsLabel(stops),
             style = RuuunText.Label,
             color = TextMuted,
         )
