@@ -1,0 +1,32 @@
+# ruuun!
+
+> ruuun! is a free running app for Android (8.0 or newer), made for beginners and young runners. Runs are logged by hand: no GPS, no account, no ads, nothing to buy. Data stays on the phone.
+
+ruuun! turns running into a story. Each run sets the next mission, a distance to aim for plus a stop goal. Every day you run moves a story of 24 chapters across eight worlds along, with Ruu the fox, an orange fox in a blue hoodie, as the running buddy. 193 badges reward showing up, going a bit further, stopping less, trying new places and coming back after a break.
+
+## How it works
+
+- Next mission: a distance and a stop goal. The stop goal is one fewer stop than last time. A run with 2 stops or fewer (adjustable in Settings) makes the next distance a little longer. A hard run eases the next one off. Easier and Harder buttons adjust it by hand, in 25 m steps.
+- Weekly goal: run on 1, 2 or 3 days a week, plus an optional side quest such as running at a park. Missing a week costs nothing.
+- Story: two seasons, eight worlds (Rookie Woods, Desert Dash, Sky Kingdom, Planet Zoom, Coral Coast, Jungle Run, Frosty Peaks, Comet Run), 24 chapters. Any distance counts towards the story.
+- Walking counts and breaks are fine. The app tells children to stop and tell an adult about any pain, dizziness or feeling unwell.
+
+## Privacy
+
+- No account, no sign-in, no ads, no in-app purchases.
+- No location tracking: runs are typed in by hand.
+- Runs stay on the phone unless the user exports a backup file.
+- The app only goes online to check GitHub for a new version of itself.
+
+## Install
+
+- Download page: https://ruuun.app (tap Download for Android on the phone itself)
+- Direct download of the newest version: https://github.com/to-ie/ruuun/releases/latest/download/ruuun.apk
+- Not on the Google Play Store. No iPhone version.
+- Updates appear as a banner inside the app; runs and badges are kept.
+
+## Links
+
+- Download page: https://ruuun.app
+- Source code: https://github.com/to-ie/ruuun
+- All versions: https://github.com/to-ie/ruuun/releases

@@ -1,0 +1,5 @@
+# Everyone, search engines and AI assistants alike, is welcome to read the whole site.
+User-agent: *
+Allow: /
+
+Sitemap: https://ruuun.app/sitemap.xml

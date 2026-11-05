@@ -1,22 +1,165 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ruuun! for Android</title>
-<meta name="description" content="A running adventure for beginners. Log a run, aim for your next mission and run through eight worlds with Ruu the fox. Free, no account, no ads.">
+<title>ruuun! · Free running app for beginners and kids on Android</title>
+<meta name="description" content="A free running app for beginners and kids. Log runs, beat your next mission, stop less each time and explore eight worlds with Ruu the fox. No account, no ads.">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#3DBDF5">
 <link rel="canonical" href="https://ruuun.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ruuun!">
+<meta property="og:locale" content="en_GB">
 <meta property="og:url" content="https://ruuun.app/">
-<meta property="og:title" content="ruuun! for Android">
-<meta property="og:description" content="A running adventure for beginners. Free, no account, no ads.">
+<meta property="og:title" content="ruuun! · A running adventure for beginners">
+<meta property="og:description" content="A free Android running app for beginners and kids. Missions, fewer stops, eight worlds with Ruu the fox. No account, no ads.">
 <meta property="og:image" content="https://ruuun.app/assets/share.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Ruu the fox running, next to the ruuun! name and the words A running adventure for beginners.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="apple-touch-icon" href="assets/icon-180.png">
+<meta name="twitter:title" content="ruuun! · A running adventure for beginners">
+<meta name="twitter:description" content="A free Android running app for beginners and kids. No account, no ads.">
+<meta name="twitter:image" content="https://ruuun.app/assets/share.jpg">
+<meta name="twitter:image:alt" content="Ruu the fox running, next to the ruuun! name and the words A running adventure for beginners.">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+<link rel="preload" href="fonts/baloo2_extrabold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/nunito_regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="alternate" type="text/plain" href="https://ruuun.app/llms.txt" title="ruuun! summary for AI assistants">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "WebSite",
+   "@id": "https://ruuun.app/#website",
+   "url": "https://ruuun.app/",
+   "name": "ruuun!",
+   "inLanguage": "en-GB"
+  },
+  {
+   "@type": "MobileApplication",
+   "@id": "https://ruuun.app/#app",
+   "name": "ruuun!",
+   "alternateName": "ruuun",
+   "description": "A free running app for beginners and kids. Log runs, beat your next mission, stop less each time and explore eight worlds with Ruu the fox. No account, no ads.",
+   "url": "https://ruuun.app/",
+   "image": "https://ruuun.app/assets/share.jpg",
+   "screenshot": [
+    "https://ruuun.app/assets/home.webp",
+    "https://ruuun.app/assets/journey.webp",
+    "https://ruuun.app/assets/saved.webp",
+    "https://ruuun.app/assets/badges.webp"
+   ],
+   "operatingSystem": "Android 8.0 or newer",
+   "applicationCategory": "HealthApplication",
+   "applicationSubCategory": "Running",
+   "downloadUrl": "https://github.com/to-ie/ruuun/releases/latest/download/ruuun.apk",
+   "installUrl": "https://ruuun.app/#install",
+   "isAccessibleForFree": true,
+   "inLanguage": "en-GB",
+   "audience": {
+    "@type": "PeopleAudience",
+    "audienceType": "Beginner runners and children"
+   },
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+   },
+   "featureList": [
+    "Next mission with a distance and a stop goal",
+    "Story of 24 chapters across eight worlds",
+    "193 badges",
+    "Weekly goal of 1, 2 or 3 days with an optional side quest",
+    "Run history with stops and notes",
+    "No account, no ads, no location tracking",
+    "Backup export and import"
+   ],
+   "author": {
+    "@type": "Person",
+    "name": "to-ie",
+    "url": "https://github.com/to-ie"
+   },
+   "sameAs": [
+    "https://github.com/to-ie/ruuun"
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://ruuun.app/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "What is ruuun!?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "ruuun! is a free running app for Android, made for beginners and young runners. You log each run by hand, and the app gives you a next mission: a distance to aim for and a stop goal. Every day you run moves a story along through eight worlds with Ruu the fox, and earns badges along the way."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Who is ruuun! for?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Children and anyone starting to run. It was made for one young runner on a family phone. Walking counts, breaks are fine, and a hard day makes the next mission a little easier."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is ruuun! free?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. There are no ads, no shop, nothing to buy and no account to make."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does ruuun! track my location or collect data?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. There is no GPS tracking: runs are typed in by hand. Everything stays on the phone unless you export a backup yourself. The app only goes online to check GitHub for a new version of itself."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How does the next mission work?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Each run sets the next one. Count your stops and you get a stop goal of one fewer than last time. A run with 2 stops or fewer (you can change this in Settings) makes the next distance a bit longer. If a run felt hard, the next one eases off. Easier and Harder buttons let you adjust it by hand."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is there an iPhone version?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. ruuun! is for Android 8.0 or newer."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Why is ruuun! not on the Google Play Store?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "It installs straight from this page. New versions show up as a banner inside the app: tap Update, then Install, and your runs and badges stay as they are."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How do I keep my progress on a new phone?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "In Settings, tap Export progress to save a backup file. On the new phone, install ruuun!, then tap Import progress and pick that file."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
 <style>
 @font-face { font-family: "Baloo 2"; font-weight: 800; font-display: swap; src: url(fonts/baloo2_extrabold.woff2) format("woff2"); }
 @font-face { font-family: "Nunito"; font-weight: 400; font-display: swap; src: url(fonts/nunito_regular.woff2) format("woff2"); }
@@ -111,6 +254,17 @@ section { padding-block: 72px; }
 .season { margin: 28px 0 12px; color: var(--muted); }
 .season:first-of-type { margin-top: 0; }
 
+/* Questions */
+.faq { display: grid; gap: 12px; max-width: 820px; }
+.qa { background: var(--surface); border: 2px solid var(--border); border-bottom-width: 6px; border-radius: 18px; padding: 0 20px; }
+.qa summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 12px; padding: 16px 0; }
+.qa summary::-webkit-details-marker { display: none; }
+.qa summary::after { content: "+"; margin-left: auto; font: 800 1.6rem/1 var(--display); color: var(--sky-shade); }
+.qa[open] summary::after { content: "−"; }
+.qa summary h3 { font-size: 1.15rem; }
+.qa p { margin: 0 0 18px; color: var(--muted); }
+.qa summary:focus-visible { outline: 3px solid var(--navy); outline-offset: 4px; border-radius: 8px; }
+
 .install { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
 .panel { background: var(--surface); border: 2px solid var(--border); border-bottom-width: 7px; border-radius: 22px; padding: 26px; }
 .panel.info { background: var(--info-bg); border-color: var(--info-bg); border-bottom-color: var(--sky); }
@@ -154,7 +308,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
 <header class="hero">
   <div class="wrap hero-grid">
     <div class="hero-text">
-      <img class="logo" src="assets/logo.webp" width="600" height="535" alt="ruuun!, with Ruu the fox">
+      <img class="logo" src="assets/logo.webp" width="600" height="535" alt="ruuun!, with Ruu the fox" fetchpriority="high">
       <h1>A running adventure for <em>beginners</em>.</h1>
       <p class="lede">Log each run, aim for your next mission and run through eight worlds with Ruu the fox. Walking counts, and every run moves you on.</p>
       <a class="button" id="download" href="https://github.com/to-ie/ruuun/releases/latest/download/ruuun.apk">
@@ -165,7 +319,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
       <p class="desktop-note" id="desktop-note" hidden>On a computer? Open <strong>ruuun.app</strong> on the Android phone you want to install it on, and tap the button there.</p>
     </div>
     <div class="hero-phone">
-      <div class="phone"><img src="assets/home.webp" width="540" height="1200" alt="The ruuun! home screen: Ruu the fox in sunglasses in a round frame, saying Let's do 1.3 km, a stop goal of 2 stops or fewer, the days of this week, and a big Log a run button."></div>
+      <div class="phone"><img src="assets/home.webp" width="540" height="1200" fetchpriority="high" alt="The ruuun! home screen: Ruu the fox in sunglasses in a round frame, saying Let's do 1.3 km, a stop goal of 2 stops or fewer, the days of this week, and a big Log a run button."></div>
     </div>
   </div>
 </header>
@@ -279,6 +433,49 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: s
           </ol>
           <p class="small">After this, updates install over the top with no extra steps.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top: 0" id="questions">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Questions</h2>
+        <p>The short answers, for runners and grown-ups.</p>
+      </div>
+      <div class="faq">
+        <details class="qa">
+          <summary><h3>What is ruuun!?</h3></summary>
+          <p>ruuun! is a free running app for Android, made for beginners and young runners. You log each run by hand, and the app gives you a next mission: a distance to aim for and a stop goal. Every day you run moves a story along through eight worlds with Ruu the fox, and earns badges along the way.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>Who is ruuun! for?</h3></summary>
+          <p>Children and anyone starting to run. It was made for one young runner on a family phone. Walking counts, breaks are fine, and a hard day makes the next mission a little easier.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>Is ruuun! free?</h3></summary>
+          <p>Yes. There are no ads, no shop, nothing to buy and no account to make.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>Does ruuun! track my location or collect data?</h3></summary>
+          <p>No. There is no GPS tracking: runs are typed in by hand. Everything stays on the phone unless you export a backup yourself. The app only goes online to check GitHub for a new version of itself.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>How does the next mission work?</h3></summary>
+          <p>Each run sets the next one. Count your stops and you get a stop goal of one fewer than last time. A run with 2 stops or fewer (you can change this in Settings) makes the next distance a bit longer. If a run felt hard, the next one eases off. Easier and Harder buttons let you adjust it by hand.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>Is there an iPhone version?</h3></summary>
+          <p>No. ruuun! is for Android 8.0 or newer.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>Why is ruuun! not on the Google Play Store?</h3></summary>
+          <p>It installs straight from this page. New versions show up as a banner inside the app: tap Update, then Install, and your runs and badges stay as they are.</p>
+        </details>
+        <details class="qa">
+          <summary><h3>How do I keep my progress on a new phone?</h3></summary>
+          <p>In Settings, tap Export progress to save a backup file. On the new phone, install ruuun!, then tap Import progress and pick that file.</p>
+        </details>
       </div>
     </div>
   </section>
