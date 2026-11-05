@@ -4,7 +4,7 @@ A fun, private, manually logged running-adventure app for one beginner runner.
 Android, Kotlin, Jetpack Compose, Room. No account, no server, no GPS, no economy. Everything works
 offline; the only network use is checking GitHub for a newer version of the app.
 
-Download page: **[ruuun.t-o.ie](https://ruuun.t-o.ie)** (source in [`site/`](site/)).
+Download page: **[ruuun.app](https://ruuun.app)** (source in [`site/`](site/)).
 
 Built to [`docs/ruuun_developer_handoff_v2.md`](docs/ruuun_developer_handoff_v2.md) (behaviour,
 data, rules) and [`docs/UI_DESIGN_SPEC.md`](docs/UI_DESIGN_SPEC.md) (layout, copy, styling). Where
@@ -157,7 +157,7 @@ scripts/release.sh notes.md
 a `versionCode` that is not above the published one, runs the unit tests, builds the release APK,
 checks it carries the release key's certificate, then publishes `ruuun.apk` and `version.json` as the
 newest GitHub release. Phones see the banner on their next launch, and the download button on
-ruuun.t-o.ie serves the new APK straight away.
+ruuun.app serves the new APK straight away.
 
 The landing page is static HTML in [`site/`](site/), deployed to GitHub Pages by
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml) on any push to `main` that touches it.
@@ -362,7 +362,7 @@ decrease.
 
 ## Installing on a phone
 
-Normal use: open **[ruuun.t-o.ie](https://ruuun.t-o.ie)** on the phone and tap Download. Later
+Normal use: open **[ruuun.app](https://ruuun.app)** on the phone and tap Download. Later
 versions arrive through the in-app banner.
 
 For development, the debug APK is signed with this machine's debug key, so it sideloads without

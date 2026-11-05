@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the signed release APK and publishes it as the newest GitHub release.
 #
-# The app's update banner and the download button on ruuun.t-o.ie both read the
+# The app's update banner and the download button on ruuun.app both read the
 # newest full release through GitHub's /releases/latest/download/ links, so every
 # release must carry exactly these two files: ruuun.apk and version.json.
 #

@@ -1,4 +1,4 @@
-# Publishes site/ to GitHub Pages at ruuun.t-o.ie whenever it changes on main.
+# Publishes site/ to GitHub Pages at ruuun.app whenever it changes on main.
 # The download button links to the newest release, so releases need no site change.
 name: Landing page
 
